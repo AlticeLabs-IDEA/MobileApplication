@@ -1,0 +1,27 @@
+{
+  "expo": {
+    "name": "IdeaMobileApp",
+    "slug": "IdeaMobileApp",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./src/assets/images/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./src/assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/images/icon.png",
+        "backgroundColor": "#ffffff"
+      }
+    }
+  }
+}
