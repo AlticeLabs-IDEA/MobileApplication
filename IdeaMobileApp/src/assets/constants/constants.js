@@ -26,6 +26,7 @@ export const secondaryGray = '#666666'
 export const bage = '#F0F0F0'
 export const neutralGray = '#DDDDDD';
 export const pureWhite = '#FFFFFF';
+export const lightWhite = '#FAFAFA';
 export const pureBlack = '#000000';
 
 export const purple = '#8E52B2';
@@ -61,13 +62,15 @@ export const heading1 = 72;
 
 // ---- border-radius ----
 export const buttonBorderRadius = 25;
-export const labelBorderRadius = 5;
+export const labelBorderRadius = 10;
 export const iconBorderRadius = 100;
 export const boxBorderRadius = 30;
 
 // ---- paddings ----
-export const iconPadding = 15;
+export const iconPadding = 12;
 export const labelPaddingLateral = 10;
 export const labelPaddingVertical = 5;
+export const buttonPaddingLateral = 20;
+export const buttonPaddingVertical = 10;
 
 
