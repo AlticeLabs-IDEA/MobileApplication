@@ -26,26 +26,23 @@ export const PrimaryButton_v3 = ({text}) => {
 }
 
 export const SecondaryButton_v1 = ({text, color}) => {
-    const colorCode = "CONST." + color; 
     return(
-        <View style={[styles.secondaryButton_v1, {backgroundColor: colorCode, borderColor: colorCode}]}>
+        <View style={[styles.secondaryButton_v1, {backgroundColor: color, borderColor: color}]}>
             <Text style={styles.secondaryButtonText_v1}>{text}</Text>
         </View>
     )
 }
 export const SecondaryButton_v2 = ({text, color}) => {
-    const colorCode = "CONST." + color; 
     return(
-        <View style={[styles.secondaryButton_v2, {borderColor: colorCode}]}>
-            <Text style={[styles.secondaryButtonText_v2, {color: colorCode}]}>{text}</Text>
+        <View style={[styles.secondaryButton_v2, {borderColor: color}]}>
+            <Text style={[styles.secondaryButtonText_v2, {color: color}]}>{text}</Text>
         </View>
     )
 }
 export const SecondaryButton_v3 = ({text, color}) => {
-    const colorCode = "CONST." + color; 
     return(
         <View style={styles.secondaryButton_v3}>
-            <Text style={[styles.secondaryButtonText_v2, {color: colorCode}]}>{text}</Text>
+            <Text style={[styles.secondaryButtonText_v3, {color: color}]}>{text}</Text>
         </View>
     )
 }

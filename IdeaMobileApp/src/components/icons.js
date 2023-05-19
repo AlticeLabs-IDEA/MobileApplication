@@ -4,33 +4,33 @@ import { View } from "react-native";
 
 import { styles } from "./../assets/styles/css.js"
 
-export const AirIcon = () => {
+export const AirIcon = ({color}) => {
     return(
-        <View style={styles.airIcon}>
+        <View style={[styles.areaIcon, {backgroundColor: color}]}>
             <FontAwesome5 name="wind" size={24} color="white" />
         </View>
     )
 }
 
-export const RecycleIcon = () => {
+export const RecycleIcon = ({color}) => {
     return(
-        <View style={styles.recycleIcon}>
+        <View style={[styles.areaIcon, {backgroundColor: color}]}>
             <FontAwesome5 name="recycle" size={24} color="white" />
         </View>
     )
 }
 
-export const WaterIcon = () => {
+export const WaterIcon = ({color}) => {
     return(
-        <View style={styles.waterIcon}>
+        <View style={[styles.areaIcon, {backgroundColor: color}]}>
             <FontAwesome5 name="faucet" size={24} color="white" />
         </View>
     )
 }
 
-export const EnergyIcon = () => {
+export const EnergyIcon = ({color}) => {
     return(
-        <View style={styles.energyIcon}>
+        <View style={[styles.areaIcon, {backgroundColor: color}]}>
             <FontAwesome name="bolt" size={24} color="white" />
         </View>
     )

@@ -103,30 +103,7 @@ export const styles = StyleSheet.create({
     
 
     // ---- icons ----
-    //TODO: CHANGE TO DYNAMIC COLOR TO BACKGROUND
-    airIcon : {
-        backgroundColor: CONST.purple,
-        padding: CONST.iconPadding,
-        borderRadius: CONST.iconBorderRadius,
-        aspectRatio: 1,
-        alignItems: 'center',
-    },
-    recycleIcon : {
-        backgroundColor: CONST.green,
-        padding: CONST.iconPadding,
-        borderRadius: CONST.iconBorderRadius,
-        aspectRatio: 1,
-        alignItems: 'center',
-    },
-    waterIcon : {
-        backgroundColor: CONST.blue,
-        padding: CONST.iconPadding,
-        borderRadius: CONST.iconBorderRadius,
-        aspectRatio: 1,
-        alignItems: 'center',
-    },
-    energyIcon : {
-        backgroundColor: CONST.yellow,
+    areaIcon : {
         padding: CONST.iconPadding,
         borderRadius: CONST.iconBorderRadius,
         aspectRatio: 1,
@@ -134,38 +111,13 @@ export const styles = StyleSheet.create({
     },
 
     // ---- labels ----
-    airLabel: {
-        backgroundColor: CONST.purple,
+    areaLabel: {
         borderRadius: CONST.labelBorderRadius,
         paddingLeft: CONST.labelPaddingLateral,
         paddingRight: CONST.labelPaddingLateral,
         paddingTop: CONST.labelPaddingVertical,
         paddingBottom: CONST.labelPaddingVertical,
 
-    },
-    recycleLabel: {
-        backgroundColor: CONST.green,
-        borderRadius: CONST.labelBorderRadius,
-        paddingLeft: CONST.labelPaddingLateral,
-        paddingRight: CONST.labelPaddingLateral,
-        paddingTop: CONST.labelPaddingVertical,
-        paddingBottom: CONST.labelPaddingVertical
-    },
-    waterLabel: {
-        backgroundColor: CONST.blue,
-        borderRadius: CONST.labelBorderRadius,
-        paddingLeft: CONST.labelPaddingLateral,
-        paddingRight: CONST.labelPaddingLateral,
-        paddingTop: CONST.labelPaddingVertical,
-        paddingBottom: CONST.labelPaddingVertical
-    },
-    energyLabel: {
-        backgroundColor: CONST.yellow,
-        borderRadius: CONST.labelBorderRadius,
-        paddingLeft: CONST.labelPaddingLateral,
-        paddingRight: CONST.labelPaddingLateral,
-        paddingTop: CONST.labelPaddingVertical,
-        paddingBottom: CONST.labelPaddingVertical
     },
     labelText: {
         color: CONST.pureWhite,

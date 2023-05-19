@@ -3,33 +3,33 @@ import { View, Text } from "react-native";
 
 import { styles } from "./../assets/styles/css.js"
 
-export const AirLabel = () => {
+export const AirLabel = ({color}) => {
     return(
-        <View style={styles.airLabel}>
+        <View style={[styles.areaLabel, {backgroundColor: color}]}>
             <Text style={styles.labelText}>Climatização</Text>
         </View>
     )
 }
 
-export const RecycleLabel = () => {
+export const RecycleLabel = ({color}) => {
     return(
-        <View style={styles.recycleLabel}>
+        <View style={[styles.areaLabel, {backgroundColor: color}]}>
             <Text style={styles.labelText}>Reciclagem</Text>
         </View>
     )
 }
 
-export const WaterLabel = () => {
+export const WaterLabel = ({color}) => {
     return(
-        <View style={styles.waterLabel}>
+        <View style={[styles.areaLabel, {backgroundColor: color}]}>
             <Text style={styles.labelText}>Recursos Hídricos</Text>
         </View>
     )
 }
 
-export const EnergyLabel = () => {
+export const EnergyLabel = ({color}) => {
     return(
-        <View style={styles.energyLabel}>
+        <View style={[styles.areaLabel, {backgroundColor: color}]}>
             <Text style={styles.labelText}>Energia Elétrica</Text>
         </View>
     )
