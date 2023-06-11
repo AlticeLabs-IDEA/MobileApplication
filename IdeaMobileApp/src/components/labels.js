@@ -3,6 +3,14 @@ import { View, Text } from "react-native";
 
 import { styles } from "./../assets/styles/css.js"
 
+export const MovementLabel = ({color}) => {
+    return(
+        <View style={[styles.areaLabel, {backgroundColor: color}]}>
+            <Text style={styles.labelText}>Deslocação</Text>
+        </View>
+    )
+}
+
 export const AirLabel = ({color}) => {
     return(
         <View style={[styles.areaLabel, {backgroundColor: color}]}>

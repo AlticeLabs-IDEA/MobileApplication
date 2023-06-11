@@ -24,10 +24,15 @@ export const secondaryGreen = '#B4CFB3';
 export const mainGray = '#333333';
 export const secondaryGray = '#666666'
 export const bage = '#F0F0F0'
-export const neutralGray = '#DDDDDD';
+export const neutralGray = '#BBBBBB';
 export const pureWhite = '#FFFFFF';
 export const lightWhite = '#FAFAFA';
 export const pureBlack = '#000000';
+
+export const pink = '#D9557C';
+export const softPink = '#F15F8B';
+export const grayishPink = '#B34666';
+export const darkPink = '#732D42';
 
 export const purple = '#8E52B2';
 export const softPurple = '#B167DE';
@@ -61,16 +66,25 @@ export const heading2 = 54;
 export const heading1 = 72;
 
 // ---- border-radius ----
-export const buttonBorderRadius = 25;
-export const labelBorderRadius = 10;
+export const buttonBorderRadius = 100;
+export const labelBorderRadius = 7;
 export const iconBorderRadius = 100;
 export const boxBorderRadius = 30;
+export const shadowRadius = 5;
+export const inputRadius = 10;
 
 // ---- paddings ----
 export const iconPadding = 12;
 export const labelPaddingLateral = 10;
-export const labelPaddingVertical = 5;
+export const labelPaddingVertical = 2;
 export const buttonPaddingLateral = 20;
 export const buttonPaddingVertical = 10;
+export const addButtonPadding = 20;
+export const boxPadding = 20;
+export const inputPaddingLateral = 15;
+export const inputPaddingVertical = 5;
+// export const boxPaddingLateral = 20;
+// export const boxPaddingVertical = 30;
+
 
 

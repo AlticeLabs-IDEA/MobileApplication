@@ -100,8 +100,53 @@ export const styles = StyleSheet.create({
         letterSpacing: 0.5,
         textDecorationLine: 'underline',
     },
-    
+    addButton: {
+        padding: CONST.addButtonPadding,
+        borderRadius: CONST.buttonBorderRadius,
+        aspectRatio: 1,
+        alignItems: 'center',  
+    },
 
+    // ---- area boxes ----
+    areaBox: {
+        backgroundColor: CONST.pureWhite,
+        borderRadius: CONST.boxBorderRadius,
+        shadowColor: CONST.mainGray,
+        shadowRadius: CONST.shadowRadius,
+        shadowOpacity: 0.2,
+        elevation: 3,
+        overflow: "hidden",
+        width: CONST.screenWidth/5*2,
+        height: 'auto',
+        flexDirection: 'column',
+        alignItems: 'center',
+        margin: 10 //TODO: to remove after
+    },
+    areaBoxIcon: {
+        position: 'absolute',
+        opacity: 0.1,
+    },
+    areaBoxPoints: {
+        fontSize: CONST.heading3,
+        color: CONST.mainGray,
+        fontFamily: 'K2D-Bold',
+        marginTop: CONST.boxPadding,
+    },
+    areaBoxText: {
+        fontSize: CONST.normalText,
+        color: CONST.mainGray,
+        fontFamily: 'K2D-Regular',
+        position: 'relative',
+        top: -CONST.boxPadding,
+    },
+    areaBoxSubText: {
+        fontSize: CONST.subText,
+        color: CONST.secondaryGray,
+        fontFamily: 'K2D-Regular',
+        marginTop: CONST.boxPadding,
+        marginBottom: CONST.boxPadding,
+    },
+    
     // ---- icons ----
     areaIcon : {
         padding: CONST.iconPadding,
@@ -123,6 +168,28 @@ export const styles = StyleSheet.create({
         color: CONST.pureWhite,
         fontSize: CONST.smallText,
         fontFamily: "K2D-Regular",
+        letterSpacing: 0.5,
+    },
+
+    // ---- inputs ----
+    inputField: {
+        borderRadius: CONST.inputRadius,
+        borderWidth: 1,
+        borderColor: CONST.neutralGray,
+        borderStyle: 'solid',
+        paddingTop: CONST.inputPaddingVertical,
+        paddingBottom: CONST.inputPaddingVertical,
+        paddingLeft: CONST.inputPaddingLateral,
+        paddingRight: CONST.inputPaddingLateral,
+        color: CONST.mainGray,
+        fontFamily: "K2D-Regular",
+        fontSize: CONST.normalText,
+        letterSpacing: 0.5,
+    },
+    
+    feedbackMessage: {
+        fontFamily: "K2D-Regular",
+        fontSize: CONST.smallText,
         letterSpacing: 0.5,
     }
 })
