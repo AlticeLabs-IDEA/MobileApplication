@@ -125,3 +125,59 @@ export const PasswordInputRegister = () => {
 }
 
 // ---- LOGIN INPUTS ----
+export const EmailInputLogin = () => {
+    const [email, setEmail] = useState('');
+    const [emailFlag, setEmailFlag] = useState(true);
+
+    const handleInputChange = (text) => {
+        setEmail(text);
+    };
+
+    return (
+        <View style={{ flexDirection: 'column', marginBottom: 10}}>
+            <View style={{ flexDirection: 'row' }}>
+                <TextInput
+                    style={[styles.inputField, { width: '100%' }]}
+                    value={email}
+                    onChangeText={handleInputChange}
+                    placeholder={'E-mail'}
+                    placeholderTextColor={CONST.neutralGray}
+                />
+            </View>
+        </View>
+    )
+}
+
+export const PasswordInputLogin = () => {
+    const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+
+    const handlePasswordInputChange = (text) => {
+        setPassword(text);
+    };
+
+    return (
+        <View style={{ flexDirection: 'column', marginBottom: 10}}>
+            <View style={{ flexDirection: 'row', alignItems: 'center'}}>
+                <TextInput
+                    style={[styles.inputField, { width: '100%'}]}
+                    value={password}
+                    onChangeText={handlePasswordInputChange}
+                    placeholder={'Palavra-passe'}
+                    placeholderTextColor={CONST.neutralGray}
+                    secureTextEntry={!showPassword}
+                />
+                <Pressable 
+                    style={{position: 'absolute', right: 0, padding: 18, zIndex: 100}}
+                    onPress={() => {
+                        setShowPassword(!showPassword)
+                    }}>
+                    {showPassword ? 
+                    <FontAwesome name="eye-slash" size={18} color={CONST.mainGray} />
+                    :
+                    <FontAwesome name="eye" size={18} color={CONST.mainGray} />}
+                </Pressable>
+            </View>
+        </View>
+    )
+}

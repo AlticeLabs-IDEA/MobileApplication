@@ -9,7 +9,7 @@ import { RecycleIcon, AirIcon, WaterIcon, EnergyIcon, MovementIcon } from './src
 import { AirLabel, RecycleLabel, WaterLabel, EnergyLabel, MovementLabel } from './src/components/labels';
 import { AddButton, PrimaryButton_v1, PrimaryButton_v2, PrimaryButton_v3, SecondaryButton_v1, SecondaryButton_v2, SecondaryButton_v3 } from './src/components/buttons';
 import { AirBox, RecycleBox, EnergyBox, WaterBox, MovementBox } from './src/components/areaBoxes';
-import { EmailInput, EmailInputRegister, PasswordInputRegister } from './src/components/inputs';
+import { EmailInputLogin, EmailInputRegister, PasswordInputLogin, PasswordInputRegister } from './src/components/inputs';
 
 export default function App() {
 
@@ -79,6 +79,8 @@ export default function App() {
         <View style={{ flexDirection: 'column', alignItems: 'center' }}>
           <EmailInputRegister />
           <PasswordInputRegister />
+          <EmailInputLogin />
+          <PasswordInputLogin />
 
         </View>
       </ScrollView>
