@@ -75,6 +75,7 @@ export const inputRadius = 10;
 
 // ---- paddings ----
 export const iconPadding = 12;
+export const labelTabPadding = 12;
 export const labelPaddingLateral = 10;
 export const labelPaddingVertical = 2;
 export const buttonPaddingLateral = 20;
