@@ -82,10 +82,18 @@ export const buttonPaddingLateral = 20;
 export const buttonPaddingVertical = 10;
 export const addButtonPadding = 20;
 export const boxPadding = 20;
+export const cardBoxPaddingLateral = 20;
+export const cardBoxPaddingVertical = 30;
 export const inputPaddingLateral = 15;
 export const inputPaddingVertical = 5;
+export const layoutPaddingLateral = 20;
+export const layoutPaddingVertical = 60;
 // export const boxPaddingLateral = 20;
 // export const boxPaddingVertical = 30;
 
+// ---- margins ----
+export const titlePageMargin = 40;
+export const descriptionTextMargin = 40;
+export const inputFieldMargin = 20;
 
 

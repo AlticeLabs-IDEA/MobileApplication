@@ -184,6 +184,7 @@ export const styles = StyleSheet.create({
         color: CONST.mainGray,
         fontFamily: "K2D-Regular",
         fontSize: CONST.normalText,
+        height: CONST.normalText*3,
         letterSpacing: 0.5,
     },
     
@@ -202,6 +203,68 @@ export const styles = StyleSheet.create({
         paddingTop: 20,
         position: "absolute",
         paddingBottom: 5,
+    },
+
+    // --- texts ----
+    descriptionText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.normalText,
+        color: CONST.secondaryGray,
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        marginBottom: CONST.descriptionTextMargin,
+    },
+
+    recoverPassword: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.normalText,
+        color: CONST.mainBlue,
+        textAlign: 'right'
+    },
+
+    // ---- cardBox ----
+    cardBox: {
+        backgroundColor: CONST.pureWhite,
+        paddingLeft: CONST.cardBoxPaddingLateral,
+        paddingRight: CONST.cardBoxPaddingLateral,
+        paddingTop: CONST.cardBoxPaddingVertical,
+        paddingBottom: CONST.cardBoxPaddingVertical,
+        borderRadius: CONST.boxBorderRadius,
+        shadowColor: CONST.mainGray,
+        shadowRadius: CONST.shadowRadius,
+        shadowOpacity: 0.2,
+        elevation: 3,
+        overflow: "hidden",
+        margin: 3,
+    },
+
+    // ---- page layout ----
+    indicatorTitle: {
+        fontFamily: 'K2D-SemiBold',
+        fontSize: CONST.normalText,
+        color: CONST.mainGray,
+        textDecorationLine: 'underline',
+        textDecorationStyle: 'solid',
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        marginBottom: CONST.titlePageMargin
+    },
+
+    mainContainer: {
+        backgroundColor: CONST.lightWhite,
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        paddingBottom: CONST.layoutPaddingVertical,
+        paddingTop: CONST.layoutPaddingVertical
+    },
+    
+    doubleButtonsView: {
+        width: CONST.screenWidth,
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+        position: 'absolute', 
+        bottom: 0, 
+        paddingBottom: CONST.layoutPaddingVertical
     }
 
 })
