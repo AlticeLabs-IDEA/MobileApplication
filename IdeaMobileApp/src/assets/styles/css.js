@@ -191,5 +191,17 @@ export const styles = StyleSheet.create({
         fontFamily: "K2D-Regular",
         fontSize: CONST.smallText,
         letterSpacing: 0.5,
+    },
+
+    // ---- tabbar ----
+    tabbar: {
+        backgroundColor: 'transparent',
+        borderTopWidth: 1,
+        borderTopColor: CONST.neutralGray,
+        height: 100,
+        paddingTop: 20,
+        position: "absolute",
+        paddingBottom: 5,
     }
+
 })
