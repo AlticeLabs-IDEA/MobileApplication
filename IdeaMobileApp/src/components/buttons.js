@@ -1,8 +1,9 @@
 import React from 'react';
 import { View, Text } from "react-native";
-import { FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import { styles } from "./../assets/styles/css.js"
+import * as CONST from "./../assets/constants/constants.js"
 
 // ---- PRIMARY BUTTONS ----
 export const PrimaryButton_v1 = ({text}) => {
@@ -55,6 +56,31 @@ export const AddButton = ({color}) => {
     return(
         <View style={[styles.addButton, {backgroundColor: color}]}>
             <FontAwesome5 name="plus" size={24} color="white" />
+        </View>
+    )
+}
+
+// ---- CATEGORIES BUTTONS ----
+export const CategoryIcon = ({label}) => {
+    switch (label){
+        case "air":
+            return (<FontAwesome5 name="wind" size={24} color="white" style={{paddingRight: CONST.iconPadding}}/>)
+        case "movement":
+            return (<FontAwesome5 name="walking" size={24} color="white" style={{paddingRight: CONST.iconPadding}}/>)
+        case "recycle":
+            return (<FontAwesome5 name="recycle" size={24} color="white" style={{paddingRight: CONST.iconPadding}}/>)
+        case "energy":
+            return (<FontAwesome name="bolt" size={24} color="white" style={{paddingRight: CONST.iconPadding}}/>)
+        case "water":
+            return (<FontAwesome5 name="faucet" size={24} color="white" style={{paddingRight: CONST.iconPadding}}/>)
+    }
+}
+
+export const CategoryButton = ({text, color, icon}) => {
+    return(
+        <View style={[styles.secondaryButton_v1, {backgroundColor: color, borderColor: color, flexDirection: 'row'}]}>
+            <CategoryIcon label={icon}/>
+            <Text style={styles.secondaryButtonText_v1}>{text}</Text>
         </View>
     )
 }

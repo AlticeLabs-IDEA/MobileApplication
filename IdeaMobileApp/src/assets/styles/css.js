@@ -215,11 +215,19 @@ export const styles = StyleSheet.create({
         marginBottom: CONST.descriptionTextMargin,
     },
 
+    normalText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.normalText,
+        color: CONST.mainGray,
+        marginBottom: CONST.normalTextMargin,
+    },
+
     recoverPassword: {
         fontFamily: 'K2D-Regular',
         fontSize: CONST.normalText,
         color: CONST.mainBlue,
-        textAlign: 'right'
+        textAlign: 'right',
+        marginTop: CONST.textRecoverPasswordMargin,
     },
 
     // ---- cardBox ----
@@ -238,6 +246,25 @@ export const styles = StyleSheet.create({
         margin: 3,
     },
 
+    // ---- modal ----
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: "rgba(0, 0, 0, 0.5)"
+      },
+      modalView: {
+        backgroundColor: CONST.lightWhite,
+        borderRadius: CONST.modalRadius,
+        padding: CONST.boxPadding,
+        alignItems: 'center',
+        shadowColor: CONST.pureBlack,
+        shadowRadius: CONST.shadowRadius,
+        width: (CONST.screenWidth / 3) * 2,
+        shadowOpacity: 0.5,   
+        elevation: 3,
+        overflow: "hidden",
+      },
     // ---- page layout ----
     indicatorTitle: {
         fontFamily: 'K2D-SemiBold',

@@ -36,7 +36,11 @@ export default function LoginScreen({ navigation }) {
 
             </ScrollView>
             <View style={styles.doubleButtonsView}>
-                <Pressable style={{right: 'auto', left: CONST.layoutPaddingLateral}}>
+                <Pressable 
+                    onPress={() => {
+                        navigation.navigate("Welcome")
+                    }}
+                    style={{right: 'auto', left: CONST.layoutPaddingLateral}}>
                     <PrimaryButton_v2 text={"Voltar"} />
                 </Pressable>
                 <Pressable style={{left: 'auto', right: CONST.layoutPaddingLateral}}>

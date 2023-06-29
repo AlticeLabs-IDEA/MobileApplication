@@ -133,7 +133,7 @@ export const EmailInputLogin = () => {
     };
 
     return (
-        <View style={{ flexDirection: 'column', marginBottom: 30}}>
+        <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10}}>
             <View style={{ flexDirection: 'row' }}>
                 <TextInput
                     style={[styles.inputField, { width: '100%' }]}
@@ -156,7 +156,7 @@ export const PasswordInputLogin = () => {
     };
 
     return (
-        <View style={{ flexDirection: 'column', marginBottom: 30}}>
+        <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10}}>
             <View style={{ flexDirection: 'row', alignItems: 'center'}}>
                 <TextInput
                     style={[styles.inputField, { width: '100%'}]}
