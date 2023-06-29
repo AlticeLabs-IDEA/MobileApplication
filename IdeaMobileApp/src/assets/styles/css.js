@@ -232,6 +232,8 @@ export const styles = StyleSheet.create({
 
     // ---- cardBox ----
     cardBox: {
+        marginLeft: CONST.layoutPaddingLateral,
+        marginRight: CONST.layoutPaddingLateral,
         backgroundColor: CONST.pureWhite,
         paddingLeft: CONST.cardBoxPaddingLateral,
         paddingRight: CONST.cardBoxPaddingLateral,
@@ -279,17 +281,17 @@ export const styles = StyleSheet.create({
 
     mainContainer: {
         backgroundColor: CONST.lightWhite,
-        paddingLeft: CONST.layoutPaddingLateral,
-        paddingRight: CONST.layoutPaddingLateral,
         paddingBottom: CONST.layoutPaddingVertical,
         paddingTop: CONST.layoutPaddingVertical
     },
+
     
     doubleButtonsView: {
         width: CONST.screenWidth,
         flexDirection: 'row', 
         justifyContent: 'space-between',
         position: 'absolute', 
+        width: '100%',
         bottom: 0, 
         paddingBottom: CONST.layoutPaddingVertical
     }

@@ -7,12 +7,12 @@ import { useEffect, useState } from "react";
 
 // IMPORT COMPONENTS
 import { AirIcon, RecycleIcon, WaterIcon, EnergyIcon, MovementIcon } from "../../components/icons.js";
+import { PrimaryButton_v1, PrimaryButton_v2 } from "../../components/buttons.js";
+import { AirLabel, EnergyLabel, MovementLabel, RecycleLabel, WaterLabel } from "../../components/labels.js";
 
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
-import { PrimaryButton_v1 } from "../../components/buttons.js";
-import { AirLabel, EnergyLabel, MovementLabel, RecycleLabel, WaterLabel } from "../../components/labels.js";
 
 export default function ConfigurationScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
@@ -218,7 +218,7 @@ export default function ConfigurationScreen({ navigation }) {
                 </Text>
                 <Text style={styles.descriptionText}>
                     Vamos primeiro configurar o teu perfil. {"\n"}
-                    Esta etapa é importante porque permite-nos oferecer-te uma melhor experiência enquanto utilizas a aplicação, sendo essa a sua única finalidade.
+                    Esta etapa permite-nos oferecer-te uma melhor experiência enquanto utilizas a aplicação IDEA, sendo essa a sua única finalidade.
                     {"\n"}Podes editar a tua configuração sempre que quiseres no teu perfil.
                     {"\n"}Este processo demora cerca de 2 a 3 minutos.
                 </Text>
@@ -226,7 +226,7 @@ export default function ConfigurationScreen({ navigation }) {
                     <Text style={styles.normalText}>
                         O primeiro passo é escolheres as áreas a que desejas ser desafiado! {"\n"}
                         Para tal, clica no ícone das áreas que queres. {"\n"}
-                        Podes ainda, através de um clique prolongado, alterar o tom da área.
+                        Através de um clique prolongado, podes ainda alterar o tom da área.
                     </Text>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Pressable
@@ -287,6 +287,26 @@ export default function ConfigurationScreen({ navigation }) {
                     </View>
                 </View>
             </ScrollView>
+            <View style={styles.doubleButtonsView}>
+                <Pressable 
+                    onPress={() => {
+                        navigation.navigate("Welcome")
+                    }}
+                    style={{right: 'auto', left: CONST.layoutPaddingLateral}}>
+                    <PrimaryButton_v2 text={"Voltar"} />
+                </Pressable>
+                <Pressable 
+                    onPress={() => {
+                        navigation.navigate("Category", {
+                            "categories" : [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory],
+                            "colorToShow" : airCategory ? colorAir : energyCategory ? colorEnergy : movementCategory ? colorMovement : recycleCategory ? colorRecycle : waterCategory ? colorWater : CONST.secondaryGray,
+                            "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
+                        })
+                    }}
+                    style={{left: 'auto', right: CONST.layoutPaddingLateral}}>
+                    <PrimaryButton_v1 text={"Continuar"} />
+                </Pressable>
+            </View>
         </SafeAreaProvider>
     )
 }
