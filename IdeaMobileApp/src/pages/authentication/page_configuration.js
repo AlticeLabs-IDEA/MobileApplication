@@ -37,7 +37,7 @@ export default function ConfigurationScreen({ navigation }) {
             case "air":
                 if (airCategory) {
                     setAirCategory(false)
-                    ToastAndroid.show('Categoria climatização desativada!', ToastAndroid.SHORT);
+                    ToastAndroid.showWithGravity('Categoria climatização desativada!', ToastAndroid.SHORT);
                 } else {
                     setAirCategory(true)
                     ToastAndroid.show('Categoria climatização ativada!', ToastAndroid.SHORT);
@@ -110,8 +110,8 @@ export default function ConfigurationScreen({ navigation }) {
                                     <AirIcon color={colorAir == 4 || colorAir == 0 ? CONST.darkPurple : CONST.secondaryGray} />
                                 </Pressable>
                             </View>
-                                <View style={{ justifyContent: 'flex-start', width: '100%', marginTop: CONST.normalTextMargin, flexDirection: 'row' }}>
-                                    <Text style={[styles.normalText, { marginBottom: 0 }]}>Cor: </Text>
+                                <View style={{ justifyContent: 'flex-start', width: '100%', marginTop: CONST.descriptionTextMargin, flexDirection: 'row' }}>
+                                    <Text style={[styles.normalText, { marginBottom: 0 }]}>Categoria:  </Text>
                                     <AirLabel color={colorAir == 1 || colorAir == 0 ? CONST.softPurple :
                                         colorAir == 2 ? CONST.purple : colorAir == 3 ? CONST.grayishPurple : CONST.darkPurple} />
                                 </View>
@@ -133,7 +133,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         </Pressable>
                                     </View>
                                     <View style={{ justifyContent: 'flex-start', width: '100%', marginTop: CONST.normalTextMargin, flexDirection: 'row' }}>
-                                        <Text style={[styles.normalText, { marginBottom: 0 }]}>Cor: </Text>
+                                        <Text style={[styles.normalText, { marginBottom: 0 }]}>Categoria:  </Text>
                                         <EnergyLabel color={colorEnergy == 1 || colorEnergy == 0 ? CONST.softYellow :
                                             colorEnergy == 2 ? CONST.yellow : colorEnergy == 3 ? CONST.grayishYellow : CONST.darkYellow} />
                                     </View>
@@ -154,7 +154,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         </Pressable>
                                     </View>
                                         <View style={{ justifyContent: 'flex-start', width: '100%', marginTop: CONST.normalTextMargin, flexDirection: 'row' }}>
-                                            <Text style={[styles.normalText, { marginBottom: 0 }]}>Cor: </Text>
+                                            <Text style={[styles.normalText, { marginBottom: 0 }]}>Categoria:  </Text>
                                             <MovementLabel color={colorMovement == 1 || colorMovement == 0 ? CONST.softPink :
                                                 colorMovement == 2 ? CONST.pink : colorMovement == 3 ? CONST.grayishPink : CONST.darkPink} />
                                         </View>
@@ -175,7 +175,7 @@ export default function ConfigurationScreen({ navigation }) {
                                             </Pressable>
                                         </View>
                                             <View style={{ justifyContent: 'flex-start', width: '100%', marginTop: CONST.normalTextMargin, flexDirection: 'row' }}>
-                                                <Text style={[styles.normalText, { marginBottom: 0 }]}>Cor: </Text>
+                                                <Text style={[styles.normalText, { marginBottom: 0 }]}>Categoria:  </Text>
                                                 <RecycleLabel color={colorRecycle == 1 || colorRecycle == 0 ? CONST.softGreen :
                                                     colorRecycle == 2 ? CONST.green : colorRecycle == 3 ? CONST.grayishGreen : CONST.darkGreen} />
                                             </View>
@@ -197,7 +197,7 @@ export default function ConfigurationScreen({ navigation }) {
                                                 </Pressable>
                                             </View>
                                             <View style={{ justifyContent: 'flex-start', width: '100%', marginTop: CONST.normalTextMargin, flexDirection: 'row' }}>
-                                                <Text style={[styles.normalText, { marginBottom: 0 }]}>Cor: </Text>
+                                                <Text style={[styles.normalText, { marginBottom: 0 }]}>Categoria:  </Text>
                                                 <WaterLabel color={colorWater == 1 || colorWater == 0 ? CONST.softBlue :
                                                     colorWater == 2 ? CONST.blue : colorWater == 3 ? CONST.grayishBlue : CONST.darkBlue} />
                                             </View>
@@ -293,15 +293,22 @@ export default function ConfigurationScreen({ navigation }) {
                         navigation.navigate("Welcome")
                     }}
                     style={{right: 'auto', left: CONST.layoutPaddingLateral}}>
-                    <PrimaryButton_v2 text={"Voltar"} />
+                    <PrimaryButton_v2 text={"\u0020\u0020Voltar\u0020\u0020"} />
                 </Pressable>
                 <Pressable 
                     onPress={() => {
-                        navigation.navigate("Category", {
-                            "categories" : [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory],
-                            "colorToShow" : airCategory ? colorAir : energyCategory ? colorEnergy : movementCategory ? colorMovement : recycleCategory ? colorRecycle : waterCategory ? colorWater : CONST.secondaryGray,
-                            "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
-                        })
+                        {(airCategory || energyCategory || movementCategory || recycleCategory || waterCategory) ? 
+                            navigation.navigate("Category", {
+                                "categories" : [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory],
+                                "categoriesColors" : [colorAir, colorEnergy, colorMovement, colorRecycle, colorWater],
+                                "colorToShow" : airCategory ? colorAir : energyCategory ? colorEnergy : movementCategory ? colorMovement : recycleCategory ? colorRecycle : waterCategory ? colorWater : CONST.secondaryGray,
+                                "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
+                            })
+                            :
+                            navigation.navigate("Register")
+
+                        }
+                      
                     }}
                     style={{left: 'auto', right: CONST.layoutPaddingLateral}}>
                     <PrimaryButton_v1 text={"Continuar"} />
