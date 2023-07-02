@@ -27,18 +27,23 @@ export default function RegisterScreen({ navigation }) {
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     return (
-        <View style={[styles.mainContainer,{height: CONST.screenHeight + CONST.layoutPaddingVertical/2}]}>
+        <View style={[styles.mainContainer,{height: CONST.screenHeight + CONST.layoutPaddingVertical/2, paddingBottom: 0}]}>
             <StatusBar style={"dark"} />
             <ScrollView
                 showsVerticalScrollIndicator={false}>
                 <Text style={styles.indicatorTitle}>
                     Registo
                 </Text>
-                <Text style={styles.descriptionText}>
+                </ScrollView>
+                
+                <ScrollView
+                showsVerticalScrollIndicator={false}>
+                <Text style={[styles.descriptionText, {marginBottom: CONST.descriptionTextMargin}]}>
                     Bem-vindo à aplicação IDEA! {"\n"}Para criar uma nova conta precisamos que introduzas algumas informações sobre ti.{"\n"}
                     Preenche todos os campos com cuidado. {"\n"}Posteriormente, podes editar a informação que inserires sempre que quiseres no teu perfil.    
                 </Text>
-                <View style={[styles.cardBox, {marginBottom: CONST.descriptionTextMargin}]}>
+               
+                    <View style={[styles.cardBox]}>
                 
                     <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
                         <View style={{ flexDirection: 'row' }}>
@@ -130,9 +135,7 @@ export default function RegisterScreen({ navigation }) {
                         </View>
                     </View>
                 </View>
-
-            </ScrollView>
-                <View style={[styles.doubleButtonsView, { backgroundColor: CONST.lightWhite }]}>
+                <View style={[styles.doubleButtonsView, { backgroundColor: CONST.lightWhite, marginTop: CONST.layoutPaddingVertical, marginBottom: CONST.layoutPaddingVertical }]}>
                     <Pressable
                         onPress={() => {
                             navigation.navigate("Welcome")
@@ -144,6 +147,8 @@ export default function RegisterScreen({ navigation }) {
                         <PrimaryButton_v1 text={"Entrar"} />
                     </Pressable>
                 </View>
+            </ScrollView>
+               
         </View>
     )
 }
