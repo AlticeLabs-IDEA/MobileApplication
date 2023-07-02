@@ -296,7 +296,7 @@ export default function CategoryScreen({ route, navigation }) {
             <ScrollView
                 showsVerticalScrollIndicator={false}>
             </ScrollView>
-            <View style={styles.doubleButtonsView}>
+            <View style={[styles.doubleButtonsView, {paddingBottom: CONST.layoutPaddingVertical}]}>
                 <Pressable
                     onPress={() => {
                         {

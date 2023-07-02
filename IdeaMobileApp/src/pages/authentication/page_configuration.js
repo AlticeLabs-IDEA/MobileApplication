@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, Text, View, Modal, ToastAndroid } from "react-native";
 import { useEffect, useState } from "react";
+import Toast from 'react-native-toast-message';
 
 // IMPORT COMPONENTS
 import { AirIcon, RecycleIcon, WaterIcon, EnergyIcon, MovementIcon } from "../../components/icons.js";
@@ -27,56 +28,67 @@ export default function ConfigurationScreen({ navigation }) {
     const [colorEnergy, setColorEnergy] = useState(0)
     const [colorMovement, setColorMovement] = useState(0)
     const [colorRecycle, setColorRecycle] = useState(0)
+    const [textToast, setTextToast] = useState("")
 
     useEffect(() => {
 
-    }, [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory, areaToShow, colorAir, colorEnergy, colorWater, colorRecycle, colorMovement])
+    }, [textToast, airCategory, energyCategory, movementCategory, recycleCategory, waterCategory, areaToShow, colorAir, colorEnergy, colorWater, colorRecycle, colorMovement])
 
     const activateCategory = (category) => {
         switch (category) {
             case "air":
                 if (airCategory) {
                     setAirCategory(false)
-                    ToastAndroid.showWithGravity('Categoria climatização desativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria climatização desativada!')
+                    // ToastAndroid.show('Categoria climatização desativada!', ToastAndroid.SHORT);
                 } else {
                     setAirCategory(true)
-                    ToastAndroid.show('Categoria climatização ativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria climatização ativada!')
+                    // ToastAndroid.show('Categoria climatização ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "water":
                 if (waterCategory) {
                     setWaterCategory(false)
-                    ToastAndroid.show('Categoria recursos hídricos desativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria recursos hídricos desativada!')
+                    // ToastAndroid.show('Categoria recursos hídricos desativada!', ToastAndroid.SHORT);
                 } else {
                     setWaterCategory(true)
-                    ToastAndroid.show('Categoria recursos hídricos ativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria recursos hídricos ativada!')
+                    // ToastAndroid.show('Categoria recursos hídricos ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "energy":
                 if (energyCategory) {
                     setEnergyCategory(false)
-                    ToastAndroid.show('Categoria energia elétrica desativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria energia elétrica desativada!')
+                    // ToastAndroid.show('Categoria energia elétrica desativada!', ToastAndroid.SHORT);
                 } else {
                     setEnergyCategory(true)
-                    ToastAndroid.show('Categoria energia elétrica ativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria energia elétrica ativada!')
+                    // ToastAndroid.show('Categoria energia elétrica ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "movement":
                 if (movementCategory) {
                     setMovementCategory(false)
-                    ToastAndroid.show('Categoria mobilidade desativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria mobilidade desativada!')
+                    // ToastAndroid.show('Categoria mobilidade desativada!', ToastAndroid.SHORT);
                 } else {
                     setMovementCategory(true)
-                    ToastAndroid.show('Categoria mobilidade ativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria mobilidade ativada!')
+                    // ToastAndroid.show('Categoria mobilidade ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "recycle":
                 if (recycleCategory) {
                     setRecycleCategory(false)
-                    ToastAndroid.show('Categoria reciclagem desativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria reciclagem desativada!')
+                    // ToastAndroid.show('Categoria reciclagem desativada!', ToastAndroid.SHORT);
                 } else {
                     setRecycleCategory(true)
-                    ToastAndroid.show('Categoria reciclagem ativada!', ToastAndroid.SHORT);
+                    setTextToast('Categoria reciclagem ativada!')
+                    // ToastAndroid.show('Categoria reciclagem ativada!', ToastAndroid.SHORT);
                 }
                 return
         }
@@ -286,6 +298,9 @@ export default function ConfigurationScreen({ navigation }) {
                         </Pressable>
                     </View>
                 </View>
+                <Text style={styles.toastText}>
+                    {textToast}
+                </Text>
             </ScrollView>
             <View style={styles.doubleButtonsView}>
                 <Pressable 

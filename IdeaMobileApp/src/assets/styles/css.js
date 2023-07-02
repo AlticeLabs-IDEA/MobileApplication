@@ -215,6 +215,17 @@ export const styles = StyleSheet.create({
         marginBottom: CONST.descriptionTextMargin,
     },
 
+    toastText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.smallText,
+        color: CONST.secondaryGray,
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        textAlign: 'center',
+        marginTop: CONST.inputFieldMargin
+    },
+
+
     normalText: {
         fontFamily: 'K2D-Regular',
         fontSize: CONST.normalText,
@@ -290,10 +301,6 @@ export const styles = StyleSheet.create({
         width: CONST.screenWidth,
         flexDirection: 'row', 
         justifyContent: 'space-between',
-        position: 'absolute', 
-        width: '100%',
-        bottom: 0, 
-        paddingBottom: CONST.layoutPaddingVertical
-    }
+    } //* probably to change after to implement align-content space between the buttons and other elements
 
 })
