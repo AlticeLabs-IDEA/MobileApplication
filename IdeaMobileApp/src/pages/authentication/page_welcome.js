@@ -18,7 +18,7 @@ export default function WelcomeScreen({ navigation }) {
             </Pressable>
             <Pressable
                 onPress={() => {
-                    navigation.navigate("Configuration")
+                    navigation.navigate("Register")
                 }}>
                 <PrimaryButton_v2 text={"Criar nova conta"} />
             </Pressable>

@@ -229,7 +229,7 @@ export default function ConfigurationScreen({ navigation }) {
                     Configuração de perfil
                 </Text>
                 <Text style={styles.descriptionText}>
-                    Vamos primeiro configurar o teu perfil. {"\n"}
+                    Vamos agora configurar o teu perfil. {"\n"}
                     Esta etapa permite-nos oferecer-te uma melhor experiência enquanto utilizas a aplicação IDEA, sendo essa a sua única finalidade.
                     {"\n"}Podes editar a tua configuração sempre que quiseres no teu perfil.
                     {"\n"}Este processo demora cerca de 2 a 3 minutos.
@@ -305,7 +305,7 @@ export default function ConfigurationScreen({ navigation }) {
             <View style={styles.doubleButtonsView}>
                 <Pressable 
                     onPress={() => {
-                        navigation.navigate("Welcome")
+                        navigation.navigate("Register")
                     }}
                     style={{right: 'auto', left: CONST.layoutPaddingLateral}}>
                     <PrimaryButton_v2 text={"\u0020\u0020Voltar\u0020\u0020"} />
@@ -320,7 +320,7 @@ export default function ConfigurationScreen({ navigation }) {
                                 "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
                             })
                             :
-                            navigation.navigate("Register")
+                            navigation.navigate("Register") // TODO: change
 
                         }
                       

@@ -27,7 +27,7 @@ export default function RegisterScreen({ navigation }) {
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
     return (
-        <View style={[styles.mainContainer,{height: CONST.screenHeight + CONST.layoutPaddingVertical/2, paddingBottom: 0}]}>
+        <SafeAreaProvider style={[styles.mainContainer,{paddingBottom: 0}]}>
             <StatusBar style={"dark"} />
             <ScrollView
                 showsVerticalScrollIndicator={false}>
@@ -123,7 +123,7 @@ export default function RegisterScreen({ navigation }) {
                             </Pressable>
                         </View>
                     </View>
-                    <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
+                    {/* <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
                         <View style={{ flexDirection: 'row' }}>
                             <TextInput
                                 style={[styles.inputField, { width: '100%' }]}
@@ -133,7 +133,7 @@ export default function RegisterScreen({ navigation }) {
                                 placeholderTextColor={CONST.neutralGray}
                             />
                         </View>
-                    </View>
+                    </View> */}
                 </View>
                 <View style={[styles.doubleButtonsView, { backgroundColor: CONST.lightWhite, marginTop: CONST.layoutPaddingVertical, marginBottom: CONST.layoutPaddingVertical }]}>
                     <Pressable
@@ -141,14 +141,18 @@ export default function RegisterScreen({ navigation }) {
                             navigation.navigate("Welcome")
                         }}
                         style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
-                        <PrimaryButton_v2 text={"Voltar"} />
+                        <PrimaryButton_v2 text={"\u0020\u0020Voltar\u0020\u0020"}/>
                     </Pressable>
-                    <Pressable style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
-                        <PrimaryButton_v1 text={"Entrar"} />
+                    <Pressable 
+                         onPress={() => {
+                            navigation.navigate("Configuration")
+                        }}
+                        style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
+                        <PrimaryButton_v1 text={"Continuar"} />
                     </Pressable>
                 </View>
             </ScrollView>
                
-        </View>
+        </SafeAreaProvider>
     )
 }

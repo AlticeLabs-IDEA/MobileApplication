@@ -257,7 +257,7 @@ export default function CategoryScreen({ route, navigation }) {
                                         "toShow": nextCategory
                                     })
                                     :
-                                    navigation.navigate("Register")
+                                    navigation.navigate("Dashboard") // TODO CHANGE TO DASHBOARD
                                 }
                             }} >
                             <PrimaryButton_v1 text={"Continuar"} />

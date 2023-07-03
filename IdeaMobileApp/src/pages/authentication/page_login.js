@@ -67,9 +67,11 @@ export default function LoginScreen({ navigation }) {
                         </View>
                     </View>
 
+                    <Pressable onPress={() => navigation.navigate("Password")}>
                     <Text style={styles.recoverPassword}>
                         Esqueceste a tua palavra-passe?
                     </Text>
+                    </Pressable>
                 </View>
 
             </ScrollView>
@@ -81,7 +83,11 @@ export default function LoginScreen({ navigation }) {
                         style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v2 text={"Voltar"} />
                     </Pressable>
-                    <Pressable style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
+                    <Pressable 
+                        onPress={() => {
+                            navigation.navigate("Tabbar", { screen: "Dashboard" })
+                        }}
+                        style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v1 text={"Entrar"} />
                     </Pressable>
                 </View>

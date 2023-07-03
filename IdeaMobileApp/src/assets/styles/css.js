@@ -196,13 +196,13 @@ export const styles = StyleSheet.create({
 
     // ---- tabbar ----
     tabbar: {
-        backgroundColor: 'transparent',
+        backgroundColor: CONST.lightWhite,
         borderTopWidth: 1,
         borderTopColor: CONST.neutralGray,
-        height: 100,
-        paddingTop: 20,
+        height: 120,
+        paddingTop: CONST.labelTabPadding + 20,
         position: "absolute",
-        paddingBottom: 5,
+        paddingBottom: CONST.labelTabPadding,
     },
 
     // --- texts ----
