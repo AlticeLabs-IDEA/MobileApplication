@@ -55,7 +55,7 @@ export const SecondaryButton_v3 = ({text, color}) => {
 export const AddButton = ({color}) => {
     return(
         <View style={[styles.addButton, {backgroundColor: color}]}>
-            <FontAwesome5 name="plus" size={24} color="white" />
+            <FontAwesome5 name="plus" size={CONST.normalText} color="white" />
         </View>
     )
 }

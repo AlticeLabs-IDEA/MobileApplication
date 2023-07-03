@@ -20,7 +20,7 @@ export default function PasswordScreen({ navigation }) {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <SafeAreaProvider style={[styles.mainContainer]}>
+        <SafeAreaProvider style={[styles.mainContainer, {paddingBottom: CONST.layoutPaddingVertical}]}>
             <StatusBar style={"dark"} />
             <ScrollView
                 showsVerticalScrollIndicator={false}>

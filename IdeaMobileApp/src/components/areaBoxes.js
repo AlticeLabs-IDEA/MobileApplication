@@ -1,13 +1,14 @@
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text } from "react-native";
 
 import { styles } from "./../assets/styles/css.js"
 import { AirLabel, RecycleLabel, EnergyLabel, WaterLabel, MovementLabel } from './labels.js';
 
-export const MovementBox = ({ color, points }) => {
+
+export const MovementBox = ({ color, points, userCategory }) => {
     return (
-        <View style={[styles.areaBox]}>
+        <View style={[userCategory ? styles.areaBox : styles.areaBoxDisable]}>
             <FontAwesome5 name="walking" size={150} color={color} style={[styles.areaBoxIcon, { top: -30, left: -5 }]} />
             <View style={{alignItems: 'center'}}>
                 <Text style={styles.areaBoxPoints}>{points}</Text>
@@ -23,9 +24,9 @@ export const MovementBox = ({ color, points }) => {
     )
 }
 
-export const AirBox = ({ color, points }) => {
+export const AirBox = ({ color, points, userCategory }) => {
     return (
-        <View style={[styles.areaBox]}>
+        <View style={[userCategory ? styles.areaBox : styles.areaBoxDisable]}>
             <FontAwesome5 name="wind" size={150} color={color} style={[styles.areaBoxIcon, { top: -20, left: -30 }]} />
             <View style={{alignItems: 'center'}}>
                 <Text style={styles.areaBoxPoints}>{points}</Text>
@@ -41,9 +42,9 @@ export const AirBox = ({ color, points }) => {
     )
 }
 
-export const RecycleBox = ({ color, points }) => {
+export const RecycleBox = ({ color, points, userCategory }) => {
     return (
-        <View style={[styles.areaBox]}>
+        <View style={[userCategory ? styles.areaBox : styles.areaBoxDisable]}>
             <FontAwesome5 name="recycle" size={150} color={color} style={[styles.areaBoxIcon, { top: -20, left: -30 }]} />
             <View style={{alignItems: 'center'}}>
                 <Text style={styles.areaBoxPoints}>{points}</Text>
@@ -58,9 +59,9 @@ export const RecycleBox = ({ color, points }) => {
         </View>
     )
 }
-export const EnergyBox = ({ color, points }) => {
+export const EnergyBox = ({ color, points, userCategory }) => {
     return (
-        <View style={[styles.areaBox]}>
+        <View style={[userCategory ? styles.areaBox : styles.areaBoxDisable]}>
             <FontAwesome5 name="bolt" size={160} color={color} style={[styles.areaBoxIcon, { top: -30, left: -5 }]} />
             <View style={{alignItems: 'center'}}>
                 <Text style={styles.areaBoxPoints}>{points}</Text>
@@ -75,9 +76,9 @@ export const EnergyBox = ({ color, points }) => {
         </View>
     )
 }
-export const WaterBox = ({ color, points }) => {
+export const WaterBox = ({ color, points, userCategory }) => {
     return (
-        <View style={[styles.areaBox]}>
+        <View style={[userCategory ? styles.areaBox : styles.areaBoxDisable]}>
             <FontAwesome5 name="faucet" size={160} color={color} style={[styles.areaBoxIcon, { top: -20, left: -50 }]} />
             <View style={{alignItems: 'center'}}>
                 <Text style={styles.areaBoxPoints}>{points}</Text>
