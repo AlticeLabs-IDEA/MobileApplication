@@ -184,6 +184,7 @@ export const styles = StyleSheet.create({
         color: CONST.mainGray,
         fontFamily: "K2D-Regular",
         fontSize: CONST.normalText,
+        height: CONST.normalText*3,
         letterSpacing: 0.5,
     },
     
@@ -195,13 +196,111 @@ export const styles = StyleSheet.create({
 
     // ---- tabbar ----
     tabbar: {
-        backgroundColor: 'transparent',
+        backgroundColor: CONST.lightWhite,
         borderTopWidth: 1,
         borderTopColor: CONST.neutralGray,
-        height: 100,
-        paddingTop: 20,
+        height: 120,
+        paddingTop: CONST.labelTabPadding + 20,
         position: "absolute",
-        paddingBottom: 5,
-    }
+        paddingBottom: CONST.labelTabPadding,
+    },
+
+    // --- texts ----
+    descriptionText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.normalText,
+        color: CONST.secondaryGray,
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        marginBottom: CONST.descriptionTextMargin,
+    },
+
+    toastText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.smallText,
+        color: CONST.secondaryGray,
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        textAlign: 'center',
+        marginTop: CONST.inputFieldMargin
+    },
+
+
+    normalText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.normalText,
+        color: CONST.mainGray,
+        marginBottom: CONST.normalTextMargin,
+    },
+
+    recoverPassword: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.normalText,
+        color: CONST.mainBlue,
+        textAlign: 'right',
+        marginTop: CONST.textRecoverPasswordMargin,
+    },
+
+    // ---- cardBox ----
+    cardBox: {
+        marginLeft: CONST.layoutPaddingLateral,
+        marginRight: CONST.layoutPaddingLateral,
+        backgroundColor: CONST.pureWhite,
+        paddingLeft: CONST.cardBoxPaddingLateral,
+        paddingRight: CONST.cardBoxPaddingLateral,
+        paddingTop: CONST.cardBoxPaddingVertical,
+        paddingBottom: CONST.cardBoxPaddingVertical,
+        borderRadius: CONST.boxBorderRadius,
+        shadowColor: CONST.mainGray,
+        shadowRadius: CONST.shadowRadius,
+        shadowOpacity: 0.2,
+        elevation: 3,
+        overflow: "hidden",
+        margin: 3,
+    },
+
+    // ---- modal ----
+    centeredView: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: "rgba(0, 0, 0, 0.5)"
+      },
+      modalView: {
+        backgroundColor: CONST.lightWhite,
+        borderRadius: CONST.modalRadius,
+        padding: CONST.boxPadding,
+        alignItems: 'center',
+        shadowColor: CONST.pureBlack,
+        shadowRadius: CONST.shadowRadius,
+        width: (CONST.screenWidth / 3) * 2,
+        shadowOpacity: 0.5,   
+        elevation: 3,
+        overflow: "hidden",
+      },
+    // ---- page layout ----
+    indicatorTitle: {
+        fontFamily: 'K2D-SemiBold',
+        fontSize: CONST.normalText,
+        color: CONST.mainGray,
+        textDecorationLine: 'underline',
+        textDecorationStyle: 'solid',
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        marginBottom: CONST.titlePageMargin
+    },
+
+    mainContainer: {
+        backgroundColor: CONST.lightWhite,
+        paddingBottom: CONST.layoutPaddingVertical,
+        paddingTop: CONST.layoutPaddingVertical
+    },
+
+    
+    doubleButtonsView: {
+        width: CONST.screenWidth,
+        flexDirection: 'row', 
+        justifyContent: 'space-between',
+    } //* probably to change after to implement align-content space between the buttons and other elements
 
 })

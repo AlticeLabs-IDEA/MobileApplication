@@ -127,14 +127,13 @@ export const PasswordInputRegister = () => {
 // ---- LOGIN INPUTS ----
 export const EmailInputLogin = () => {
     const [email, setEmail] = useState('');
-    const [emailFlag, setEmailFlag] = useState(true);
 
     const handleInputChange = (text) => {
         setEmail(text);
     };
 
     return (
-        <View style={{ flexDirection: 'column', marginBottom: 10}}>
+        <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10}}>
             <View style={{ flexDirection: 'row' }}>
                 <TextInput
                     style={[styles.inputField, { width: '100%' }]}
@@ -157,7 +156,7 @@ export const PasswordInputLogin = () => {
     };
 
     return (
-        <View style={{ flexDirection: 'column', marginBottom: 10}}>
+        <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10}}>
             <View style={{ flexDirection: 'row', alignItems: 'center'}}>
                 <TextInput
                     style={[styles.inputField, { width: '100%'}]}

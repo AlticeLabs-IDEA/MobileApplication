@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 // IMPORT PAGES
-import Dashboard from "../pages/dashboard/page_dashboard"
+import DashboardScreen from "../pages/dashboard/page_dashboard"
 import Details from "../pages/dashboard/page_details"
 import Profile from "../pages/profile/page_profile"
 import Settings from "../pages/profile/page_settings"
@@ -16,6 +16,7 @@ import ConfigurationScreen from "../pages/authentication/page_configuration"
 import LoginScreen from "../pages/authentication/page_login"
 import RegisterScreen from "../pages/authentication/page_register"
 import WelcomeScreen from "../pages/authentication/page_welcome"
+import PasswordScreen from '../pages/authentication/page_password';
 
 // IMPORT STYLE
 import * as CONST from "../assets/constants/constants.js"
@@ -34,7 +35,7 @@ export const DashboardStackNavigation = ({ navigation }) => {
             <DashboardStack.Screen
                 name="Dashboard"
                 options={{ headerShown: false }}
-                component={Dashboard}>
+                component={DashboardScreen}>
             </DashboardStack.Screen>
             <DashboardStack.Screen
                 name="Details"
@@ -78,6 +79,11 @@ export const AuthenticationStackNavigation = ({ navigation }) => {
                 component={LoginScreen}>
             </AuthenticationStack.Screen>
             <AuthenticationStack.Screen
+                name="Password"
+                options={{ headerShown: false }}
+                component={PasswordScreen}>
+            </AuthenticationStack.Screen>
+            <AuthenticationStack.Screen
                 name="Register"
                 options={{ headerShown: false }}
                 component={RegisterScreen}>
@@ -106,10 +112,10 @@ export const Tabbar = () => {
                 tabBarLabelPosition: "below-icon",
                 tabBarLabelStyle: {
                     fontSize: CONST.smallText,
-                    padding: CONST.labelTabPadding
+                    paddingBottom: CONST.labelTabPadding,
+                    fontFamily: 'K2D-Regular'
                 },
                 tabBarIconStyle: {
-                    padding: CONST.iconPadding,
                 },
                 tabBarStyle: styles.tabbar
             }}>

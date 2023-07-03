@@ -72,6 +72,7 @@ export const iconBorderRadius = 100;
 export const boxBorderRadius = 30;
 export const shadowRadius = 5;
 export const inputRadius = 10;
+export const modalRadius = 20;
 
 // ---- paddings ----
 export const iconPadding = 12;
@@ -82,10 +83,19 @@ export const buttonPaddingLateral = 20;
 export const buttonPaddingVertical = 10;
 export const addButtonPadding = 20;
 export const boxPadding = 20;
+export const cardBoxPaddingLateral = 20;
+export const cardBoxPaddingVertical = 20;
 export const inputPaddingLateral = 15;
 export const inputPaddingVertical = 5;
+export const layoutPaddingLateral = 20;
+export const layoutPaddingVertical = 60;
 // export const boxPaddingLateral = 20;
 // export const boxPaddingVertical = 30;
 
-
+// ---- margins ----
+export const titlePageMargin = 40;
+export const descriptionTextMargin = 40;
+export const inputFieldMargin = 20;
+export const textRecoverPasswordMargin = 20;
+export const normalTextMargin = 20;
 
