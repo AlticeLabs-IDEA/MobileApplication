@@ -177,13 +177,13 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                 </View>
 
-                <Pressable
+                {/* <Pressable
                     style={{ justifyContent: 'center', flexDirection: 'row', marginTop: CONST.boxCardMargin }}
                     onPress={() => {
                         console.log("")
                     }}>
                     <AddButton color={CONST.mainGray} />
-                </Pressable>
+                </Pressable> */}
                 {/* <View style={[styles.cardBox, {marginTop: CONST.boxCardMargin, marginBottom: CONST.boxCardMargin,
                     // backgroundColor: selected==='personal' ? valuePer < 25 ? CONST.secondaryRed : valuePer > 66 ? CONST.secondaryGreen : CONST.secondaryBlue
                     // : selected==='departmental' ? valueDep < 25 ? CONST.secondaryRed : valueDep > 66 ? CONST.secondaryGreen : CONST.secondaryBlue
@@ -209,20 +209,32 @@ export default function DashboardScreen({ navigation }) {
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                     style={{ marginBottom: CONST.boxCardMargin/2, marginTop: CONST.boxCardMargin }}>
-                    <View style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: CONST.layoutPaddingLateral - 3 }}>
+                    <Pressable 
+                        onPress={() => {
+                            navigation.navigate("Details", {category: 'air', activeCategories: ["air", "energy", "movement"]})
+                        }}
+                        style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: CONST.layoutPaddingLateral - 3 }}>
                         <AirBox color={CONST.purple} points={45} userCategory={true} />
-                    </View>
-                    <View style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
+                    </Pressable>
+                    <Pressable 
+                        onPress={() => {
+                            navigation.navigate("Details", {category: 'energy', activeCategories: ["air", "energy", "movement"]})
+                        }}
+                        style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
                         <EnergyBox color={CONST.softYellow} points={70} userCategory={true} />
-                    </View>
-                    <View style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
+                    </Pressable>
+                    <Pressable 
+                        onPress={() => {
+                            navigation.navigate("Details", {category: 'movement', activeCategories: ["air", "energy", "movement"]})
+                        }}
+                        style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
                         <MovementBox color={CONST.pink} points={89} userCategory={true} />
+                    </Pressable>
+                    <View style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
+                        <RecycleBox color={CONST.green} points={"-"} />
                     </View>
                     <View style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
-                        <RecycleBox color={CONST.green} points={6} />
-                    </View>
-                    <View style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
-                        <WaterBox color={CONST.blue} points={11} />
+                        <WaterBox color={CONST.blue} points={"-"} />
                     </View>
 
                 </ScrollView>

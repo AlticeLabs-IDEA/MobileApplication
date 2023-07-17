@@ -2,10 +2,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from "@react-navigation/stack";
 import { useNavigation } from "@react-navigation/native";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { View } from "react-native";
 
 // IMPORT PAGES
 import DashboardScreen from "../pages/dashboard/page_dashboard"
-import Details from "../pages/dashboard/page_details"
+import DetailsScreen from "../pages/dashboard/page_details"
 import Profile from "../pages/profile/page_profile"
 import Settings from "../pages/profile/page_settings"
 import Records from "../pages/records/page_records"
@@ -40,7 +41,7 @@ export const DashboardStackNavigation = ({ navigation }) => {
             <DashboardStack.Screen
                 name="Details"
                 options={{ headerShown: false }}
-                component={Details}>
+                component={DetailsScreen}>
             </DashboardStack.Screen>
         </DashboardStack.Navigator>
     )
@@ -106,7 +107,7 @@ export const AuthenticationStackNavigation = ({ navigation }) => {
 export const Tabbar = () => {
     return (
         <Tab.Navigator
-            initialRouteName='Dashboard'
+            initialRouteName='DashboardRoute'
             screenOptions={{
                 headerShown: false,
                 tabBarLabelPosition: "below-icon",
@@ -138,6 +139,20 @@ export const Tabbar = () => {
                     tabBarActiveTintColor: CONST.mainGray,
                     tabBarIcon: ({ color }) => (
                         <FontAwesome name="pie-chart" size={24} color={color} />
+                    )
+                }}
+            />
+            <Tab.Screen
+                name="Add"
+                component={Stats}
+                options={{
+                    tabBarLabel: "",
+                    tabBarShowLabel: false,
+                    tabBarActiveTintColor: CONST.mainGray,
+                    tabBarIcon: ({ color }) => (
+                        <View style={[styles.addButton, {backgroundColor: CONST.mainGray}]}>
+                            <FontAwesome5 name="plus" size={16} color={CONST.pureWhite} />
+                        </View>
                     )
                 }}
             />

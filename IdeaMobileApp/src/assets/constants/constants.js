@@ -81,7 +81,7 @@ export const labelPaddingLateral = 10;
 export const labelPaddingVertical = 2;
 export const buttonPaddingLateral = 20;
 export const buttonPaddingVertical = 10;
-export const addButtonPadding = 20;
+export const addButtonPadding = 12;
 export const boxPadding = 20;
 export const cardBoxPaddingLateral = 20;
 export const cardBoxPaddingVertical = 20;
@@ -100,4 +100,5 @@ export const inputFieldMargin = 20;
 export const textRecoverPasswordMargin = 20;
 export const normalTextMargin = 20;
 export const boxCardMargin = 20;
+export const graphMargin = 40;
 

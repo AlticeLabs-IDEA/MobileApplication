@@ -257,7 +257,7 @@ export default function CategoryScreen({ route, navigation }) {
                                         "toShow": nextCategory
                                     })
                                     :
-                                    navigation.navigate("Tabbar", { screen: "Dashboard" })
+                                    navigation.navigate("Tabbar")
 
                                 }
                             }} >

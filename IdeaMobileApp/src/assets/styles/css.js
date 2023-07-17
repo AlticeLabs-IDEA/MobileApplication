@@ -106,6 +106,7 @@ export const styles = StyleSheet.create({
         paddingLeft: CONST.addButtonPadding + 2,
         paddingRight: CONST.addButtonPadding + 2,
         borderRadius: CONST.buttonBorderRadius,
+        // marginTop: CONST.labelTabPadding,
         alignItems: 'center',  
     },
 

@@ -320,7 +320,7 @@ export default function ConfigurationScreen({ navigation }) {
                                 "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
                             })
                             :
-                            navigation.navigate("Tabbar", { screen: "Dashboard" })
+                            navigation.navigate("Tabbar")
                         }
                       
                     }}

@@ -85,7 +85,7 @@ export default function LoginScreen({ navigation }) {
                     </Pressable>
                     <Pressable 
                         onPress={() => {
-                            navigation.navigate("Tabbar", { screen: "Dashboard" })
+                            navigation.navigate("Tabbar")
                         }}
                         style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v1 text={"Entrar"} />
