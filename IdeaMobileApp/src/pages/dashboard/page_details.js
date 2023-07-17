@@ -7,7 +7,6 @@ import { useEffect, useState, useRef } from "react";
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useFonts } from "expo-font";
 import { BarChart } from "react-native-chart-kit";
-import Swipeable from 'react-native-gesture-handler/Swipeable';
 
 // IMPORT COMPONENTS
 import { AirBox, EnergyBox, MovementBox, RecycleBox, WaterBox } from "../../components/areaBoxes.js";
@@ -22,7 +21,6 @@ export default function DetailsScreen({ route, navigation }) {
     console.log(activeCategories.length)
     const [area, setCategory] = useState("")
     const [points, setPoints] = useState(60)
-    const [colorArea, setColorArea] = useState()
     const [days, setDays] = useState([])
     const [page, setPage] = useState()
     const scrollViewRef = useRef(null);
@@ -30,19 +28,24 @@ export default function DetailsScreen({ route, navigation }) {
     const whichCategory = (value) => {
         switch (value) {
             case "air":
-                setColorArea(CONST.purple) //TODO get from db
+                scrollViewRef.current.scrollTo({x: 0, y: 0, animated: true});
+                setPage(1)
                 return ("Climatização");
             case "water":
-                setColorArea(CONST.blue)
+                scrollViewRef.current.scrollTo({x: CONST.screenWidth*4, y: 0, animated: true})
+                setPage(5)
                 return ("Recursos Hídricos");
             case "energy":
-                setColorArea(CONST.softYellow)
+                scrollViewRef.current.scrollTo({x:  CONST.screenWidth, y: 0, animated: true})
+                setPage(2)
                 return ("Energia elétrica");
             case "movement":
-                setColorArea(CONST.pink)
+                scrollViewRef.current.scrollTo({x:  CONST.screenWidth*2, y: 0, animated: true})
+                setPage(3)
                 return ("Mobilidade");
             case "recycle":
-                setColorArea(CONST.green)
+                scrollViewRef.current.scrollTo({x:  CONST.screenWidth*3, y: 0, animated: true})
+                setPage(4)
                 return ("Reciclagem");
             default:
                 return ("")
@@ -76,20 +79,11 @@ export default function DetailsScreen({ route, navigation }) {
         ]
     };
 
-    const leftSwipeActions = () => {
-        navigation.navigate("Details", { category: 'energy', activeCategories: ["air", "energy", "movement"] })
-    }
-
-    const rightSwipeActions = () => {
-        navigation.navigate("Details", { category: 'energy', activeCategories: ["air", "energy", "movement"] })
-    }
-
-
 
     useEffect(() => {
-        setCategory(whichCategory(category))
+        whichCategory(category)
         setDays(getDays());
-    }, [category])
+    }, [])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer]}>
@@ -112,8 +106,6 @@ export default function DetailsScreen({ route, navigation }) {
                     } else {
                         setPage(5);
                     }
-                    // alert(screenWidth*2)
-                    // alert(e.nativeEvent.contentOffset.x)
                 }}>
 
                 {activeCategories.includes('air') ?
@@ -147,7 +139,7 @@ export default function DetailsScreen({ route, navigation }) {
                                 <View style={{ marginBottom: CONST.boxCardMargin }}>
                                     <Text style={styles.subText}>Pontos na área de {area} durante os últimos sete dias</Text>
                                 </View>
-                                <View style={{ position: 'relative', left: -CONST.screenWidth / 6 }}>
+                                <View style={ CONST.screenWidth > 400 ? { left: - CONST.screenWidth / 6, position: 'relative' } : {left:  -CONST.screenWidth / 5, position: 'relative' }}>
                                     <BarChart
                                         style={{}}
                                         data={data}
@@ -218,7 +210,7 @@ export default function DetailsScreen({ route, navigation }) {
                                 <View style={{ marginBottom: CONST.boxCardMargin }}>
                                     <Text style={styles.subText}>Pontos na área de Energia Elétrica durante os últimos sete dias</Text>
                                 </View>
-                                <View style={{ position: 'relative', left: -CONST.screenWidth / 6 }}>
+                                <View style={ CONST.screenWidth > 400 ? { left: - CONST.screenWidth / 6, position: 'relative' } : {left:  -CONST.screenWidth / 5, position: 'relative' }}>
                                     <BarChart
                                         style={{}}
                                         data={data}
@@ -289,7 +281,7 @@ export default function DetailsScreen({ route, navigation }) {
                                 <View style={{ marginBottom: CONST.boxCardMargin }}>
                                     <Text style={styles.subText}>Pontos na área de Mobilidade durante os últimos sete dias</Text>
                                 </View>
-                                <View style={{ position: 'relative', left: -CONST.screenWidth / 6 }}>
+                                <View style={ CONST.screenWidth > 400 ? { left: - CONST.screenWidth / 6, position: 'relative' } : {left:  -CONST.screenWidth / 5, position: 'relative' }}>
                                     <BarChart
                                         style={{}}
                                         data={data}
@@ -360,7 +352,7 @@ export default function DetailsScreen({ route, navigation }) {
                                 <View style={{ marginBottom: CONST.boxCardMargin }}>
                                     <Text style={styles.subText}>Pontos na área de Reciclagem durante os últimos sete dias</Text>
                                 </View>
-                                <View style={{ position: 'relative', left: -CONST.screenWidth / 6 }}>
+                                <View style={ CONST.screenWidth > 400 ? { left: - CONST.screenWidth / 6, position: 'relative' } : {left:  -CONST.screenWidth / 5, position: 'relative' }}>
                                     <BarChart
                                         style={{}}
                                         data={data}
@@ -431,7 +423,7 @@ export default function DetailsScreen({ route, navigation }) {
                                 <View style={{ marginBottom: CONST.boxCardMargin }}>
                                     <Text style={styles.subText}>Pontos na área de Recursos Hídricos durante os últimos sete dias</Text>
                                 </View>
-                                <View style={{ position: 'relative', left: -CONST.screenWidth / 6 }}>
+                                <View style={ CONST.screenWidth > 400 ? { left: - CONST.screenWidth / 6, position: 'relative' } : {left:  -CONST.screenWidth / 5, position: 'relative' }}>
                                     <BarChart
                                         style={{}}
                                         data={data}
