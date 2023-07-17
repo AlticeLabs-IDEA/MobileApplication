@@ -6,7 +6,7 @@ import { styles } from "./../assets/styles/css.js"
 export const MovementLabel = ({color}) => {
     return(
         <View style={[styles.areaLabel, {backgroundColor: color}]}>
-            <Text style={styles.labelText}>Deslocação</Text>
+            <Text style={styles.labelText}>Mobilidade</Text>
         </View>
     )
 }
