@@ -8,7 +8,7 @@ export const screenHeight = Dimensions.get("window").height;
 // ---- background layout ----
 export const backgroundLateral = 20;
 export const backgroundTop = 60;
-export const backgroundBottom = 80; //TODO: probably to change
+export const navbarHeight = 100; 
 
 // ---- colors ----
 export const mainBlue = '#1264B0';
@@ -81,7 +81,7 @@ export const labelPaddingLateral = 10;
 export const labelPaddingVertical = 2;
 export const buttonPaddingLateral = 20;
 export const buttonPaddingVertical = 10;
-export const addButtonPadding = 20;
+export const addButtonPadding = 12;
 export const boxPadding = 20;
 export const cardBoxPaddingLateral = 20;
 export const cardBoxPaddingVertical = 20;
@@ -94,8 +94,11 @@ export const layoutPaddingVertical = 60;
 
 // ---- margins ----
 export const titlePageMargin = 40;
+export const titlePageMargin_v2 = 20;
 export const descriptionTextMargin = 40;
 export const inputFieldMargin = 20;
 export const textRecoverPasswordMargin = 20;
 export const normalTextMargin = 20;
+export const boxCardMargin = 20;
+export const graphMargin = 40;
 

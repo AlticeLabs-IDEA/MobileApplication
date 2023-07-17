@@ -101,9 +101,12 @@ export const styles = StyleSheet.create({
         textDecorationLine: 'underline',
     },
     addButton: {
-        padding: CONST.addButtonPadding,
+        paddingTop: CONST.addButtonPadding,
+        paddingBottom: CONST.addButtonPadding,
+        paddingLeft: CONST.addButtonPadding + 2,
+        paddingRight: CONST.addButtonPadding + 2,
         borderRadius: CONST.buttonBorderRadius,
-        aspectRatio: 1,
+        // marginTop: CONST.labelTabPadding,
         alignItems: 'center',  
     },
 
@@ -114,13 +117,25 @@ export const styles = StyleSheet.create({
         shadowColor: CONST.mainGray,
         shadowRadius: CONST.shadowRadius,
         shadowOpacity: 0.2,
-        elevation: 3,
+        elevation: 2,
+        overflow: "hidden",
+        margin: 3,
+        width: CONST.screenWidth/5*2,
+        height: 'auto',
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    areaBoxDisable: {
+        backgroundColor: CONST.pureWhite,
+        borderRadius: CONST.boxBorderRadius,
+        borderColor: "#DDD",
+        borderWidth: 1,
+        opacity: 0.5,
         overflow: "hidden",
         width: CONST.screenWidth/5*2,
         height: 'auto',
         flexDirection: 'column',
         alignItems: 'center',
-        margin: 10 //TODO: to remove after
     },
     areaBoxIcon: {
         position: 'absolute',
@@ -197,10 +212,13 @@ export const styles = StyleSheet.create({
     // ---- tabbar ----
     tabbar: {
         backgroundColor: CONST.lightWhite,
+        shadowColor: 'transparent',
         borderTopWidth: 1,
-        borderTopColor: CONST.neutralGray,
-        height: 120,
-        paddingTop: CONST.labelTabPadding + 20,
+        borderTopColor: "#DDD",
+        marginLeft: CONST.layoutPaddingLateral,
+        marginRight: CONST.layoutPaddingLateral,
+        height: CONST.navbarHeight,
+        paddingTop: CONST.labelTabPadding ,
         position: "absolute",
         paddingBottom: CONST.labelTabPadding,
     },
@@ -225,12 +243,18 @@ export const styles = StyleSheet.create({
         marginTop: CONST.inputFieldMargin
     },
 
-
     normalText: {
         fontFamily: 'K2D-Regular',
         fontSize: CONST.normalText,
         color: CONST.mainGray,
         marginBottom: CONST.normalTextMargin,
+    },
+
+    subText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.subText,
+        color: CONST.secondaryGray,
+        textAlign: 'center'
     },
 
     recoverPassword: {
@@ -254,7 +278,7 @@ export const styles = StyleSheet.create({
         shadowColor: CONST.mainGray,
         shadowRadius: CONST.shadowRadius,
         shadowOpacity: 0.2,
-        elevation: 3,
+        elevation: 2,
         overflow: "hidden",
         margin: 3,
     },
@@ -290,9 +314,20 @@ export const styles = StyleSheet.create({
         marginBottom: CONST.titlePageMargin
     },
 
+    indicatorTitle_v2: {
+        fontFamily: 'K2D-SemiBold',
+        fontSize: CONST.normalText,
+        color: CONST.mainGray,
+        textDecorationLine: 'underline',
+        textDecorationStyle: 'solid',
+        paddingLeft: CONST.layoutPaddingLateral,
+        paddingRight: CONST.layoutPaddingLateral,
+        marginBottom: CONST.titlePageMargin_v2
+    },
+
     mainContainer: {
         backgroundColor: CONST.lightWhite,
-        paddingBottom: CONST.layoutPaddingVertical,
+        paddingBottom: CONST.navbarHeight,
         paddingTop: CONST.layoutPaddingVertical
     },
 
@@ -301,6 +336,28 @@ export const styles = StyleSheet.create({
         width: CONST.screenWidth,
         flexDirection: 'row', 
         justifyContent: 'space-between',
-    } //* probably to change after to implement align-content space between the buttons and other elements
+    }, //* probably to change after to implement align-content space between the buttons and other elements
+
+    // ---- Progress Bar ----
+    mainProgressBarText: {
+        fontFamily: 'K2D-SemiBold',
+        fontSize: CONST.heading4,
+        color: CONST.mainGray
+    },
+
+    mainProgressBarSubText: {
+        fontFamily: 'K2D-Regular',
+        fontSize: CONST.normalText,
+        color: CONST.mainGray,
+        position: 'relative',
+        top: -10
+    },
+
+    progressBarText: {
+        fontFamily: 'K2D-SemiBold',
+        fontSize: CONST.normalText,
+        color: CONST.mainGray
+    },
+
 
 })

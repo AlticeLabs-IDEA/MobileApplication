@@ -21,7 +21,7 @@ export default function LoginScreen({ navigation }) {
     const [showPassword, setShowPassword] = useState(false);
 
     return (
-        <View style={[styles.mainContainer,{height: CONST.screenHeight + CONST.layoutPaddingVertical/2}]}>
+        <View style={[styles.mainContainer,{height: CONST.screenHeight + CONST.layoutPaddingVertical/2, paddingBottom: CONST.layoutPaddingVertical}]}>
             <StatusBar style={"dark"} />
             <ScrollView
                 showsVerticalScrollIndicator={false}>
@@ -85,7 +85,7 @@ export default function LoginScreen({ navigation }) {
                     </Pressable>
                     <Pressable 
                         onPress={() => {
-                            navigation.navigate("Tabbar", { screen: "Dashboard" })
+                            navigation.navigate("Tabbar")
                         }}
                         style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v1 text={"Entrar"} />

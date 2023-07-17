@@ -96,7 +96,7 @@ export default function ConfigurationScreen({ navigation }) {
 
 
     return (
-        <SafeAreaProvider style={styles.mainContainer}>
+        <SafeAreaProvider style={[styles.mainContainer, {paddingBottom: CONST.layoutPaddingVertical}]}>
             <StatusBar style={"dark"} />
             <Modal
                 animationType="fade"
@@ -320,8 +320,7 @@ export default function ConfigurationScreen({ navigation }) {
                                 "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
                             })
                             :
-                            navigation.navigate("Register") // TODO: change
-
+                            navigation.navigate("Tabbar")
                         }
                       
                     }}
