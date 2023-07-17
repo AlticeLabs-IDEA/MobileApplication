@@ -211,21 +211,21 @@ export default function DashboardScreen({ navigation }) {
                     style={{ marginBottom: CONST.boxCardMargin/2, marginTop: CONST.boxCardMargin }}>
                     <Pressable 
                         onPress={() => {
-                            navigation.navigate("Details", {category: 'air', activeCategories: ["air", "energy", "movement", "recycle", "water"]})
+                            navigation.navigate("Details", {category: 'air', activeCategories: ["air", "energy", "movement"]})
                         }}
                         style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: CONST.layoutPaddingLateral - 3 }}>
                         <AirBox color={CONST.purple} points={45} userCategory={true} />
                     </Pressable>
                     <Pressable 
                         onPress={() => {
-                            navigation.navigate("Details", {category: 'energy', activeCategories: ["air", "energy", "movement", "recyle", "water"]})
+                            navigation.navigate("Details", {category: 'energy', activeCategories: ["air", "energy", "movement"]})
                         }}
                         style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
                         <EnergyBox color={CONST.softYellow} points={70} userCategory={true} />
                     </Pressable>
                     <Pressable 
                         onPress={() => {
-                            navigation.navigate("Details", {category: 'movement', activeCategories: ["air", "energy", "movement", "recycle", "water"]})
+                            navigation.navigate("Details", {category: 'movement', activeCategories: ["air", "energy", "movement"]})
                         }}
                         style={{ marginRight: CONST.layoutPaddingLateral - 3, marginLeft: 0 }}>
                         <MovementBox color={CONST.pink} points={89} userCategory={true} />
