@@ -16,8 +16,7 @@ export default function Records({ navigation}) {
   //console.log(activeCategories.length)
   const [colors, setColors]= useState ([CONST.purple, CONST.yellow, CONST.pink, CONST.green, CONST.blue])
 
-  //const pickDate = new Date();
-
+ 
   return (
     <SafeAreaProvider style={[styles.mainContainer]}>
       <StatusBar style={"dark"} />
@@ -109,6 +108,22 @@ export default function Records({ navigation}) {
               >
               Nunca.
               </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { marginTop: CONST.normalTextMargin, marginBottom: 0 },
+                ]}
+              >
+              As janelas do departamento estiveram abertas?
+              </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { fontFamily: 'K2D-SemiBold', marginBottom: 0 },
+                ]}
+              >
+              1 ou 2 vezes
+              </Text>
             </View>
           </View>
         </View>
@@ -134,6 +149,38 @@ export default function Records({ navigation}) {
               >
               Sempre.
               </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { marginTop: CONST.normalTextMargin, marginBottom: 0 },
+                ]}
+              >
+              As luzes do departamento estavam desligadas?
+              </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { fontFamily: 'K2D-SemiBold', marginBottom: 0},
+                ]}
+              >
+              Intervalos.
+              </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { marginTop: CONST.normalTextMargin, marginBottom: 0 },
+                ]}
+              >
+              Ao fim do dia, desligaste o teu monitor, onde?
+              </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { fontFamily: 'K2D-SemiBold', marginBottom: 0},
+                ]}
+              >
+              Tomada eletrica.
+              </Text>
             </View>
           </View>
         </View>
@@ -158,6 +205,22 @@ export default function Records({ navigation}) {
                 ]}
               >
               Viatura Partilhada.
+              </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { marginTop: CONST.normalTextMargin, marginBottom: 0 },
+                ]}
+              >
+              Para movimentar-te entre um e outro andar na empresa, utilizaste o elevador?
+              </Text>
+              <Text
+                style={[
+                  styles.normalText,
+                  { fontFamily: 'K2D-SemiBold', marginBottom: 0},
+                ]}
+              >
+              1 ou 2 vezes.
               </Text>
             </View>
           </View>
