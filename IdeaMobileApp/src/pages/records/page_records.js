@@ -16,6 +16,19 @@ export default function Records({ navigation}) {
   //console.log(activeCategories.length)
   const [colors, setColors]= useState ([CONST.purple, CONST.yellow, CONST.pink, CONST.green, CONST.blue])
 
+  const [currentDate, setCurrentDate] = useState('');
+  useEffect(() => {
+    const getCurrentDate = () => {
+      const date = new Date();
+      const day = date.getDate();
+      const month = date.getMonth() + 1; // months are zero-based
+
+      setCurrentDate(`${day}/${month}`);
+    };
+
+    getCurrentDate();
+  }, []);
+  console.log(currentDate)
  
   return (
     <SafeAreaProvider style={[styles.mainContainer]}>
@@ -76,7 +89,7 @@ export default function Records({ navigation}) {
                   { marginTop: CONST.normalTextMargin, marginBottom: 0 },
                 ]}
               >
-                14/07
+                {currentDate}
               </Text>
               <FontAwesome5
                 name="calendar-alt"
