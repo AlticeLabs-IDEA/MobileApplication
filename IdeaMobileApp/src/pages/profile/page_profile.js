@@ -670,7 +670,11 @@ export default function Profile() {
           {textToast}
         </Text>
         <View style={[styles.cardBox, { marginBottom: CONST.boxCardMargin }]}>
-        <Pressable style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Pressable style={{ 
+            flexDirection: "row", 
+            justifyContent: "space-between", 
+            marginBottom: 10 
+            }}>
                <Text
             style={[
               styles.normalText,
@@ -681,27 +685,38 @@ export default function Profile() {
           </Text> 
           <FontAwesome name="angle-right" size={CONST.heading6} color="black" />
             </Pressable>
-            <Pressable style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Pressable style={{ 
+                flexDirection: "row", 
+                justifyContent: "space-between",
+                borderTopWidth: 1,
+                borderColor: "#DDD", 
+                marginBottom: 10
+                }}>
                <Text
             style={[
               styles.normalText,
-              { fontFamily: "K2D-SemiBold", marginBottom: 0 },
+              { fontFamily: "K2D-SemiBold", marginBottom: 0, marginTop: 10},
             ]}
           >
             Editar palabra passe
           </Text> 
-          <FontAwesome name="angle-right" size={CONST.heading6} color="black" />
+          <FontAwesome name="angle-right" size={CONST.heading6} color="black" style={[{marginTop: 10 }]} />
             </Pressable>
-            <Pressable style={{ flexDirection: "row", justifyContent: "space-between" }}>
+            <Pressable style={{ 
+                flexDirection: "row", 
+                justifyContent: "space-between",
+                borderTopWidth: 1,
+                borderColor: "#DDD"
+        }}>
                <Text
             style={[
               styles.normalText,
-              { fontFamily: "K2D-SemiBold", marginBottom: 0 },
+              { fontFamily: "K2D-SemiBold", marginBottom: 0, marginTop: 10 },
             ]}
           >
             Apagar conta
           </Text> 
-          <FontAwesome name="angle-right" size={CONST.heading6} color="black" style={[{fontFamily: "K2D-SemiBold"}]} />
+          <FontAwesome name="angle-right" size={CONST.heading6} color="black" style={[{marginTop: 10 }]} />
             </Pressable>
         </View>
       </ScrollView>
