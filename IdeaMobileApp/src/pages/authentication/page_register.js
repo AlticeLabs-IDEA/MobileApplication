@@ -3,7 +3,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, Text, View, TextInput } from "react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 
@@ -26,6 +26,11 @@ export default function RegisterScreen({ navigation }) {
     const [passwordConfirm, setPasswordConfirm] = useState('');
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
     const [isChecked, setChecked] = useState(false);
+    const [visible, setVisible] = useState(false);
+
+    useEffect(() => {
+
+    }, [visible])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer, { paddingBottom: 0 }]}>
@@ -140,12 +145,25 @@ export default function RegisterScreen({ navigation }) {
                     <Checkbox
                         style={styles.checkbox}
                         value={isChecked}
-                        onValueChange={setChecked}
+                        onValueChange={() => {
+                            setChecked(!isChecked)
+                            if (!isChecked) {
+                                setVisible(false)
+                            }
+                        }}
                         color={isChecked ? CONST.mainGray : undefined}
-                        onChange={() => {setChecked(!isChecked)}}
+                        onChange={() => {
+                            setChecked(!isChecked)
+                        }}
                     />
                     <Text style={[styles.normalText, {marginBottom: 0, paddingLeft: CONST.labelPaddingLateral}]}>Declaro que li e concordo com os termos de utilização.</Text>
                 </View>
+                {visible ? 
+                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
+                    <Text style={[styles.subText, {color: CONST.mainRed}]}>Para criar conta na aplicação IDEA precisa de ler e concordar com os termos de utilização.</Text>
+                </View>
+                : 
+                <></>}
                 <View style={[styles.doubleButtonsView, { backgroundColor: CONST.lightWhite, marginTop: CONST.layoutPaddingVertical, marginBottom: CONST.layoutPaddingVertical }]}>
                     <Pressable
                         onPress={() => {
@@ -156,7 +174,10 @@ export default function RegisterScreen({ navigation }) {
                     </Pressable>
                     <Pressable
                         onPress={() => {
+                            isChecked ? 
                             navigation.navigate("Configuration")
+                            :
+                            setVisible(true)
                         }}
                         style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v1 text={"Continuar"} />

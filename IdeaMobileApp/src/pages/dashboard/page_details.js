@@ -20,7 +20,6 @@ export default function DetailsScreen({ route, navigation }) {
     const { category, activeCategories } = route.params;
     console.log(activeCategories.length)
     const [area, setCategory] = useState("")
-    const [points, setPoints] = useState(60)
     const [days, setDays] = useState([])
     const [page, setPage] = useState()
     const scrollViewRef = useRef(null);
@@ -131,7 +130,7 @@ export default function DetailsScreen({ route, navigation }) {
                                         <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>A tua média de pontos nos últimos sete dias foi: </Text>
                                     </View>
                                     <View style={{ width: '30%', justifyContent: 'flex-end' }}>
-                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.purple }]}>{points} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
+                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.purple }]}>45 <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                     </View>
                                 </View>
                             </View>
@@ -202,7 +201,7 @@ export default function DetailsScreen({ route, navigation }) {
                                         <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>A tua média de pontos nos últimos sete dias foi: </Text>
                                     </View>
                                     <View style={{ width: '30%', justifyContent: 'flex-end' }}>
-                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.yellow }]}>{points} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
+                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.yellow }]}>70 <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                     </View>
                                 </View>
                             </View>
@@ -273,7 +272,7 @@ export default function DetailsScreen({ route, navigation }) {
                                         <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>A tua média de pontos nos últimos sete dias foi: </Text>
                                     </View>
                                     <View style={{ width: '30%', justifyContent: 'flex-end' }}>
-                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.pink }]}>{points} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
+                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.pink }]}>89 <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                     </View>
                                 </View>
                             </View>
@@ -344,7 +343,7 @@ export default function DetailsScreen({ route, navigation }) {
                                         <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>A tua média de pontos nos últimos sete dias foi: </Text>
                                     </View>
                                     <View style={{ width: '30%', justifyContent: 'flex-end' }}>
-                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.green }]}>{points} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
+                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.green }]}>0 <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                     </View>
                                 </View>
                             </View>
@@ -415,7 +414,7 @@ export default function DetailsScreen({ route, navigation }) {
                                         <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>A tua média de pontos nos últimos sete dias foi: </Text>
                                     </View>
                                     <View style={{ width: '30%', justifyContent: 'flex-end' }}>
-                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.blue }]}>{points} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
+                                        <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: CONST.blue }]}>0 <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                     </View>
                                 </View>
                             </View>
