@@ -6,7 +6,6 @@ import { ScrollView, Text, View, Modal, Pressable } from "react-native";
 import { useEffect, useState } from "react";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
-import { Calendar, LocaleConfig } from "react-native-calendars";
 
 // IMPORT COMPONENTS
 
@@ -340,9 +339,20 @@ export default function Profile() {
                         </Pressable>
                     </View>
                 </View>
-                <Text style={styles.toastText}>
+                <Text style={{ marginBottom: CONST.boxCardMargin, marginTop: 0, alignSelf: 'center' }}>
                     {textToast}
                 </Text>
+                <View style={[styles.cardBox, { marginBottom: CONST.boxCardMargin }]}>
+                <Text
+              style={[
+                styles.normalText,
+                { fontFamily: "K2D-SemiBold", marginBottom: 0 },
+              ]}
+            >
+              Editar dados pessoais
+            </Text>
+
+                </View>
         
       </ScrollView>
     </SafeAreaProvider>
