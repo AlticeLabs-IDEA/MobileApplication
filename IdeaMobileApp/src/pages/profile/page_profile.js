@@ -31,7 +31,7 @@ import {
 import { styles } from "../../assets/styles/css.js";
 import * as CONST from "../../assets/constants/constants.js";
 
-export default function Profile() {
+export default function Profile(navigation) {
   const [modalVisible, setModalVisible] = useState(false);
   const [airCategory, setAirCategory] = useState(false);
   const [energyCategory, setEnergyCategory] = useState(false);
@@ -670,7 +670,11 @@ export default function Profile() {
           {textToast}
         </Text>
         <View style={[styles.cardBox, { marginBottom: CONST.boxCardMargin }]}>
-        <Pressable style={{ 
+        <Pressable 
+         onPress={() => {
+          navigation.navigate("Settings", {editingData: 'userInfo',});
+      }}
+        style={{ 
             flexDirection: "row", 
             justifyContent: "space-between", 
             marginBottom: 10 
@@ -685,7 +689,8 @@ export default function Profile() {
           </Text> 
           <FontAwesome name="angle-right" size={CONST.heading6} color="black" />
             </Pressable>
-            <Pressable style={{ 
+            <Pressable 
+            style={{ 
                 flexDirection: "row", 
                 justifyContent: "space-between",
                 borderTopWidth: 1,
