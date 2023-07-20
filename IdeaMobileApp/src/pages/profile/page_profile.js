@@ -706,7 +706,7 @@ export default function Profile({navigation}) {
               { fontFamily: "K2D-SemiBold", marginBottom: 0, marginTop: 10},
             ]}
           >
-            Editar palabra passe
+            Editar palavra passe
           </Text> 
           <FontAwesome name="angle-right" size={CONST.heading6} color="black" style={[{marginTop: 10 }]} />
             </Pressable>
