@@ -432,7 +432,7 @@ export default function Settings({ route, navigation }) {
           </Pressable>
           <Pressable
             onPress={() => {
-              navigation.navigate("Configuration");
+              navigation.navigate("Profile");
             }}
             style={{ left: "auto", right: CONST.layoutPaddingLateral }}
           >
