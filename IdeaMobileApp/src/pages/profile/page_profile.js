@@ -31,7 +31,7 @@ import {
 import { styles } from "../../assets/styles/css.js";
 import * as CONST from "../../assets/constants/constants.js";
 
-export default function Profile(navigation) {
+export default function Profile({navigation}) {
   const [modalVisible, setModalVisible] = useState(false);
   const [airCategory, setAirCategory] = useState(false);
   const [energyCategory, setEnergyCategory] = useState(false);
@@ -690,6 +690,9 @@ export default function Profile(navigation) {
           <FontAwesome name="angle-right" size={CONST.heading6} color="black" />
             </Pressable>
             <Pressable 
+             onPress={() => {
+              navigation.navigate("Settings", {editingData: 'passWord',});
+          }}
             style={{ 
                 flexDirection: "row", 
                 justifyContent: "space-between",
@@ -707,7 +710,11 @@ export default function Profile(navigation) {
           </Text> 
           <FontAwesome name="angle-right" size={CONST.heading6} color="black" style={[{marginTop: 10 }]} />
             </Pressable>
-            <Pressable style={{ 
+            <Pressable 
+             onPress={() => {
+              navigation.navigate("Settings", {editingData: 'deleteCount',});
+          }}
+            style={{ 
                 flexDirection: "row", 
                 justifyContent: "space-between",
                 borderTopWidth: 1,
