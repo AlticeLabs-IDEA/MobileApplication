@@ -33,14 +33,37 @@ export default function Settings({ route, navigation }) {
   const [isChecked_3, setChecked_3] = useState(false);
   const [isChecked_4, setChecked_4] = useState(false);
 
-  //const [indicator, setIndicator] = useState("");
-  //const [text, setText] = useState("");
+  const [indicator, setIndicator] = useState("");
+  const [textBox, setTextBox] = useState('');
+  const [textBoxBelow, setTextBoxBelow] = useState('');
+
+  // Function to set the appropriate text based on the infoType prop
+  const setTextBoxTextBasedOnInfoType = () => {
+    if (editingData === 'userInfo') {
+        setIndicator('Editar dados pessoais')
+        setTextBox('Aqui podes alterar o teu nome, e-mail e o departamento a que fazes parte.');
+        setTextBoxBelow(' Seleciona um campo para ser alterado e depois submete a tua alteração.')
+    } else if (editingData === 'passWord') {
+        setIndicator('Editar palavra passe')
+      setTextBox('Aqui podes alterar a tua senha.');
+      setTextBoxBelow('Só precisas de indicar qual era a senha antiga, aplicar uma nova e confirmar a sua alteração.')
+    } else if (editingData === 'deleteCount'){
+        setIndicator('Apagar conta')
+      setTextBox('Aqui podes apagar a tua conta IDEA.');
+      setTextBoxBelow('Por favor indica em baixo, um dos motivos que te pareça justificar a tua decisão.')
+    }
+  };
+
+  // Run the function whenever the infoType prop changes
+  useEffect(() => {
+    setTextBoxTextBasedOnInfoType();
+  }, [editingData]);
 
   return (
     <SafeAreaProvider style={[styles.mainContainer, { paddingBottom: 0 }]}>
       <StatusBar style={"dark"} />
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.indicatorTitle}>Editar dados pessoais</Text>
+        <Text style={styles.indicatorTitle}>{indicator}</Text>
       </ScrollView>
       <ScrollView showsVerticalScrollIndicator={false}>
         <Text
@@ -49,10 +72,9 @@ export default function Settings({ route, navigation }) {
             { marginBottom: CONST.descriptionTextMargin },
           ]}
         >
-          Aqui podes alterar o teu nome, e-mail e o departamento a que fazes
-          parte.
+          {textBox}
           {"\n"}
-          Seleciona um campo para ser alterado e depois submete a tua alteração.
+          {textBoxBelow}
         </Text>
         {editingData.includes("userInfo") ? (
           <View style={[styles.cardBox]}>
