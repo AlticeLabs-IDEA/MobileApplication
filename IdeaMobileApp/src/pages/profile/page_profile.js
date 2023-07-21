@@ -495,11 +495,11 @@ export default function Profile({navigation}) {
           </View>
         </View>
       </Modal>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <View>
+<View>
           <Text style={[styles.indicatorTitle, { marginBottom: 20 }]}>Perfil de José</Text>
         </View>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        
         <View style={[styles.cardBox, { marginBottom: CONST.boxCardMargin }]}>
           <View
             style={{
