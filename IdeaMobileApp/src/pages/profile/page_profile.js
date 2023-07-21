@@ -498,13 +498,12 @@ export default function Profile({navigation}) {
 
       <ScrollView showsVerticalScrollIndicator={false}>
         <View>
-          <Text style={styles.indicatorTitle}>Perfil de José</Text>
+          <Text style={[styles.indicatorTitle, { marginBottom: 20 }]}>Perfil de José</Text>
         </View>
         <View style={[styles.cardBox, { marginBottom: CONST.boxCardMargin }]}>
           <View
             style={{
               flexDirection: "column",
-              marginBottom: CONST.inputFieldMargin,
             }}
           >
             <Text
@@ -523,11 +522,11 @@ export default function Profile({navigation}) {
             </Text>
           </View>
         </View>
-        <View style={[styles.cardBox, { marginBottom: CONST.boxCardMargin }]}>
+        <View style={[styles.cardBox, { marginBottom: 10 }]}>
           <View
             style={{
               flexDirection: "column",
-              marginBottom: CONST.inputFieldMargin,
+              marginBottom: 10,
             }}
           >
             <Text
