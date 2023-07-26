@@ -101,4 +101,4 @@ export const textRecoverPasswordMargin = 20;
 export const normalTextMargin = 20;
 export const boxCardMargin = 20;
 export const graphMargin = 40;
-
+export const dotsMargin = 10;
