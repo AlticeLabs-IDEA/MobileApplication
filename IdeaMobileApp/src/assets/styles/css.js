@@ -243,6 +243,14 @@ export const styles = StyleSheet.create({
         marginTop: CONST.inputFieldMargin
     },
 
+    welcomeProfileText: {
+        fontFamily: 'K2D-SemiBold',
+        fontSize: CONST.heading6,
+        color: CONST.mainGray,
+        marginBottom: CONST.normalTextMargin,
+        textAlign: 'center',
+    },
+
     normalText: {
         fontFamily: 'K2D-Regular',
         fontSize: CONST.normalText,
@@ -297,7 +305,7 @@ export const styles = StyleSheet.create({
         alignItems: 'center',
         shadowColor: CONST.pureBlack,
         shadowRadius: CONST.shadowRadius,
-        width: (CONST.screenWidth / 3) * 2,
+        width: CONST.screenWidth < 400 ? (CONST.screenWidth / 5) * 4 : (CONST.screenWidth / 3) * 2,
         shadowOpacity: 0.5,   
         elevation: 3,
         overflow: "hidden",
@@ -358,6 +366,16 @@ export const styles = StyleSheet.create({
         fontSize: CONST.normalText,
         color: CONST.mainGray
     },
+
+    // ---- Sections ----
+    sectionRedirect: {
+        flexDirection: 'row',
+        justifyContent: "space-between",
+        paddingLeft: CONST.labelPaddingLateral,
+        paddingTop: CONST.inputPaddingLateral,
+        paddingRight: CONST.labelPaddingLateral,
+        paddingBottom: CONST.inputPaddingLateral,
+    }
 
 
 })

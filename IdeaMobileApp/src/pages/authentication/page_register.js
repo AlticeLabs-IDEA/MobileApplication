@@ -50,7 +50,6 @@ export default function RegisterScreen({ navigation }) {
                 </Text>
 
                 <View style={[styles.cardBox]}>
-
                     <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
                         <View style={{ flexDirection: 'row' }}>
                             <TextInput

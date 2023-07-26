@@ -7,8 +7,8 @@ import { View } from "react-native";
 // IMPORT PAGES
 import DashboardScreen from "../pages/dashboard/page_dashboard"
 import DetailsScreen from "../pages/dashboard/page_details"
-import Profile from "../pages/profile/page_profile"
-import Settings from "../pages/profile/page_settings"
+import ProfileScreen from "../pages/profile/page_profile"
+import SettingsScreen from "../pages/profile/page_settings"
 import Records from "../pages/records/page_records"
 import Stats from "../pages/stats/page_stats"
 import Onboarding from "../pages/onboarding/page_onboarding"
@@ -25,7 +25,7 @@ import { styles } from "../assets/styles/css.js"
 
 const Tab = createBottomTabNavigator();
 const DashboardStack = createStackNavigator();
-const ProfileStack = createBottomTabNavigator();
+const ProfileStack = createStackNavigator();
 const AuthenticationStack = createStackNavigator();
 const MainStack = createStackNavigator();
 
@@ -54,12 +54,12 @@ export const ProfileStackNavigation = ({ navigation }) => {
             <ProfileStack.Screen
                 name="Profile"
                 options={{ headerShown: false }}
-                component={Profile}>
+                component={ProfileScreen}>
             </ProfileStack.Screen>
             <ProfileStack.Screen
                 name="Settings"
                 options={{ headerShown: false }}
-                component={Settings}>
+                component={SettingsScreen}>
             </ProfileStack.Screen>
         </ProfileStack.Navigator>
     )
@@ -121,7 +121,7 @@ export const Tabbar = () => {
                 tabBarStyle: styles.tabbar
             }}>
             <Tab.Screen
-                name="Dashboard"
+                name="DashboardTab"
                 component={DashboardStackNavigation}
                 options={{
                     tabBarLabel: "Painel",
@@ -132,7 +132,7 @@ export const Tabbar = () => {
                 }}
             />
             <Tab.Screen
-                name="Stats"
+                name="StatsTab"
                 component={Stats}
                 options={{
                     tabBarLabel: "Estatísticas",
@@ -143,21 +143,21 @@ export const Tabbar = () => {
                 }}
             />
             <Tab.Screen
-                name="Add"
+                name="AddTab"
                 component={Stats}
                 options={{
                     tabBarLabel: "",
                     tabBarShowLabel: false,
                     tabBarActiveTintColor: CONST.mainGray,
                     tabBarIcon: ({ color }) => (
-                        <View style={[styles.addButton, {backgroundColor: CONST.mainGray}]}>
+                        <View style={[styles.addButton, { backgroundColor: CONST.mainGray }]}>
                             <FontAwesome5 name="plus" size={16} color={CONST.pureWhite} />
                         </View>
                     )
                 }}
             />
             <Tab.Screen
-                name="Records"
+                name="RecordsTab"
                 component={Records}
                 options={{
                     tabBarLabel: "Registos",
@@ -168,7 +168,7 @@ export const Tabbar = () => {
                 }}
             />
             <Tab.Screen
-                name="Profile"
+                name="ProfileTab"
                 component={ProfileStackNavigation}
                 options={{
                     tabBarLabel: "Perfil",
@@ -183,16 +183,16 @@ export const Tabbar = () => {
 }
 
 export const MainStackNavigation = () => {
-    return(
+    return (
         <MainStack.Navigator>
             <MainStack.Screen
                 name="AuthenticationStack"
                 component={AuthenticationStackNavigation}
-                options={{headerShown: false}} />
+                options={{ headerShown: false }} />
             <MainStack.Screen
                 name='Tabbar'
                 component={Tabbar}
-                options={{headerShown: false}} />
+                options={{ headerShown: false }} />
         </MainStack.Navigator>
     )
 }
