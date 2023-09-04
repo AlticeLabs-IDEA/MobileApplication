@@ -4,6 +4,11 @@ import { useNavigation } from "@react-navigation/native";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { View } from "react-native";
 
+// BACKEND
+import { getAuth } from "firebase/auth";
+import firebase from "../../config/firebase.js";
+
+
 // IMPORT PAGES
 import DashboardScreen from "../pages/dashboard/page_dashboard"
 import DetailsScreen from "../pages/dashboard/page_details"
@@ -22,6 +27,7 @@ import PasswordScreen from '../pages/authentication/page_password';
 // IMPORT STYLE
 import * as CONST from "../assets/constants/constants.js"
 import { styles } from "../assets/styles/css.js"
+import { useEffect, useState } from 'react';
 
 const Tab = createBottomTabNavigator();
 const DashboardStack = createStackNavigator();

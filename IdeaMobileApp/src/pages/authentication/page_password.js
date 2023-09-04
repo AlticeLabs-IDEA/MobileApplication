@@ -2,9 +2,10 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, TextInput } from "react-native";
+import { Pressable, ScrollView, Text, View, Alert, TextInput } from "react-native";
 import { useState } from "react";
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import firebase from "../../../config/firebase.js";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
 // IMPORT COMPONENTS
 import { PrimaryButton_v1, PrimaryButton_v2 } from "../../components/buttons.js";
@@ -16,8 +17,17 @@ import * as CONST from "../../assets/constants/constants.js"
 
 export default function PasswordScreen({ navigation }) {
     const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('');
-    const [showPassword, setShowPassword] = useState(false);
+
+    const changePassword = () => {
+        firebase.auth().sendPasswordResetEmail(email.trim().toLowerCase())
+        .then(() => {
+            Alert.alert("Sucesso", "E-mail enviado com sucesso.");
+            navigation.navigate("Login")
+        })
+        .catch((error) => {
+            Alert.alert("Erro", "Impossível encontrar utilizador.");
+        });
+    }
 
     return (
         <SafeAreaProvider style={[styles.mainContainer, {paddingBottom: CONST.layoutPaddingVertical}]}>
@@ -54,7 +64,9 @@ export default function PasswordScreen({ navigation }) {
                         style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v2 text={"Voltar"} />
                     </Pressable>
-                    <Pressable style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
+                    <Pressable 
+                        onPress={() => changePassword()}
+                        style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v1 text={"Enviar"} />
                     </Pressable>
                 </View>

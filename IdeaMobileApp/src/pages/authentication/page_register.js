@@ -2,10 +2,12 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, TextInput } from "react-native";
+import { Pressable, Modal, Image, ScrollView, Text, View, TextInput, Alert, BackHandler } from "react-native";
 import { useEffect, useState } from "react";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
+import firebase from "../../../config/firebase.js";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 // IMPORT COMPONENTS
 import { PrimaryButton_v1, PrimaryButton_v2 } from "../../components/buttons.js";
@@ -13,6 +15,11 @@ import { PrimaryButton_v1, PrimaryButton_v2 } from "../../components/buttons.js"
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
+
+// ? TO REMOVE BEFORE MAIN
+import { LogBox } from "react-native";
+LogBox.ignoreLogs(["Warning: ..."]); // Ignore log notification by message
+LogBox.ignoreAllLogs(); //Ignore all log notifications
 
 
 export default function RegisterScreen({ navigation }) {
@@ -27,14 +34,81 @@ export default function RegisterScreen({ navigation }) {
     const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
     const [isChecked, setChecked] = useState(false);
     const [visible, setVisible] = useState(false);
+    const [wait, setWait] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+
+    // *firebase store
+    const firestore_users= firebase.firestore().collection("users");
+
+    // *firebase authentication
+    const auth = getAuth();
+
+    // *function to save user in authentication store and save user data in collection users 
+    const handleSignUp = () => {
+        let currentDate = new Date()
+        createUserWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
+            .then((userCredential) => {
+                firestore_users.doc(userCredential.user.uid).set({
+                    name: name,
+                    email: email.trim().toLowerCase(),
+                    uid: userCredential.user.uid,
+                    department: department,
+                    created: currentDate,
+                    last_conection: currentDate,
+                    points: 0,
+                    active_categories: {'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0},
+                    points_categories: {'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0},
+                    admin: false,
+                    authorized: false,
+                });
+
+                console.log(userCredential.user)
+                navigation.navigate("Configuration", { userID: userCredential.user.uid })
+            })
+            .catch((error) => {
+                Alert.alert("Erro", "Impossível registar utilizador.");
+                setLoading(false)
+            });
+    };
+
+    // *function to verify if user filled out all fields first before sign up
+    const checkData = () => {
+        if (name.length === 0 || department.length === 0 || password.length === 0 || passwordConfirm.length === 0 || email.length === 0) {
+            Alert.alert("Erro", "Preencha todos os campos.");
+            return null;
+        }
+        if (password !== passwordConfirm) {
+            Alert.alert("Erro", "As palavras-passe devem ser iguais.");
+            return null;
+        }
+        handleSignUp();
+    }
 
     useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true)
+        return () => backHandler.remove()
+    }, [])
 
+    useEffect(() => {
     }, [visible])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer, { paddingBottom: 0 }]}>
             <StatusBar style={"dark"} />
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={loading}
+                onRequestClose={() => {
+                    setLoading(!loading);
+                }}>
+            <View style={styles.centeredView}>
+                <View style={{bottom: CONST.screenHeight/2, zIndex: 1000, left: CONST.screenWidth/2.5, position: 'absolute' }}>
+                    <Image source={require('../../assets/images/loading_bolt_blue.gif')} resizeMode="contain" style={{ tintColor: 'white' ,height: 80, width: 80  }} />
+                </View>
+            </View>
+            </Modal>
             <ScrollView
                 showsVerticalScrollIndicator={false}>
                 <Text style={styles.indicatorTitle}>
@@ -89,7 +163,7 @@ export default function RegisterScreen({ navigation }) {
                                 style={[styles.inputField, { width: '100%' }]}
                                 value={password}
                                 onChangeText={(text) => { setPassword(text) }}
-                                placeholder={'Palavra-passe'}
+                                placeholder={'Palavra-passe (Min. 6 caracteres)'}
                                 placeholderTextColor={CONST.neutralGray}
                                 secureTextEntry={!showPassword}
                             />
@@ -155,14 +229,14 @@ export default function RegisterScreen({ navigation }) {
                             setChecked(!isChecked)
                         }}
                     />
-                    <Text style={[styles.normalText, {marginBottom: 0, paddingLeft: CONST.labelPaddingLateral}]}>Declaro que li e concordo com os termos de utilização.</Text>
+                    <Text style={[styles.normalText, { marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Declaro que li e concordo com os termos de utilização.</Text>
                 </View>
-                {visible ? 
-                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
-                    <Text style={[styles.subText, {color: CONST.mainRed}]}>Para criar conta na aplicação IDEA precisa de ler e concordar com os termos de utilização.</Text>
-                </View>
-                : 
-                <></>}
+                {visible ?
+                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
+                        <Text style={[styles.subText, { color: CONST.mainRed }]}>Para criar conta na aplicação IDEA precisa de ler e concordar com os termos de utilização.</Text>
+                    </View>
+                    :
+                    <></>}
                 <View style={[styles.doubleButtonsView, { backgroundColor: CONST.lightWhite, marginTop: CONST.layoutPaddingVertical, marginBottom: CONST.layoutPaddingVertical }]}>
                     <Pressable
                         onPress={() => {
@@ -173,10 +247,11 @@ export default function RegisterScreen({ navigation }) {
                     </Pressable>
                     <Pressable
                         onPress={() => {
-                            isChecked ? 
-                            navigation.navigate("Configuration")
-                            :
-                            setVisible(true)
+                            setLoading(true)
+                            isChecked ?
+                                checkData()
+                                :
+                                setVisible(true)
                         }}
                         style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v1 text={"Continuar"} />
