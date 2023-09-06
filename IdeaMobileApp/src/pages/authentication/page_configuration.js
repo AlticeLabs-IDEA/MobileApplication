@@ -5,6 +5,8 @@ import { Pressable, ScrollView, Text, View, Modal } from "react-native";
 import { useEffect, useState } from "react";
 import { BackHandler } from 'react-native';
 import firebase from "../../../config/firebase.js";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // IMPORT COMPONENTS
 import { AirIcon, RecycleIcon, WaterIcon, EnergyIcon, MovementIcon } from "../../components/icons.js";
@@ -15,8 +17,8 @@ import { AirLabel, EnergyLabel, MovementLabel, RecycleLabel, WaterLabel } from "
 import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
 
-export default function ConfigurationScreen({ route, navigation }) {
-    const { userID } = route.params;
+export default function ConfigurationScreen({ navigation }) {
+    const [userID, setUserID] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [airCategory, setAirCategory] = useState(false)
     const [energyCategory, setEnergyCategory] = useState(false)
@@ -31,8 +33,29 @@ export default function ConfigurationScreen({ route, navigation }) {
     const [colorRecycle, setColorRecycle] = useState(0)
     const [textToast, setTextToast] = useState("")
 
+    const storeData = async (doc) => {
+        try {
+          const jsonDoc = JSON.stringify(doc);
+          await AsyncStorage.setItem('userDoc', jsonDoc);
+        } catch (e) {
+          console.log(e.message)
+        }
+      };
+    
+    // * Function to get data in asyncStorage to persistence
+    const getData = async () => {
+        try {
+          const id = await AsyncStorage.getItem('userID');
+          setUserID(id != null ? id : null)
+        } catch (e) {
+          console.log(e.message)
+        }
+      };
+    
+
     // * prevent user back to register page, the user is already registered and we don't want double the account
     useEffect(() => {
+        getData()
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true)
         return () => backHandler.remove()
     }, [])
@@ -41,9 +64,8 @@ export default function ConfigurationScreen({ route, navigation }) {
     }, [textToast, airCategory, energyCategory, movementCategory, recycleCategory, waterCategory, areaToShow, colorAir, colorEnergy, colorWater, colorRecycle, colorMovement])
 
     // * update field "active_categories" from userID document
-    const updateUserCollection = () => {
+    const updateUserCollection = async () => {
         const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
-
         firestore_user_doc.update({
             active_categories: {
                 'air': colorAir,
@@ -53,14 +75,8 @@ export default function ConfigurationScreen({ route, navigation }) {
                 'movement': colorMovement,
             }
         });
-
-        navigation.navigate("Category", {
-            "userID": userID,
-            "categories": [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory],
-            "categoriesColors": [colorAir, colorEnergy, colorMovement, colorRecycle, colorWater],
-            "colorToShow": airCategory ? colorAir : energyCategory ? colorEnergy : movementCategory ? colorMovement : recycleCategory ? colorRecycle : waterCategory ? colorWater : CONST.secondaryGray,
-            "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
-        })
+        const doc = await firestore_user_doc.get();
+        storeData(doc.data())
     }
 
     const activateCategory = (category) => {
@@ -333,19 +349,26 @@ export default function ConfigurationScreen({ route, navigation }) {
             <View style={styles.doubleButtonsView}>
                 <Pressable
                     onPress={() => {
-                        navigation.navigate("Tabbar", { 'userID': userID })
+                        updateUserCollection()
+                        navigation.navigate("Tabbar")
                     }}
                     style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
                     <PrimaryButton_v2 text={"Mais tarde"} />
-                    {/* <PrimaryButton_v2 text={"\u0020\u0020Voltar\u0020\u0020"} /> */}
                 </Pressable>
                 <Pressable
                     onPress={() => {
                         {
                             (airCategory || energyCategory || movementCategory || recycleCategory || waterCategory) ?
-                                updateUserCollection()
+                                updateUserCollection() &&
+                                navigation.navigate("Category", {
+                                    "userID": userID,
+                                    "categories": [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory],
+                                    "categoriesColors": [colorAir, colorEnergy, colorMovement, colorRecycle, colorWater],
+                                    "colorToShow": airCategory ? colorAir : energyCategory ? colorEnergy : movementCategory ? colorMovement : recycleCategory ? colorRecycle : waterCategory ? colorWater : CONST.secondaryGray,
+                                    "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
+                                })
                                 :
-                                navigation.navigate("Tabbar", { 'userID': userID })
+                                navigation.navigate("Tabbar")
                         }
 
                     }}

@@ -22,18 +22,22 @@ export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+
+    // * Loading icon/gif showed when loading is true
     const [loading, setLoading] = useState(false);
 
+    // * Function to store data in asyncStorage to persistence
     const storeData = async (doc, id) => {
         try {
           const jsonDoc = JSON.stringify(doc);
           await AsyncStorage.setItem('userDoc', jsonDoc);
           await AsyncStorage.setItem('userID', id);
         } catch (e) {
-          // saving error
+          console.log(e.message)
         }
       };
 
+    // * function to see if email and password belong to a valid user
     const loginUser = () => {
         const auth = getAuth();
         signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
@@ -45,8 +49,8 @@ export default function LoginScreen({ navigation }) {
             navigation.navigate("Tabbar")
         })
         .catch((error) => {
-            // Alert.alert("Erro", "Credenciais inválidas.");
-            Alert.alert("Erro", error);
+            Alert.alert("Erro", "Credenciais inválidas.");
+            // Alert.alert("Erro", error);
             setLoading(false)
         });
     }

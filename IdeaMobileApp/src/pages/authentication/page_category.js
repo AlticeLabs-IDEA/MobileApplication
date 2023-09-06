@@ -880,7 +880,6 @@ export default function CategoryScreen({ route, navigation }) {
                                                                 if (waterAnswers1[0]) {
                                                                     setWaterAnswers1([false, false])
                                                                     setWaterQuestion1(false)
-                                                                    setWaterAnswers2([false, false])
                                                                 } else {
                                                                     setWaterAnswers1([true, false])
                                                                     setWaterQuestion1(true)
@@ -894,7 +893,6 @@ export default function CategoryScreen({ route, navigation }) {
                                                             style={{ marginBottom: 10 }}
                                                             onPress={() => {
                                                                 setWaterQuestion1(false)
-                                                                setWaterAnswers2([false, false])
                                                                 if (waterAnswers1[1]) {
                                                                     setWaterAnswers1([false, false])
                                                                 } else {

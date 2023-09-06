@@ -8,6 +8,7 @@ import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
 import firebase from "../../../config/firebase.js";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // IMPORT COMPONENTS
 import { PrimaryButton_v1, PrimaryButton_v2 } from "../../components/buttons.js";
@@ -39,7 +40,16 @@ export default function RegisterScreen({ navigation }) {
 
 
     // *firebase store
-    const firestore_users= firebase.firestore().collection("users");
+    const firestore_users = firebase.firestore().collection("users");
+
+    // * Function to store data in asyncStorage to persistence
+    const storeData = async (id) => {
+        try {
+          await AsyncStorage.setItem('userID', id);
+        } catch (e) {
+          console.log(e.message)
+        }
+      };
 
     // *firebase authentication
     const auth = getAuth();
@@ -64,7 +74,9 @@ export default function RegisterScreen({ navigation }) {
                 });
 
                 console.log(userCredential.user)
-                navigation.navigate("Configuration", { userID: userCredential.user.uid })
+                storeData(userCredential.user.uid)
+                setLoading(false)
+                navigation.navigate("Configuration")
             })
             .catch((error) => {
                 Alert.alert("Erro", "Impossível registar utilizador.");
@@ -76,10 +88,12 @@ export default function RegisterScreen({ navigation }) {
     const checkData = () => {
         if (name.length === 0 || department.length === 0 || password.length === 0 || passwordConfirm.length === 0 || email.length === 0) {
             Alert.alert("Erro", "Preencha todos os campos.");
+            setLoading(false)
             return null;
         }
         if (password !== passwordConfirm) {
             Alert.alert("Erro", "As palavras-passe devem ser iguais.");
+            setLoading(false)
             return null;
         }
         handleSignUp();

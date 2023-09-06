@@ -3,7 +3,8 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ScrollView, Text, View, Modal, Image, Pressable, Alert, BackHandler } from "react-native";
-import { useEffect, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useState } from "react";
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import { useFonts } from "expo-font";
 import { getAuth, signOut } from "firebase/auth";
@@ -18,8 +19,9 @@ import { PrimaryButton_v1 } from "../../components/buttons.js";
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js";
 import * as CONST from "../../assets/constants/constants.js";
+import SettingsScreen from "./page_settings.js";
 
-export default function Profile({ navigation }) {
+export default function Profile({ route, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   //* vars to indicate which categories are active
@@ -37,7 +39,9 @@ export default function Profile({ navigation }) {
   const [textToast, setTextToast] = useState("");
 
   const [userName, setUserName] = useState(null);
+  const [userFullName, setUserFullName] = useState(null);
   const [userDep, setUserDep] = useState(null);
+  const [userEmail, setUserEmail] = useState(null);
   const [userOrg, setUserOrg] = useState("Altice Labs"); // TODO: get from db
 
   const [userID, setUserID] = useState()
@@ -45,8 +49,10 @@ export default function Profile({ navigation }) {
 
   const getDocumentInfo = async (doc) => {
     console.log(doc.active_categories)
+    setUserFullName(doc.name)
     setUserName(doc.name.match(/\S+/)[0])
     setUserDep(doc.department)
+    setUserEmail(doc.email)
     if (doc.active_categories.air !== 0) {
       setAirCategory(true)
     }
@@ -75,13 +81,14 @@ export default function Profile({ navigation }) {
       const jsonDoc = JSON.stringify(doc);
       await AsyncStorage.setItem('userDoc', jsonDoc);
     } catch (e) {
-      // saving error
+      console.log(e.message)
     }
   };
 
   const getData = async () => {
     try {
       const jsonDoc = await AsyncStorage.getItem('userDoc');
+      console.log(jsonDoc)
       const id = await AsyncStorage.getItem('userID');
       setUserDOC(jsonDoc != null ? JSON.parse(jsonDoc) : null);
       setUserID(id != null ? id : null)
@@ -91,9 +98,16 @@ export default function Profile({ navigation }) {
     }
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      getData()
+    }, [userName, userDep, userEmail])
+  );
+
+
   useEffect(() => {
     getData()
-  }, [])
+  }, [userName, userDep, userEmail])
 
   const activateCategory = async (category) => {
     const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
@@ -681,13 +695,14 @@ export default function Profile({ navigation }) {
           <View style={{ height: 1, backgroundColor: CONST.neutralGray, marginTop: CONST.boxCardMargin, marginBottom: CONST.boxCardMargin - CONST.inputPaddingLateral, marginLeft: CONST.boxPadding * 2, marginRight: CONST.boxPadding * 2 }}>
           </View>
           <View style={{ marginTop: CONST.boxCardMargin }}>
-            <Pressable onPress={() => { navigation.navigate("Settings", { editingData: 'userInfo' }) }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}>
+          <Pressable onPress={() => { navigation.navigate("Settings", { 'userID' : userID, 'editingData': 'userInfo', 'email': userEmail, 'name': userFullName, 'department': userDep }) }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}>
+            {/* <Pressable onPress={() => { <SettingsScreen userID= {userID} editingData='userInfo' email={userEmail} name={userFullName} department={userDep} /> }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}> */}
               <Text style={[styles.normalText, { fontFamily: "K2D-SemiBold", marginBottom: 0 }]}>
                 Editar dados pessoais
               </Text>
               <FontAwesome name="angle-right" size={CONST.heading6} color={CONST.mainGray} />
             </Pressable>
-            <Pressable onPress={() => { navigation.navigate("Settings", { editingData: 'userPassword' }) }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}>
+            <Pressable onPress={() => { navigation.navigate("Settings", { 'userID' : userID, 'editingData': 'userPassword', 'email': userEmail }) }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}>
               <Text style={[styles.normalText, { fontFamily: "K2D-SemiBold", marginBottom: 0 }]}>
                 Editar palavra passe
               </Text>
