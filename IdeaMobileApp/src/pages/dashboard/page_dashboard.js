@@ -11,7 +11,6 @@ import { useFonts } from "expo-font";
 
 // IMPORT COMPONENTS
 import { AirBox, EnergyBox, MovementBox, RecycleBox, WaterBox } from "../../components/areaBoxes.js";
-import { AddButton } from "../../components/buttons.js";
 
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js"
@@ -207,7 +206,7 @@ export default function DashboardScreen({ navigation }) {
 
                 <ScrollView
                     horizontal={true}
-                    showsHorizontalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={true}
                     style={{ marginBottom: CONST.boxCardMargin/2, marginTop: CONST.boxCardMargin }}>
                     <Pressable 
                         onPress={() => {

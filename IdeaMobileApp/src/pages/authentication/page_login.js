@@ -2,9 +2,12 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, TextInput } from "react-native";
-import { useState } from "react";
+import { Pressable, ScrollView, Image, Text, Modal, View, TextInput, Alert, BackHandler } from "react-native";
+import { useState, useEffect } from "react";
+import firebase from "../../../config/firebase.js";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // IMPORT COMPONENTS
 import { EmailInputLogin, PasswordInputLogin } from "../../components/inputs.js";
@@ -20,9 +23,59 @@ export default function LoginScreen({ navigation }) {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
+    // * Loading icon/gif showed when loading is true
+    const [loading, setLoading] = useState(false);
+
+    // * Function to store data in asyncStorage to persistence
+    const storeData = async (doc, id) => {
+        try {
+          const jsonDoc = JSON.stringify(doc);
+          await AsyncStorage.setItem('userDoc', jsonDoc);
+          await AsyncStorage.setItem('userID', id);
+        } catch (e) {
+          console.log(e.message)
+        }
+      };
+
+    // * function to see if email and password belong to a valid user
+    const loginUser = () => {
+        const auth = getAuth();
+        signInWithEmailAndPassword(auth, email.trim().toLowerCase(), password)
+        .then(async (userCredential) => {
+            // Signed in 
+            const firestore_user_doc = firebase.firestore().collection("users").doc(userCredential.user.uid);
+            const doc = await firestore_user_doc.get();
+            storeData(doc.data(), userCredential.user.uid)
+            navigation.navigate("Tabbar")
+        })
+        .catch((error) => {
+            Alert.alert("Erro", "Credenciais inválidas.");
+            // Alert.alert("Erro", error);
+            setLoading(false)
+        });
+    }
+
+    useEffect(() => {
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true)
+        return () => backHandler.remove()
+    }, [])
+
     return (
         <View style={[styles.mainContainer,{height: CONST.screenHeight + CONST.layoutPaddingVertical/2, paddingBottom: CONST.layoutPaddingVertical}]}>
             <StatusBar style={"dark"} />
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={loading}
+                onRequestClose={() => {
+                    setLoading(!loading);
+                }}>
+            <View style={styles.centeredView}>
+                <View style={{bottom: CONST.screenHeight/2, zIndex: 1000, left: CONST.screenWidth/2.5, position: 'absolute' }}>
+                    <Image source={require('../../assets/images/loading_bolt_blue.gif')} resizeMode="contain" style={{ tintColor: 'white' ,height: 80, width: 80  }} />
+                </View>
+            </View>
+            </Modal>
             <ScrollView
                 showsVerticalScrollIndicator={false}>
                 <Text style={styles.indicatorTitle}>
@@ -85,7 +138,8 @@ export default function LoginScreen({ navigation }) {
                     </Pressable>
                     <Pressable 
                         onPress={() => {
-                            navigation.navigate("Tabbar")
+                            setLoading(true)
+                            loginUser()
                         }}
                         style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                         <PrimaryButton_v1 text={"Entrar"} />

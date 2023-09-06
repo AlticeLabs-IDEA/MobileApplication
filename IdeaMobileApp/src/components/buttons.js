@@ -28,6 +28,16 @@ export const PrimaryButton_v3 = ({text}) => {
     )
 }
 
+// ---- OPTION BUTTON ----
+export const OptionButton_v1 = ({text, color}) => {
+    return(
+        <View style={[styles.optionButton_v1, {borderColor: color}]}>
+            <Text style={[styles.optionButtonText_v1, {color: color}]}>{text}</Text>
+        </View>
+    )
+}
+
+
 // ---- SECONDARY BUTTONS ----
 export const SecondaryButton_v1 = ({text, color}) => {
     return(

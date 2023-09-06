@@ -17,6 +17,8 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: CONST.mainGray,
         borderStyle: 'solid',
+        justifyContent: 'center',
+        flexDirection: 'row',
     },
     primaryButtonText_v1: {
         color: CONST.pureWhite,
@@ -34,6 +36,8 @@ export const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: CONST.mainGray,
         borderStyle: 'solid',
+        justifyContent: 'center',
+        flexDirection: 'row',
     },
     primaryButtonText_v2: {
         color: CONST.mainGray,
@@ -47,7 +51,9 @@ export const styles = StyleSheet.create({
         paddingLeft: CONST.buttonPaddingLateral,
         paddingRight: CONST.buttonPaddingLateral,
         paddingTop: CONST.buttonPaddingVertical,
-        paddingBottom: CONST.buttonPaddingVertical
+        paddingBottom: CONST.buttonPaddingVertical,
+        justifyContent: 'center',
+        flexDirection: 'row',
     },
     primaryButtonText_v3: {
         color: CONST.mainGray,
@@ -64,6 +70,8 @@ export const styles = StyleSheet.create({
         paddingBottom: CONST.buttonPaddingVertical,
         borderWidth: 1,
         borderStyle: 'solid',
+        justifyContent: 'center',
+        flexDirection: 'row',
     },
     secondaryButtonText_v1: {
         color: CONST.pureWhite,
@@ -80,6 +88,8 @@ export const styles = StyleSheet.create({
         paddingBottom: CONST.buttonPaddingVertical,
         borderWidth: 1,
         borderStyle: 'solid',
+        justifyContent: 'center',
+        flexDirection: 'row',
     },
     secondaryButtonText_v2: {
         fontSize: CONST.normalText,
@@ -92,7 +102,9 @@ export const styles = StyleSheet.create({
         paddingLeft: CONST.buttonPaddingLateral,
         paddingRight: CONST.buttonPaddingLateral,
         paddingTop: CONST.buttonPaddingVertical,
-        paddingBottom: CONST.buttonPaddingVertical
+        paddingBottom: CONST.buttonPaddingVertical,
+        justifyContent: 'center',
+        flexDirection: 'row',
     },
     secondaryButtonText_v3: {
         fontSize: CONST.normalText,
@@ -100,6 +112,24 @@ export const styles = StyleSheet.create({
         letterSpacing: 0.5,
         textDecorationLine: 'underline',
     },
+    optionButton_v1: {
+        backgroundColor: 'transparent',
+        borderRadius: CONST.buttonBorderRadius,
+        paddingLeft: CONST.buttonPaddingLateral - 3,
+        paddingRight: CONST.buttonPaddingLateral - 3,
+        paddingTop: CONST.buttonPaddingVertical - 3,
+        paddingBottom: CONST.buttonPaddingVertical - 3,
+        borderWidth: 1,
+        justifyContent: 'center',
+        flexDirection: 'row',
+        borderStyle: 'solid',
+    },
+    optionButtonText_v1: {
+        fontSize: CONST.normalText,
+        fontFamily: "K2D-SemiBold",
+        letterSpacing: 0.5,
+    },
+   
     addButton: {
         paddingTop: CONST.addButtonPadding,
         paddingBottom: CONST.addButtonPadding,
@@ -297,6 +327,12 @@ export const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: "rgba(0, 0, 0, 0.5)"
+      },
+      centeredViewDarker: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: "rgba(0, 0, 0, 0.8)"
       },
       modalView: {
         backgroundColor: CONST.lightWhite,

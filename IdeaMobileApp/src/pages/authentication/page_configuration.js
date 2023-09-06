@@ -1,10 +1,12 @@
 // IMPORT LIBRARIES
-import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, Modal, ToastAndroid } from "react-native";
+import { Pressable, ScrollView, Text, View, Modal } from "react-native";
 import { useEffect, useState } from "react";
-import Toast from 'react-native-toast-message';
+import { BackHandler } from 'react-native';
+import firebase from "../../../config/firebase.js";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // IMPORT COMPONENTS
 import { AirIcon, RecycleIcon, WaterIcon, EnergyIcon, MovementIcon } from "../../components/icons.js";
@@ -16,6 +18,7 @@ import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
 
 export default function ConfigurationScreen({ navigation }) {
+    const [userID, setUserID] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [airCategory, setAirCategory] = useState(false)
     const [energyCategory, setEnergyCategory] = useState(false)
@@ -30,73 +33,114 @@ export default function ConfigurationScreen({ navigation }) {
     const [colorRecycle, setColorRecycle] = useState(0)
     const [textToast, setTextToast] = useState("")
 
-    useEffect(() => {
+    const storeData = async (doc) => {
+        try {
+          const jsonDoc = JSON.stringify(doc);
+          await AsyncStorage.setItem('userDoc', jsonDoc);
+        } catch (e) {
+          console.log(e.message)
+        }
+      };
+    
+    // * Function to get data in asyncStorage to persistence
+    const getData = async () => {
+        try {
+          const id = await AsyncStorage.getItem('userID');
+          setUserID(id != null ? id : null)
+        } catch (e) {
+          console.log(e.message)
+        }
+      };
+    
 
+    // * prevent user back to register page, the user is already registered and we don't want double the account
+    useEffect(() => {
+        getData()
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => true)
+        return () => backHandler.remove()
+    }, [])
+
+    useEffect(() => {
     }, [textToast, airCategory, energyCategory, movementCategory, recycleCategory, waterCategory, areaToShow, colorAir, colorEnergy, colorWater, colorRecycle, colorMovement])
+
+    // * update field "active_categories" from userID document
+    const updateUserCollection = async () => {
+        const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
+        firestore_user_doc.update({
+            active_categories: {
+                'air': colorAir,
+                'water': colorWater,
+                'energy': colorEnergy,
+                'recycle': colorRecycle,
+                'movement': colorMovement,
+            }
+        });
+        const doc = await firestore_user_doc.get();
+        storeData(doc.data())
+    }
 
     const activateCategory = (category) => {
         switch (category) {
             case "air":
                 if (airCategory) {
                     setAirCategory(false)
+                    setColorAir(0)
                     setTextToast('Categoria climatização desativada!')
-                    // ToastAndroid.show('Categoria climatização desativada!', ToastAndroid.SHORT);
                 } else {
                     setAirCategory(true)
+                    setColorAir(1)
                     setTextToast('Categoria climatização ativada!')
-                    // ToastAndroid.show('Categoria climatização ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "water":
                 if (waterCategory) {
                     setWaterCategory(false)
+                    setColorWater(0)
                     setTextToast('Categoria recursos hídricos desativada!')
-                    // ToastAndroid.show('Categoria recursos hídricos desativada!', ToastAndroid.SHORT);
                 } else {
                     setWaterCategory(true)
+                    setColorWater(1)
                     setTextToast('Categoria recursos hídricos ativada!')
-                    // ToastAndroid.show('Categoria recursos hídricos ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "energy":
                 if (energyCategory) {
                     setEnergyCategory(false)
+                    setColorEnergy(0)
                     setTextToast('Categoria energia elétrica desativada!')
-                    // ToastAndroid.show('Categoria energia elétrica desativada!', ToastAndroid.SHORT);
                 } else {
                     setEnergyCategory(true)
+                    setColorEnergy(1)
                     setTextToast('Categoria energia elétrica ativada!')
-                    // ToastAndroid.show('Categoria energia elétrica ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "movement":
                 if (movementCategory) {
                     setMovementCategory(false)
+                    setColorMovement(0)
                     setTextToast('Categoria mobilidade desativada!')
-                    // ToastAndroid.show('Categoria mobilidade desativada!', ToastAndroid.SHORT);
                 } else {
                     setMovementCategory(true)
+                    setColorMovement(1)
                     setTextToast('Categoria mobilidade ativada!')
-                    // ToastAndroid.show('Categoria mobilidade ativada!', ToastAndroid.SHORT);
                 }
                 return
             case "recycle":
                 if (recycleCategory) {
                     setRecycleCategory(false)
+                    setColorRecycle(0)
                     setTextToast('Categoria reciclagem desativada!')
-                    // ToastAndroid.show('Categoria reciclagem desativada!', ToastAndroid.SHORT);
                 } else {
                     setRecycleCategory(true)
+                    setColorRecycle(1)
                     setTextToast('Categoria reciclagem ativada!')
-                    // ToastAndroid.show('Categoria reciclagem ativada!', ToastAndroid.SHORT);
                 }
                 return
         }
     }
 
-
     return (
-        <SafeAreaProvider style={[styles.mainContainer, {paddingBottom: CONST.layoutPaddingVertical}]}>
+        <SafeAreaProvider style={[styles.mainContainer, { paddingBottom: CONST.layoutPaddingVertical }]}>
             <StatusBar style={"dark"} />
             <Modal
                 animationType="fade"
@@ -303,29 +347,33 @@ export default function ConfigurationScreen({ navigation }) {
                 </Text>
             </ScrollView>
             <View style={styles.doubleButtonsView}>
-                <Pressable 
+                <Pressable
                     onPress={() => {
-                        navigation.navigate("Register")
+                        updateUserCollection()
+                        navigation.navigate("Tabbar")
                     }}
-                    style={{right: 'auto', left: CONST.layoutPaddingLateral}}>
-                    <PrimaryButton_v2 text={"\u0020\u0020Voltar\u0020\u0020"} />
+                    style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
+                    <PrimaryButton_v2 text={"Mais tarde"} />
                 </Pressable>
-                <Pressable 
+                <Pressable
                     onPress={() => {
-                        {(airCategory || energyCategory || movementCategory || recycleCategory || waterCategory) ? 
-                            navigation.navigate("Category", {
-                                "categories" : [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory],
-                                "categoriesColors" : [colorAir, colorEnergy, colorMovement, colorRecycle, colorWater],
-                                "colorToShow" : airCategory ? colorAir : energyCategory ? colorEnergy : movementCategory ? colorMovement : recycleCategory ? colorRecycle : waterCategory ? colorWater : CONST.secondaryGray,
-                                "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
-                            })
-                            :
-                            navigation.navigate("Tabbar")
+                        {
+                            (airCategory || energyCategory || movementCategory || recycleCategory || waterCategory) ?
+                                updateUserCollection() &&
+                                navigation.navigate("Category", {
+                                    "userID": userID,
+                                    "categories": [airCategory, energyCategory, movementCategory, recycleCategory, waterCategory],
+                                    "categoriesColors": [colorAir, colorEnergy, colorMovement, colorRecycle, colorWater],
+                                    "colorToShow": airCategory ? colorAir : energyCategory ? colorEnergy : movementCategory ? colorMovement : recycleCategory ? colorRecycle : waterCategory ? colorWater : CONST.secondaryGray,
+                                    "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
+                                })
+                                :
+                                navigation.navigate("Tabbar")
                         }
-                      
+
                     }}
-                    style={{left: 'auto', right: CONST.layoutPaddingLateral}}>
-                    <PrimaryButton_v1 text={"Continuar"} />
+                    style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
+                    <PrimaryButton_v1 text={"\u0020Continuar\u0020"} />
                 </Pressable>
             </View>
         </SafeAreaProvider>
