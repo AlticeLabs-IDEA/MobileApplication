@@ -41,6 +41,7 @@ export default function Profile({ route, navigation }) {
   const [userName, setUserName] = useState(null);
   const [userFullName, setUserFullName] = useState(null);
   const [userDep, setUserDep] = useState(null);
+  const [userDepName, setUserDepName] = useState(null);
   const [userEmail, setUserEmail] = useState(null);
   const [userOrg, setUserOrg] = useState("Altice Labs"); // TODO: get from db
 
@@ -52,6 +53,7 @@ export default function Profile({ route, navigation }) {
     setUserFullName(doc.name)
     setUserName(doc.name.match(/\S+/)[0])
     setUserDep(doc.department)
+    setUserDepName(doc.department_name)
     setUserEmail(doc.email)
     if (doc.active_categories.air !== 0) {
       setAirCategory(true)
@@ -101,13 +103,13 @@ export default function Profile({ route, navigation }) {
   useFocusEffect(
     React.useCallback(() => {
       getData()
-    }, [userName, userDep, userEmail])
+    }, [userName, userDep, userEmail, userDepName])
   );
 
 
   useEffect(() => {
     getData()
-  }, [userName, userDep, userEmail])
+  }, [userName, userDep, userDepName, userEmail])
 
   const activateCategory = async (category) => {
     const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
@@ -686,7 +688,7 @@ export default function Profile({ route, navigation }) {
               Prazer em ver-te, {userName}!
             </Text>
             <Text style={[styles.subText, { marginBottom: 0 }]}>
-              {userDep}
+              {userDepName}
             </Text>
             <Text style={[styles.subText, { marginBottom: 0 }]}>
               {userOrg}
@@ -695,7 +697,7 @@ export default function Profile({ route, navigation }) {
           <View style={{ height: 1, backgroundColor: CONST.neutralGray, marginTop: CONST.boxCardMargin, marginBottom: CONST.boxCardMargin - CONST.inputPaddingLateral, marginLeft: CONST.boxPadding * 2, marginRight: CONST.boxPadding * 2 }}>
           </View>
           <View style={{ marginTop: CONST.boxCardMargin }}>
-          <Pressable onPress={() => { navigation.navigate("Settings", { 'userID' : userID, 'editingData': 'userInfo', 'email': userEmail, 'name': userFullName, 'department': userDep }) }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}>
+          <Pressable onPress={() => { navigation.navigate("Settings", { 'userID' : userID, 'editingData': 'userInfo', 'email': userEmail, 'name': userFullName, 'department': userDep, 'departmentName': userDepName }) }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}>
             {/* <Pressable onPress={() => { <SettingsScreen userID= {userID} editingData='userInfo' email={userEmail} name={userFullName} department={userDep} /> }} style={[styles.sectionRedirect, { borderBottomColor: "#DDD", borderBottomWidth: 1 }]}> */}
               <Text style={[styles.normalText, { fontFamily: "K2D-SemiBold", marginBottom: 0 }]}>
                 Editar dados pessoais

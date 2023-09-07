@@ -231,6 +231,7 @@ export const styles = StyleSheet.create({
         fontSize: CONST.normalText,
         height: CONST.normalText*3,
         letterSpacing: 0.5,
+        backgroundColor: CONST.pureWhite,
     },
     
     feedbackMessage: {

@@ -8,7 +8,7 @@ import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import firebase from "../../../config/firebase.js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getAuth, updateEmail, EmailAuthProvider, updatePassword } from "firebase/auth";
-
+import DropDownPicker from 'react-native-dropdown-picker';
 
 // IMPORT COMPONENTS
 import {
@@ -27,11 +27,13 @@ export default function SettingsScreen({ route, navigation }) {
   const [oldEmail, setOldEmail] = useState("")
   const [oldDep, setOldDep] = useState("")
   const [department, setDepartment] = useState("");
-  const [departments, setDepartments] = useState("");
+  const [departmentName, setDepartmentName] = useState("");
+  const [departments, setDepartments] = useState([]);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const storeData = async (doc) => {
     try {
@@ -41,6 +43,18 @@ export default function SettingsScreen({ route, navigation }) {
       console.log(e.message)
     }
   };
+
+  const getDepartmentsFromFirebase = async () => {
+    const firestore_departments = firebase.firestore().collection("departments");
+    firestore_departments.get().then((querySnapshot) => {
+      const tempDoc = querySnapshot.docs.map((doc) => {
+        return ({ label: doc.data().description, value: doc.id })
+        // return { id: doc.id, ...doc.data() }
+      })
+      setDepartments(tempDoc)
+      // return (tempDoc)
+    })
+  }
 
   // * Function to update the info saved in the firestore
   const submitUpdates = async () => {
@@ -66,7 +80,7 @@ export default function SettingsScreen({ route, navigation }) {
       }
     } else if (editingData === 'userPassword') {
       if (checkPassword()) {
-        updatePassword(auth.currentUser, password).then(() => { 
+        updatePassword(auth.currentUser, password).then(() => {
         }).catch((error) => {
           console.log(error.message)
         });
@@ -83,7 +97,7 @@ export default function SettingsScreen({ route, navigation }) {
       Alert.alert("Erro", "As palavras-passe não coincidem.")
       return false
     }
-    if (password.length < 6 ) {
+    if (password.length < 6) {
       Alert.alert("Erro", "A nova palavra-passe deve ter, no mínimo, 6 caracteres.")
       return false
     }
@@ -93,12 +107,14 @@ export default function SettingsScreen({ route, navigation }) {
   // Run the function whenever the infoType prop changes
   useEffect(() => {
     if (editingData === 'userInfo') {
+      getDepartmentsFromFirebase()
       setOldEmail(route.params.email)
       setEmail(route.params.email)
       setOldDep(route.params.department)
       setName(route.params.name)
       setDepartment(route.params.department)
-    } 
+      setDepartmentName(route.params.departmentName)
+    }
 
   }, []);
 
@@ -114,6 +130,7 @@ export default function SettingsScreen({ route, navigation }) {
         </Text>
         {editingData === "userInfo" ? (
           <View style={[styles.cardBox]}>
+            
             <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
               <Text style={[styles.subText, { textAlign: 'left', paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1 }]}>Nome</Text>
               <View style={{ flexDirection: 'row' }}>
@@ -138,15 +155,27 @@ export default function SettingsScreen({ route, navigation }) {
                 />
               </View>
             </View>
-            <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
+            <View style={{ flexDirection: 'column', marginBottom: open ? 220 : 20, marginTop: 10 }}>
               <Text style={[styles.subText, { textAlign: 'left', paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1 }]}>Departamento</Text>
               <View style={{ flexDirection: 'row' }}>
-                <TextInput
-                  style={[styles.inputField, { width: '100%' }]}
+                <DropDownPicker
+                  open={open}
                   value={department}
-                  onChangeText={(text) => { setDepartment(text) }}
-                  placeholder={department}
-                  placeholderTextColor={CONST.neutralGray}
+                  items={departments}
+                  setOpen={setOpen}
+                  setValue={setDepartment}
+                  setItems={setDepartments}
+                  style={styles.inputField}
+                  dropDownContainerStyle={[styles.inputField, { height: 200 }]}
+                  textStyle={[styles.normalText, { fontFamily: 'K2D-Regular', marginBottom: 0 }]}
+                  maxHeight={200}
+                  placeholder="Departamento"
+                  placeholderStyle={{ color: CONST.neutralGray }}
+                  theme="LIGHT"
+                  closeOnBackPressed={true}
+                  onSelectItem={(item) => { setDepartmentName(item.label) }}
+                  listMode="SCROLLVIEW"
+                  zIndex={10000}
                 />
               </View>
             </View>
