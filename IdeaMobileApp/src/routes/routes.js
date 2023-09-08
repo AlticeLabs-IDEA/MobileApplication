@@ -14,8 +14,8 @@ import DashboardScreen from "../pages/dashboard/page_dashboard"
 import DetailsScreen from "../pages/dashboard/page_details"
 import ProfileScreen from "../pages/profile/page_profile"
 import SettingsScreen from "../pages/profile/page_settings"
-import Records from "../pages/records/page_records"
-import Stats from "../pages/stats/page_stats"
+import RecordsScreen from "../pages/records/page_records"
+import StatsScreen from "../pages/stats/page_stats"
 import Onboarding from "../pages/onboarding/page_onboarding"
 import CategoryScreen from "../pages/authentication/page_category"
 import ConfigurationScreen from "../pages/authentication/page_configuration"
@@ -28,6 +28,7 @@ import PasswordScreen from '../pages/authentication/page_password';
 import * as CONST from "../assets/constants/constants.js"
 import { styles } from "../assets/styles/css.js"
 import { useEffect, useState } from 'react';
+import AddActivitiesScreen from '../pages/activities/page_add_activities.js';
 
 const Tab = createBottomTabNavigator();
 const DashboardStack = createStackNavigator();
@@ -139,7 +140,7 @@ export const Tabbar = () => {
             />
             <Tab.Screen
                 name="StatsTab"
-                component={Stats}
+                component={StatsScreen}
                 options={{
                     tabBarLabel: "Estatísticas",
                     tabBarActiveTintColor: CONST.mainGray,
@@ -150,10 +151,9 @@ export const Tabbar = () => {
             />
             <Tab.Screen
                 name="AddTab"
-                component={Stats}
+                component={AddActivitiesScreen}
                 options={{
                     tabBarLabel: "",
-                    tabBarShowLabel: false,
                     tabBarActiveTintColor: CONST.mainGray,
                     tabBarIcon: ({ color }) => (
                         <View style={[styles.addButton, { backgroundColor: CONST.mainGray }]}>
@@ -164,7 +164,7 @@ export const Tabbar = () => {
             />
             <Tab.Screen
                 name="RecordsTab"
-                component={Records}
+                component={RecordsScreen}
                 options={{
                     tabBarLabel: "Registos",
                     tabBarActiveTintColor: CONST.mainGray,

@@ -38,7 +38,7 @@ LocaleConfig.locales['pt'] = {
 
 LocaleConfig.defaultLocale = 'pt';
 
-export default function Records({ navigation }) {
+export default function RecordsScreen({ navigation }) {
   const [colors, setColors] = useState([CONST.purple, CONST.yellow, CONST.pink, CONST.green, CONST.blue])
   const activeCategories = ["air", "energy", "movement"]; // after, get from db
   const [selected, setSelected] = useState('');

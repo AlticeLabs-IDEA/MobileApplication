@@ -49,7 +49,6 @@ export default function Profile({ route, navigation }) {
   const [userDOC, setUserDOC] = useState()
 
   const getDocumentInfo = async (doc) => {
-    console.log(doc.active_categories)
     setUserFullName(doc.name)
     setUserName(doc.name.match(/\S+/)[0])
     setUserDep(doc.department)
@@ -90,7 +89,6 @@ export default function Profile({ route, navigation }) {
   const getData = async () => {
     try {
       const jsonDoc = await AsyncStorage.getItem('userDoc');
-      console.log(jsonDoc)
       const id = await AsyncStorage.getItem('userID');
       setUserDOC(jsonDoc != null ? JSON.parse(jsonDoc) : null);
       setUserID(id != null ? id : null)

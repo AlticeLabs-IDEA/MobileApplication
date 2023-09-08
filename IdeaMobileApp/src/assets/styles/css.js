@@ -373,7 +373,7 @@ export const styles = StyleSheet.create({
     mainContainer: {
         backgroundColor: CONST.lightWhite,
         paddingBottom: CONST.navbarHeight,
-        paddingTop: CONST.layoutPaddingVertical
+        paddingTop: CONST.layoutPaddingVertical,
     },
 
     

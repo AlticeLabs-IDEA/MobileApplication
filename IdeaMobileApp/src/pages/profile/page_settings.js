@@ -2,18 +2,20 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Pressable, ScrollView, Text, View, TextInput, Alert } from "react-native";
+import { Pressable, ScrollView, Text, View, TextInput, Alert, Modal } from "react-native";
 import { useEffect, useState } from "react";
 import { FontAwesome, FontAwesome5 } from "@expo/vector-icons";
 import firebase from "../../../config/firebase.js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getAuth, updateEmail, EmailAuthProvider, updatePassword } from "firebase/auth";
+import { getAuth, updateEmail, deleteUser, updatePassword } from "firebase/auth";
 import DropDownPicker from 'react-native-dropdown-picker';
 
 // IMPORT COMPONENTS
 import {
   PrimaryButton_v1,
   PrimaryButton_v2,
+  SecondaryButton_v1,
+  SecondaryButton_v2,
 } from "../../components/buttons.js";
 
 // IMPORT STYLES
@@ -34,6 +36,8 @@ export default function SettingsScreen({ route, navigation }) {
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [open, setOpen] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [deleteAccount, setDeleteAccount] = useState('')
 
   const storeData = async (doc) => {
     try {
@@ -121,19 +125,66 @@ export default function SettingsScreen({ route, navigation }) {
   return (
     <SafeAreaProvider style={styles.mainContainer}>
       <StatusBar style={"dark"} />
-      <View>
+      <View showsVerticalScrollIndicator={false}>
         <Text style={styles.indicatorTitle}>{editingData === "userInfo" ? "Editar dados pessoais" : "Editar palavra-passe"}</Text>
-      </View>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <Text style={styles.descriptionText}>
+        <Text style={[styles.descriptionText]}>
           {editingData === "userInfo" ? "Nesta página podes alterar os teus dados pessoais.\nPara guardar as alterações, clica no botão Submeter após editares os campos que desejares.\nAlterações na secção Departamento estão dependentes de aprovação posterior." : "Nesta página podes alterar a tua palavra-passe.\nPara guardar as alterações, clica no botão Submeter após inserires a nova palavra-passe a respetiva confirmação."}
         </Text>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
         {editingData === "userInfo" ? (
-          <View style={[styles.cardBox]}>
-            
-            <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
-              <Text style={[styles.subText, { textAlign: 'left', paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1 }]}>Nome</Text>
-              <View style={{ flexDirection: 'row' }}>
+          <>
+            <Modal
+              animationType="fade"
+              transparent={true}
+              visible={modalVisible}
+              onRequestClose={() => {
+                setModalVisible(!modalVisible);
+              }}>
+              <View style={styles.centeredView}>
+                <View style={styles.modalView}>
+                  <View style={{ flexDirection: 'column', width: '100%' }}>
+                  <Pressable
+              style={{  justifyContent: 'flex-end', flexDirection: 'row', paddingLeft: 10, paddingRight: 10 }}
+              onPress={() => setModalVisible(!modalVisible)}
+            >
+              <FontAwesome name="close" size={CONST.heading6} color={CONST.mainGray} />
+            </Pressable>
+                    <Text style={styles.normalText}>
+                      Introduza o seu e-mail para concluir a ação.
+                    </Text>
+                    <TextInput
+                      style={[styles.inputField]}
+                      value={deleteAccount}
+                      onChangeText={(text) => { setDeleteAccount(text) }}
+                      placeholder={'E-mail'}
+                      placeholderTextColor={CONST.neutralGray}
+                    />
+                  </View>
+                  <Pressable
+                    style={{marginTop: CONST.inputFieldMargin}}
+                    onPress={() => { 
+                      let auth = getAuth()
+                      let email_user = auth.currentUser.email
+                      if (email_user !== deleteAccount.trim().toLowerCase()) {
+                        Alert.alert("Erro", "E-mail inválido.")
+                      } else {
+                        deleteUser(auth.currentUser).then(() => {
+                          navigation.navigate("Welcome")
+                        }).catch((error) => {
+                          console.log(error.message)
+                        });
+                      }
+                    }} >
+                    <SecondaryButton_v1 text={"Apagar a conta"} color={CONST.mainRed} />
+                  </Pressable>
+                </View>
+              </View>
+            </Modal>
+            <View style={[styles.cardBox, { marginBottom: 20 }]}>
+              <Text style={[styles.subText, { textAlign: 'left', paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1, marginTop: 10 }]}>Nome</Text>
+              <View style={{ flexDirection: 'row', marginBottom: 20, }}>
                 <TextInput
                   style={[styles.inputField, { width: '100%' }]}
                   value={name}
@@ -142,10 +193,8 @@ export default function SettingsScreen({ route, navigation }) {
                   placeholderTextColor={CONST.neutralGray}
                 />
               </View>
-            </View>
-            <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
-              <Text style={[styles.subText, { textAlign: 'left', paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1 }]}>E-mail</Text>
-              <View style={{ flexDirection: 'row' }}>
+              <Text style={[styles.subText, { textAlign: 'left', paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1, marginTop: 10 }]}>E-mail</Text>
+              <View style={{ flexDirection: 'row', marginBottom: 20, }}>
                 <TextInput
                   style={[styles.inputField, { width: '100%' }]}
                   value={email}
@@ -154,10 +203,8 @@ export default function SettingsScreen({ route, navigation }) {
                   placeholderTextColor={CONST.neutralGray}
                 />
               </View>
-            </View>
-            <View style={{ flexDirection: 'column', marginBottom: open ? 220 : 20, marginTop: 10 }}>
-              <Text style={[styles.subText, { textAlign: 'left', paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1 }]}>Departamento</Text>
-              <View style={{ flexDirection: 'row' }}>
+              <Text style={[styles.subText, { textAlign: 'left', marginTop: 10, paddingLeft: CONST.inputPaddingVertical, letterSpacing: 1 }]}>Departamento</Text>
+              <View style={{ flexDirection: 'row', marginBottom: 20, }}>
                 <DropDownPicker
                   open={open}
                   value={department}
@@ -166,7 +213,7 @@ export default function SettingsScreen({ route, navigation }) {
                   setValue={setDepartment}
                   setItems={setDepartments}
                   style={styles.inputField}
-                  dropDownContainerStyle={[styles.inputField, { height: 200 }]}
+                  dropDownContainerStyle={[styles.inputField, { height: 200, position: 'relative', top: -2, }]}
                   textStyle={[styles.normalText, { fontFamily: 'K2D-Regular', marginBottom: 0 }]}
                   maxHeight={200}
                   placeholder="Departamento"
@@ -179,7 +226,16 @@ export default function SettingsScreen({ route, navigation }) {
                 />
               </View>
             </View>
-          </View>
+            <View style={[styles.cardBox, { marginBottom: 20 }]}>
+              <Text style={styles.normalText}>
+                <Text style={{ fontFamily: 'K2D-SemiBold' }}>Deseja apagar a sua conta? {"\n"}{"\n"}</Text>
+                Esta ação é irreversível, não poderá recuperar os dados da sua conta após apagá-la.
+              </Text>
+              <Pressable onPress={() => { setModalVisible(true) }} style={{ flexDirection: 'row', justifyContent: 'center' }}>
+                <SecondaryButton_v2 text={"Apagar a conta"} color={CONST.mainRed} />
+              </Pressable>
+            </View>
+          </>
         ) : (
           <View style={[styles.cardBox]}>
             <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>

@@ -82,8 +82,8 @@ export default function RegisterScreen({ navigation }) {
                 navigation.navigate("Configuration")
             })
             .catch((error) => {
-                Alert.alert("Erro", error.message);
-                // Alert.alert("Erro", "Impossível registar utilizador.");
+                // Alert.alert("Erro", error.message);
+                Alert.alert("Erro", "Impossível registar utilizador.");
                 setLoading(false)
             });
     };
@@ -152,7 +152,6 @@ export default function RegisterScreen({ navigation }) {
                     Bem-vindo à aplicação IDEA! {"\n"}Para criar uma nova conta precisamos que introduzas algumas informações sobre ti.{"\n"}
                     Preenche todos os campos com cuidado. {"\n"}Posteriormente, podes editar a informação que inserires sempre que quiseres no teu perfil.
                 </Text>
-
                 <View style={[styles.cardBox]}>
                     <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
                         <View style={{ flexDirection: 'row' }}>
@@ -255,7 +254,6 @@ export default function RegisterScreen({ navigation }) {
                         </View>
                     </View> */}
                 </View>
-
                 <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
                     <Checkbox
                         style={styles.checkbox}
