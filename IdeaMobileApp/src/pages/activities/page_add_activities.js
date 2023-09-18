@@ -2,7 +2,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, Modal, Alert } from "react-native";
+import { Pressable, ScrollView, Text, View, Modal, Alert, Image } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Svg, Path } from "react-native-svg";
 import Animated, { useAnimatedProps, useSharedValue } from "react-native-reanimated";
@@ -20,40 +20,32 @@ import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
 
 export default function AddActivitiesScreen({ navigation }) {
+
+    const [loadingBolt, setLoadingBolt] = useState(true);
     const [userID, setUserID] = useState()
     const [userDOC, setUserDOC] = useState()
     const [categories, setCategories] = useState({})
-    const [toShow, setToShow] = useState(null)
-    const [colorToShow, setColorToShow] = useState(null)
+    const [toShow, setToShow] = useState('none')
     const [modalVisible, setModalVisible] = useState(false);
     const [category, setCategory] = useState("")
+    const [airQuestions, setAirQuestions] = useState([])
+    const [airAnswers, setAirAnswers] = useState([])
+    const [waterQuestions, setWaterQuestions] = useState([])
+    const [waterAnswers, setWaterAnswers] = useState([])
+    const [energyQuestions, setEnergyQuestions] = useState([])
+    const [energyAnswers, setEnergyAnswers] = useState([])
+    const [movementQuestions, setMovementQuestions] = useState([])
+    const [movementAnswers, setMovementAnswers] = useState([])
+    const [recycleQuestions, setRecycleQuestions] = useState([])
+    const [recycleAnswers, setRecycleAnswers] = useState([])
+    const [initialQuestions, setInitialQuestions] = useState({})
+    const [memorizedAnswers, setMemorizedAnswers] = useState({})
 
-    // * saber se o user utiliza o ar condicionado
-    const [airQuestion1, setAirQuestion1] = useState(false)
-    const [airAnswers1, setAirAnswers1] = useState([false, false, false, false])
-    // * saber se o user pode abrir as janelas
-    const [airQuestion2, setAirQuestion2] = useState(false)
-    const [airAnswers2, setAirAnswers2] = useState([false, false, false])
 
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
 
     // * saber a distância do utilizador ao trabalho
-    const [movementQuestion1, setMovementQuestion1] = useState('min_range_1')
-    const [movementAnswers1, setMovementAnswers1] = useState([false, false, false, false])
-    // * saber se o utilizador possui alguma condição que o limite de caminhar
-    const [physicalCondition, setPhysicalCondition] = useState(false)
-    const [movementAnswers2, setMovementAnswers2] = useState([false, false])
-    // * saber a distância do rés do chão ao posto de trabalho do utilizador
-    const [movementQuestion3, setMovementQuestion3] = useState('min_range_1')
-    const [movementAnswers3, setMovementAnswers3] = useState([false, false])
-
-    // * saber que tipo de separação ele pode fazer no local de trabalho
-    const [recycleMaterials, setRecycleMaterials] = useState([])
-
-    // * saber se o utilizador bebe água ou não
-    const [waterQuestion1, setWaterQuestion1] = useState(false)
-    const [waterAnswers1, setWaterAnswers1] = useState([false, false])
 
     const removeFromArray = (element, array) => {
         return (array.filter(item => item !== element));
@@ -74,37 +66,90 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to get the categories active and the first category to show
     const getActiveCategories = (doc) => {
+        setInitialQuestions(doc.initial_questions)
+        setMemorizedAnswers(doc.memorized_answers)
         setCategories(doc.active_categories)
-        console.log("--------> ", userDOC)
+        setEnergyDevices(doc.initial_questions.devices)
+
         if (categories['air'] !== 0) {
             setToShow('air')
-            setColorToShow(whichColor(categories['air'], 'air'))
             setCategory('de Climatização')
         } else if (categories['energy'] !== 0) {
             setToShow('energy')
-            setColorToShow(whichColor(categories['energy'], 'energy'))
             setCategory('de Energia Elétrica')
         } else if (categories['movement'] !== 0) {
             setToShow('movement')
-            setColorToShow(whichColor(categories['movement'], 'movement'))
             setCategory('de Mobilidade')
         } else if (categories['recycle'] !== 0) {
             setToShow('recycle')
-            setColorToShow(whichColor(categories['recycle'], 'recycle'))
             setCategory('de Reciclagem')
         } else if (categories['water'] !== 0) {
             setToShow('water')
-            setColorToShow(whichColor(categories['water'], 'water'))
             setCategory('de Recursos Hídricos')
-        } else {
-            setToShow('none')
-            setColorToShow(CONST.secondaryGray)
-            setCategory('')
         }
     }
 
-    const heightAnimated = useSharedValue(300);
+    // * function to get the questions from database
+    const getQuestions = () => {
+        const firestore_questions = firebase.firestore().collection("questions");
+        firestore_questions.get().then((querySnapshot) => {
+            const tempDoc = querySnapshot.docs.map((doc) => doc.data());
 
+            const filteredAirData = (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id));
+            const initialAirAnswers = filteredAirData.map((data) => {
+                let airTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                return airTemp;
+            });
+            setAirAnswers(initialAirAnswers);
+            setAirQuestions(filteredAirData);
+
+            const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
+            const initialMovementAnswers = filteredMovementData.map((data) => {
+                let movementTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                return movementTemp;
+            });
+            setMovementAnswers(initialMovementAnswers);
+            setMovementQuestions(filteredMovementData);
+
+            const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
+            const initialWaterAnswers = filteredWaterData.map((data) => {
+                let waterTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                return waterTemp;
+            });
+            setWaterAnswers(initialWaterAnswers);
+            setWaterQuestions(filteredWaterData)
+
+            const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
+            const initialRecycleAnswers = filteredRecycleData.map((data) => {
+                let recycleTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                return recycleTemp;
+            });
+            setRecycleAnswers(initialRecycleAnswers);
+            setRecycleQuestions(filteredRecycleData)
+
+            const filteredEnergyData = (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id));
+            const deviceAnswers = {'geral': [false, false, false]};
+
+            energyDevices.forEach((device) => {
+                // Filtrar as questões que têm o dispositivo no campo 'field'
+                const questionsWithDevice = filteredEnergyData.filter((question) =>
+                    question.field.includes(device)
+                );
+                // Criar um array de falses para cada pergunta encontrada
+                const deviceAnswersArray = questionsWithDevice.map((data) =>
+                    Array.from({ length: Object.keys(data.options).length }, () => false)
+                );
+                // Adicionar o array de falses ao objeto com o nome do dispositivo como chave
+                deviceAnswers[device] = deviceAnswersArray;
+            });
+            setEnergyAnswers(deviceAnswers);
+            setEnergyQuestions(filteredEnergyData)
+
+        });
+        setLoadingBolt(false)
+    }
+
+    const heightAnimated = useSharedValue(250);
     const AnimatedPath = Animated.createAnimatedComponent(Path);
     const AnimatedSvg = Animated.createAnimatedComponent(Svg);
 
@@ -134,6 +179,37 @@ export default function AddActivitiesScreen({ navigation }) {
         };
     });
 
+    // * function to translate the device to portuguese to show in energy section
+    const whichDevice = (dev) => {
+        switch (dev) {
+            case "heater":
+                return 'AQUECEDOR'
+            case "fan":
+                return "VENTOINHA"
+            case "printer":
+                return "IMPRESSORA"
+            case "computer":
+                return "COMPUTADOR"
+            case "monitor":
+                return "MONITOR"
+            case "projector":
+                return "PROJETOR"
+            case "fridge":
+                return "FRIGORíFICO"
+            case "microwave":
+                return "MICROONDAS"
+            case "coffee_machine":
+                return "MÁQUINA DE CAFÉ"
+            case "hand_dryer":
+                return "SECADOR DE MÃOS"
+            case "lamp":
+                return "CANDEEIRO"
+            case "television":
+                return "TELEVISÃO"
+        }
+    }
+
+    // * function to interperter which color should show
     const whichColor = (color, category) => {
         switch (category) {
             case "air":
@@ -206,71 +282,26 @@ export default function AddActivitiesScreen({ navigation }) {
         }
     }
 
+    // * function to send 
     const submitAnswers = (value) => {
-        const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
-        switch (value) {
-            case "air":
-                if (airAnswers1.includes(true) && (airAnswers2.includes(true) || !airQuestion1)) {
-                    firestore_user_doc.update({
-                        'initial_questions.air': airQuestion1,
-                        'initial_questions.windows': airQuestion2,
-                    });
-                    if (!airQuestion1) {
-                        firestore_user_doc.update({
-                            'active_categories.air': 0
-                        });
-                    }
-                    setModalVisible(true)
-                    return true
-                }
-                Alert.alert("Erro", "Responda a todas as perguntas.");
-                return false
-            case "water":
-                if (waterAnswers1.includes(true)) {
-                    firestore_user_doc.update({
-                        'initial_questions.drink_water': waterQuestion1,
-                    });
-                    setModalVisible(true)
-                    return true
-                }
-                Alert.alert("Erro", "Responda a todas as perguntas.");
-                return false;
-            case "energy":
-                firestore_user_doc.update({
-                    'initial_questions.devices': energyDevices,
-                });
-                if (energyDevices.length === 0) {
-                    firestore_user_doc.update({
-                        'active_categories.energy': 0
-                    });
-                }
-                setModalVisible(true)
-                return true
-            case "movement":
-                if (movementAnswers1.includes(true) && movementAnswers2.includes(true) && movementAnswers3.includes(true)) {
-                    // ? se ele tem alguma condição física que o limita de caminhar, o range não vai ser 3 - 2 - 1 e sim 3 - 2
-                    if (physicalCondition) {
-                        setMovementQuestion1('min_range_2')
-                    }
-                    firestore_user_doc.update({
-                        'initial_questions.distance': movementQuestion1,
-                        'initial_questions.elevator': movementQuestion3,
-                    });
-                    setModalVisible(true)
-                    return true
-                }
-                Alert.alert("Erro", "Responda a todas as perguntas.");
-                return false
-            case "recycle":
-                firestore_user_doc.update({
-                    'initial_questions.recycle': recycleMaterials,
-                });
-                setModalVisible(true)
-                return true
-            default:
-                return ("")
-        }
     }
+
+    // * function to save data in localStorage to edit later
+    const saveData = () => {
+        const formattedDate = getCurrentDate();
+        // * we save in localstorage the par key-value where key is the date and the value is a dict where key is the category and value the answers
+        // TODO: IMPLEMENT
+    }
+
+    // * function to get the current date in format day/month/year
+    const getCurrentDate = () => {
+        const today = new Date();
+        const day = today.getDate();
+        const month = today.getMonth() + 1; 
+        const year = today.getFullYear();
+        const formattedDate = `${day}/${month}/${year}`;
+        return formattedDate;
+      }
 
     useFocusEffect(
         React.useCallback(() => {
@@ -278,15 +309,29 @@ export default function AddActivitiesScreen({ navigation }) {
         }, [])
     );
 
-    // useEffect(() => {
-    //     getData()
-    //     console.log(toShow)
-    // }, [])
+    useEffect(() => {
+    }, [toShow, airAnswers, movementAnswers])
 
+    useEffect(() => {
+        getQuestions()
+    }, [])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer, { paddingTop: 0 }]}>
-            <StatusBar style={"dark"} />
+            <StatusBar style={"light"} />
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={loadingBolt}
+                onRequestClose={() => {
+                    setLoadingBolt(!loadingBolt);
+                }}>
+                <View style={styles.centeredViewDarker}>
+                    <View style={{ bottom: CONST.screenHeight / 2, zIndex: 1000, left: CONST.screenWidth / 2.5, position: 'absolute' }}>
+                        <Image source={require('../../assets/images/loading_bolt_blue.gif')} resizeMode="contain" style={{ tintColor: 'white', height: 80, width: 80 }} />
+                    </View>
+                </View>
+            </Modal>
             <Modal
                 animationType="fade"
                 transparent={true}
@@ -323,27 +368,26 @@ export default function AddActivitiesScreen({ navigation }) {
             >
                 <AnimatedPath
                     animatedProps={firstWaveProps}
-                    fill={colorToShow}
+                    fill={whichColor(categories[toShow], toShow)}
                     style={{ opacity: 0.5 }}
                     transform="translate(0, 0)"
                 />
                 <AnimatedPath
                     animatedProps={secondWaveProps}
-                    fill={colorToShow}
+                    fill={whichColor(categories[toShow], toShow)}
                     transform="translate(0, 0)"
                 />
-                <Text style={[styles.indicatorTitle, { color: CONST.lightWhite, paddingTop: CONST.layoutPaddingVertical, paddingLeft: CONST.layoutPaddingLateral, paddingRight: CONST.layoutPaddingLateral }]}>
+                <Text style={[styles.indicatorTitle, { color: CONST.lightWhite, paddingTop: CONST.layoutPaddingVertical, marginBottom: CONST.titlePageMargin }]}>
                     Atividades {category}
                 </Text>
                 <Text style={[styles.descriptionText, { color: CONST.lightWhite }]}>
-                    Nesta secção podes preencher o teu relatório diários com as atividades sustentáveis que tiveste ao longo do dia e assim ganhares pontos.
+                    Preenche o teu relatório diários com as atividades sustentáveis que tiveste ao longo do dia e assim ganhares pontos.
                 </Text>
             </AnimatedSvg>
-            <View style={{ marginBottom: CONST.boxCardMargin, flexDirection: 'row', justifyContent: 'space-between', paddingLeft: CONST.layoutPaddingLateral, paddingRight: CONST.layoutPaddingLateral }}>
+            <View style={{ positio: 'relative', top: -CONST.boxCardMargin, flexDirection: 'row', justifyContent: 'space-between', paddingLeft: CONST.layoutPaddingLateral, paddingRight: CONST.layoutPaddingLateral }}>
                 <Pressable
                     onPress={() => {
                         setToShow('air')
-                        setColorToShow(whichColor(categories['air'], 'air'))
                         setCategory('de Climatização')
                     }}>
                     <AirIcon color={(categories['air'] === 0 || toShow !== 'air') ? CONST.secondaryGray : whichColor(categories['air'], 'air')} />
@@ -351,576 +395,363 @@ export default function AddActivitiesScreen({ navigation }) {
                 <Pressable
                     onPress={() => {
                         setToShow('energy')
-                        setColorToShow(whichColor(categories['energy'], 'energy'))
                         setCategory('de Energia Elétrica')
                     }}>
-                    <EnergyIcon color={(categories['energy'] === 0 || toShow !== 'energy')? CONST.secondaryGray : whichColor(categories['energy'], 'energy')} />
+                    <EnergyIcon color={(categories['energy'] === 0 || toShow !== 'energy') ? CONST.secondaryGray : whichColor(categories['energy'], 'energy')} />
                 </Pressable>
                 <Pressable
                     onPress={() => {
                         setToShow('movement')
-                        setColorToShow(whichColor(categories['movement'], 'movement'))
                         setCategory('de Mobilidade')
                     }}>
-                    <MovementIcon color={(categories['movement'] === 0 || toShow !== 'movement')? CONST.secondaryGray : whichColor(categories['movement'], 'movement')} />
+                    <MovementIcon color={(categories['movement'] === 0 || toShow !== 'movement') ? CONST.secondaryGray : whichColor(categories['movement'], 'movement')} />
                 </Pressable>
                 <Pressable
                     onPress={() => {
                         setToShow('recycle')
-                        setColorToShow(whichColor(categories['recycle'], 'recycle'))
                         setCategory('de Reciclagem')
                     }}>
-                    <RecycleIcon color={(categories['recycle'] === 0 || toShow !== 'recycle')? CONST.secondaryGray : whichColor(categories['recycle'], 'recycle')} />
+                    <RecycleIcon color={(categories['recycle'] === 0 || toShow !== 'recycle') ? CONST.secondaryGray : whichColor(categories['recycle'], 'recycle')} />
                 </Pressable>
                 <Pressable
                     onPress={() => {
                         setToShow('water')
-                        setColorToShow(whichColor(categories['water'], 'water'))
                         setCategory('de Recursos Hídricos')
                     }}>
-                    <WaterIcon color={(categories['water'] === 0 || toShow !== 'water')? CONST.secondaryGray : whichColor(categories['water'], 'water')} />
+                    <WaterIcon color={(categories['water'] === 0 || toShow !== 'water') ? CONST.secondaryGray : whichColor(categories['water'], 'water')} />
                 </Pressable>
             </View>
             <ScrollView
                 showsVerticalScrollIndicator={false}>
-                {
-                    toShow === "air" ?
-                        <>
+                {toShow === 'air' && airQuestions && airQuestions.length > 0 &&
+                    airQuestions.map((callbackfn, id) => {
+                        const firstQuestion = 0
+                        if (id === firstQuestion + 1 && !airAnswers[firstQuestion][1]) {
+                            return (<></>)
+                        }
+                        if (id === firstQuestion + 2 && !airAnswers[firstQuestion][0]) {
+                            return (<></>)
+                        }
+                        return (
                             <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                <View style={{ flexDirection: 'column' }}>
+                                <View key={'air_' + id} style={{ flexDirection: 'column' }}>
                                     <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                        No teu local de trabalho, o ar condicionado costuma estar:
+                                        {airQuestions[id].description}
                                     </Text>
-                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly", marginBottom: 10 }}>
-                                        <Pressable onPress={() => {
-                                            if (airAnswers1[0]) {
-                                                setAirAnswers1([false, false, false, false])
-                                                setAirQuestion1(false)
-                                            } else {
-                                                setAirAnswers1([true, false, false, false])
-                                                setAirQuestion1(true)
-                                            }
-                                        }}>
-                                            <OptionButton_v1 text={'Sempre ligado'} color={airAnswers1[0] ? colorToShow : CONST.secondaryGray} />
-                                        </Pressable>
-                                        <Pressable onPress={() => {
-                                            setAirQuestion1(false)
-                                            if (airAnswers1[1]) {
-                                                setAirAnswers1([false, false, false, false])
-                                            } else {
-                                                setAirAnswers1([false, true, false, false])
-                                            }
-                                        }}>
-                                            <OptionButton_v1 text={'Nunca ligado'} color={airAnswers1[1] ? colorToShow : CONST.secondaryGray} />
-                                        </Pressable>
-                                    </View>
-                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly", marginTop: 10 }}>
-                                        <Pressable onPress={() => {
-                                            if (airAnswers1[2]) {
-                                                setAirAnswers1([false, false, false, false])
-                                                setAirQuestion1(false)
+                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                        {Object.keys(airQuestions[id].options).sort().map((optionKey, idx) => {
+                                            const viewElements = [];
+                                            if (idx === 0 || idx === Math.round(Object.keys(airQuestions[id].options).length / 2)) {
+                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(airQuestions[id].options).length / 2) : i < Object.keys(airQuestions[id].options).length; i++) {
+                                                    const key = Object.keys(airQuestions[id].options).sort()[i]
+                                                    const option = airQuestions[id].options[key]
+                                                    viewElements.push(
+                                                        <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                            const updatedAnswers = [...airAnswers];
+                                                            const falseAnswers = updatedAnswers[id].map(() => false);
 
-                                            } else {
-                                                setAirAnswers1([false, false, true, false])
-                                                setAirQuestion1(true)
-                                            }
-                                        }}>
-                                            <OptionButton_v1 text={'Raramente ligado'} color={airAnswers1[2] ? colorToShow : CONST.secondaryGray} />
-                                        </Pressable>
-                                        <Pressable onPress={() => {
-                                            if (airAnswers1[3]) {
-                                                setAirAnswers1([false, false, false, false])
-                                                setAirQuestion1(false)
+                                                            if (!updatedAnswers[id][i]) {
+                                                                falseAnswers[i] = true;
+                                                            }
 
+                                                            updatedAnswers[id] = falseAnswers;
+                                                            setAirAnswers(updatedAnswers);
+                                                        }}>
+                                                            <OptionButton_v1 text={key} color={airAnswers[id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                        </Pressable>
+                                                    )
+                                                }
+                                                return (
+                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                        {viewElements}
+                                                    </View>)
                                             } else {
-                                                setAirAnswers1([false, false, false, true])
-                                                setAirQuestion1(true)
+                                                <></>
                                             }
-                                        }}>
-                                            <OptionButton_v1 text={'Intercalado'} color={airAnswers1[3] ? colorToShow : CONST.secondaryGray} />
-                                        </Pressable>
+                                        })}
                                     </View>
                                 </View>
                             </View>
-                            {airQuestion1 ?
-                                <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                    <View style={{ flexDirection: 'column' }}>
-                                        <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                            No teu local de trabalho, há a possibilidade de arejar o ambiente abrindo as janelas?
-                                        </Text>
+                        )
+                    })}
+                {toShow === 'energy' && energyQuestions && energyQuestions.length > 0 ?
+                    <>
+                        <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>GERAL</Text>
+                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                            <View style={{ flexDirection: 'column' }}>
+                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                    {energyQuestions[0].description}
+                                </Text>
+                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                    {Object.keys(energyQuestions[0].options).sort().map((optionKey, idx) => {
+                                        const viewElements = [];
+                                        if (idx === 0 || idx === Math.round(Object.keys(energyQuestions[0].options).length / 2)) {
+                                            for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions[0].options).length / 2) : i < Object.keys(energyQuestions[0].options).length; i++) {
+                                                const key = Object.keys(energyQuestions[0].options).sort()[i]
+                                                const option = energyQuestions[0].options[key]
+                                                viewElements.push(
+                                                    <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                        const updatedAnswers = {...energyAnswers};
+                                                        const falseAnswers = updatedAnswers['geral'].map(() => false);
 
-                                        <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly", marginBottom: 10 }}>
-                                            <Pressable onPress={() => {
-                                                if (airAnswers2[0]) {
-                                                    setAirAnswers2([false, false, false])
-                                                    setAirQuestion2(false)
+                                                        if (!updatedAnswers['geral'][i]) {
+                                                            falseAnswers[i] = true;
+                                                        }
 
-                                                } else {
-                                                    setAirAnswers2([true, false, false])
-                                                    setAirQuestion2(true)
-
-                                                }
-                                            }}>
-                                                <OptionButton_v1 text={'Sim'} color={airAnswers2[0] ? colorToShow : CONST.secondaryGray} />
-                                            </Pressable>
-                                            <Pressable onPress={() => {
-                                                if (airAnswers2[1]) {
-                                                    setAirAnswers2([false, false, false])
-                                                    setAirQuestion2(false)
-
-                                                } else {
-                                                    setAirAnswers2([false, true, false])
-                                                    setAirQuestion2(true)
-                                                }
-                                            }}>
-                                                <OptionButton_v1 text={'Às vezes'} color={airAnswers2[1] ? colorToShow : CONST.secondaryGray} />
-                                            </Pressable>
-                                            <Pressable onPress={() => {
-                                                setAirQuestion2(false)
-                                                if (airAnswers2[2]) {
-                                                    setAirAnswers2([false, false, false])
-                                                } else {
-                                                    setAirAnswers2([false, false, true])
-                                                }
-                                            }}>
-                                                <OptionButton_v1 text={'Não'} color={airAnswers2[2] ? colorToShow : CONST.secondaryGray} />
-                                            </Pressable>
-                                        </View>
-
-                                    </View>
+                                                        updatedAnswers['geral'] = falseAnswers;
+                                                        setEnergyAnswers(updatedAnswers);
+                                                    }}>
+                                                        <OptionButton_v1 text={key} color={energyAnswers['geral'][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                    </Pressable>
+                                                )
+                                            }
+                                            return (
+                                                <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                    {viewElements}
+                                                </View>)
+                                        } else {
+                                            <></>
+                                        }
+                                    })}
                                 </View>
-                                :
-                                <></>
-                            }
-                        </>
-                        :
-                        toShow === "energy" ?
-                            <>
-                                <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                    <View style={{ flexDirection: 'column' }}>
-                                        <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                            Seleciona os equipamentos que costumas utilizar com frequência no teu local de trabalho:
-                                        </Text>
-                                        <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                            <View style={{ flexDirection: 'column' }}>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('a')) {
-                                                            setEnergyDevices(removeFromArray('a', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'a'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Aquecedor'} color={energyDevices.includes('a') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('coffee_machine')) {
-                                                            setEnergyDevices(removeFromArray('coffee_machine', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'coffee_machine'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Cafeteira'} color={energyDevices.includes('coffee_machine') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('lamp')) {
-                                                            setEnergyDevices(removeFromArray('lamp', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'lamp'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Candeeiro'} color={energyDevices.includes('lamp') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('computer')) {
-                                                            setEnergyDevices(removeFromArray('computer', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'computer'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Computador'} color={energyDevices.includes('computer') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('printer')) {
-                                                            setEnergyDevices(removeFromArray('printer', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'printer'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Impressora'} color={energyDevices.includes('printer') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('fridge')) {
-                                                            setEnergyDevices(removeFromArray('fridge', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'fridge'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Frigorífico'} color={energyDevices.includes('fridge') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                            </View>
-                                            <View style={{ flexDirection: 'column' }}>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('microwave')) {
-                                                            setEnergyDevices(removeFromArray('microwave', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'microwave'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Microondas'} color={energyDevices.includes('microwave') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('monitor')) {
-                                                            setEnergyDevices(removeFromArray('monitor', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'monitor'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Monitor'} color={energyDevices.includes('monitor') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('projector')) {
-                                                            setEnergyDevices(removeFromArray('projector', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'projector'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Projetor'} color={energyDevices.includes('projector') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('hand_dryer')) {
-                                                            setEnergyDevices(removeFromArray('hand_dryer', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'hand_dryer'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={"Secadora"} color={energyDevices.includes('hand_dryer') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('television')) {
-                                                            setEnergyDevices(removeFromArray('television', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'television'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={'Televisão'} color={energyDevices.includes('television') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable
-                                                    style={{ marginBottom: 10 }}
-                                                    onPress={() => {
-                                                        if (energyDevices.includes('v')) {
-                                                            setEnergyDevices(removeFromArray('v', energyDevices))
-                                                        } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'v'])
-                                                        }
-                                                    }}>
-                                                    <OptionButton_v1 text={"Ventoinha"} color={energyDevices.includes('v') ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                            </View>
-                                        </View>
-                                    </View>
-                                </View>
-                            </>
-                            :
-                            toShow === "movement" ?
+                            </View>
+                        </View>
+                        {energyDevices.map((callbackfn, index) => {
+                            return (
                                 <>
-                                    <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                        <View style={{ flexDirection: 'column' }}>
-                                            <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                                A distância da tua casa ao teu local de trabalho é cerca de:
-                                            </Text>
-                                            <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                                <View style={{ flexDirection: 'column' }}>
-                                                    <Pressable
-                                                        style={{ marginBottom: 10 }}
-                                                        onPress={() => {
-                                                            setMovementQuestion1('min_range_1')
-                                                            if (movementAnswers1[0]) {
-                                                                setMovementAnswers1([false, false, false, false])
-                                                            } else {
-                                                                setMovementAnswers1([true, false, false, false])
-                                                            }
-                                                        }}>
-                                                        <OptionButton_v1 text={'< 05 km'} color={movementAnswers1[0] ? colorToShow : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                    <Pressable
-                                                        style={{ marginBottom: 10 }}
-                                                        onPress={() => {
-                                                            setMovementQuestion1('min_range_1')
-                                                            if (movementAnswers1[2]) {
-                                                                setMovementAnswers1([false, false, false, false])
-                                                            } else {
-                                                                setMovementAnswers1([false, false, true, false])
-                                                            }
-                                                        }}>
-                                                        <OptionButton_v1 text={'10 ~ 25 km'} color={movementAnswers1[2] ? colorToShow : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                </View>
-                                                <View style={{ flexDirection: 'column' }}>
-                                                    <Pressable
-                                                        style={{ marginBottom: 10 }}
-                                                        onPress={() => {
-                                                            if (movementAnswers1[1]) {
-                                                                setMovementAnswers1([false, false, false, false])
-                                                                setMovementQuestion1('min_range_1')
-                                                            } else {
-                                                                setMovementAnswers1([false, true, false, false])
-                                                                setMovementQuestion1('min_range_2')
-                                                            }
-                                                        }}>
-                                                        <OptionButton_v1 text={'05 ~ 10 km'} color={movementAnswers1[1] ? colorToShow : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                    <Pressable
-                                                        style={{ marginBottom: 10 }}
-                                                        onPress={() => {
-                                                            if (movementAnswers1[3]) {
-                                                                setMovementAnswers1([false, false, false, false])
-                                                                setMovementQuestion1('min_range_1')
-                                                            } else {
-                                                                setMovementAnswers1([false, false, false, true])
-                                                                setMovementQuestion1('min_range_2')
-                                                            }
-                                                        }}>
-                                                        <OptionButton_v1 text={'> 25 km'} color={movementAnswers1[3] ? colorToShow : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                        <View style={{ flexDirection: 'column' }}>
-                                            <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                                Tens algum tipo de limitação física para caminhar?
-                                            </Text>
-                                            <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly", marginBottom: 10 }}>
-                                                <Pressable onPress={() => {
-                                                    if (movementAnswers2[0]) {
-                                                        setMovementAnswers2([false, false])
-                                                        setPhysicalCondition(false)
+                                    <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>{whichDevice(energyDevices[index])}</Text>
+                                    {energyQuestions.filter(element => element.field.includes(energyDevices[index])).map((callbackfn, id) => {
+                                        if (id != 0 && energyAnswers[energyDevices[index]][0][0]) {
+                                            return (<></>)
+                                        }
+                                        return (
+                                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                                <View key={'energy_' + id} style={{ flexDirection: 'column' }}>
+                                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                                        {energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].description}
+                                                    </Text>
+                                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                                        {Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort().map((optionKey, idx) => {
+                                                            const viewElements = [];
+                                                            if (idx === 0 || idx === Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2)) {
+                                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2) : i < Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length; i++) {
+                                                                    const key = Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort()[i]
+                                                                    const option = energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options[key]
+                                                                    viewElements.push(
+                                                                        <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                                            const updatedAnswers = { ...energyAnswers };
+                                                                            const currentDeviceAnswers = updatedAnswers[energyDevices[index]][id];
+                                                                        
+                                                                            // Invertir a resposta para o índice 'i'
+                                                                            currentDeviceAnswers[i] = !currentDeviceAnswers[i];
+                                                                        
+                                                                            for (let j = 0; j < currentDeviceAnswers.length; j++) {
+                                                                                if (j !== i) {
+                                                                                    currentDeviceAnswers[j] = false;
+                                                                                }
+                                                                            }
 
-                                                    } else {
-                                                        setMovementAnswers2([true, false])
-                                                        setPhysicalCondition(true)
-                                                    }
-                                                }}>
-                                                    <OptionButton_v1 text={'Sim, tenho'} color={movementAnswers2[0] ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                                <Pressable onPress={() => {
-                                                    setPhysicalCondition(false)
-                                                    if (movementAnswers2[1]) {
-                                                        setMovementAnswers2([false, false])
-                                                    } else {
-                                                        setMovementAnswers2([false, true])
-                                                    }
-                                                }}>
-                                                    <OptionButton_v1 text={'Não tenho'} color={movementAnswers2[1] ? colorToShow : CONST.secondaryGray} />
-                                                </Pressable>
-                                            </View>
-                                        </View>
-                                    </View>
-                                    <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                        <View style={{ flexDirection: 'column' }}>
-                                            <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                                O teu posto no teu local de trabalho localiza-se a quantos andares de distância do rés do chão?
-                                            </Text>
-                                            <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                                <View style={{ flexDirection: 'column' }}>
-                                                    <Pressable
-                                                        style={{ marginBottom: 10 }}
-                                                        onPress={() => {
-                                                            setMovementQuestion3('min_range_1')
-                                                            if (movementAnswers3[0]) {
-                                                                setMovementAnswers3([false, false])
+                                                                            setEnergyAnswers({ ...updatedAnswers });
+                                                                        }}>
+                                                                            <OptionButton_v1 text={key} color={energyAnswers[energyDevices[index]][id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                                        </Pressable>
+                                                                    )
+                                                                }
+                                                                return (
+                                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                                        {viewElements}
+                                                                    </View>)
                                                             } else {
-                                                                setMovementAnswers3([true, false])
+                                                                <></>
                                                             }
-                                                        }}>
-                                                        <OptionButton_v1 text={'Entre 0 e 2'} color={movementAnswers3[0] ? colorToShow : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                </View>
-                                                <View style={{ flexDirection: 'column' }}>
-                                                    <Pressable
-                                                        style={{ marginBottom: 10 }}
-                                                        onPress={() => {
-                                                            if (movementAnswers3[1]) {
-                                                                setMovementAnswers3([false, false])
-                                                                setMovementQuestion3('min_range_1')
-                                                            } else {
-                                                                setMovementAnswers3([false, true])
-                                                                setMovementQuestion3('min_range_2')
-                                                            }
-                                                        }}>
-                                                        <OptionButton_v1 text={'3 ou mais'} color={movementAnswers3[1] ? colorToShow : CONST.secondaryGray} />
-                                                    </Pressable>
+                                                        })}
+                                                    </View>
                                                 </View>
                                             </View>
-                                        </View>
-                                    </View>
+                                        )
+                                    })}
                                 </>
-                                :
-                                toShow === "recycle" ?
-                                    <>
-                                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                            <View style={{ flexDirection: 'column' }}>
-                                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                                    Que tipo(s) de separação de lixo é possível realizares no teu local de trabalho?
-                                                </Text>
-                                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-around" }}>
-                                                    <View style={{ flexDirection: 'column' }}>
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                if (recycleMaterials.includes('lamps')) {
-                                                                    setRecycleMaterials(removeFromArray('lamps', recycleMaterials))
-                                                                } else {
-                                                                    setRecycleMaterials(recycleMaterials => [...recycleMaterials, 'lamps'])
-                                                                }
-                                                            }}>
-                                                            <OptionButton_v1 text={'Lâmpadas'} color={recycleMaterials.includes('lamps') ? colorToShow : CONST.secondaryGray} />
-                                                        </Pressable>
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                if (recycleMaterials.includes('paper')) {
-                                                                    setRecycleMaterials(removeFromArray('paper', recycleMaterials))
-                                                                } else {
-                                                                    setRecycleMaterials(recycleMaterials => [...recycleMaterials, 'paper'])
-                                                                }
-                                                            }}>
-                                                            <OptionButton_v1 text={'Papel'} color={recycleMaterials.includes('paper') ? colorToShow : CONST.secondaryGray} />
-                                                        </Pressable>
-
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                if (recycleMaterials.includes('stacks')) {
-                                                                    setRecycleMaterials(removeFromArray('stacks', recycleMaterials))
-                                                                } else {
-                                                                    setRecycleMaterials(recycleMaterials => [...recycleMaterials, 'stacks'])
-                                                                }
-                                                            }}>
-                                                            <OptionButton_v1 text={'Pilhas'} color={recycleMaterials.includes('stacks') ? colorToShow : CONST.secondaryGray} />
-                                                        </Pressable>
-                                                    </View>
-                                                    <View style={{ flexDirection: 'column' }}>
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                if (recycleMaterials.includes('glass')) {
-                                                                    setRecycleMaterials(removeFromArray('glass', recycleMaterials))
-                                                                } else {
-                                                                    setRecycleMaterials(recycleMaterials => [...recycleMaterials, 'glass'])
-                                                                }
-                                                            }}>
-                                                            <OptionButton_v1 text={'Vidro'} color={recycleMaterials.includes('glass') ? colorToShow : CONST.secondaryGray} />
-                                                        </Pressable>
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                if (recycleMaterials.includes('plastic')) {
-                                                                    setRecycleMaterials(removeFromArray('plastic', recycleMaterials))
-                                                                } else {
-                                                                    setRecycleMaterials(recycleMaterials => [...recycleMaterials, 'plastic'])
-                                                                }
-                                                            }}>
-                                                            <OptionButton_v1 text={'Plástico'} color={recycleMaterials.includes('plastic') ? colorToShow : CONST.secondaryGray} />
-                                                        </Pressable>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </>
-                                    :
-                                    <>
-                                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                            <View style={{ flexDirection: 'column' }}>
-                                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                                    Tens o hábito de beber água durante o dia?
-                                                </Text>
-                                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                                    <View style={{ flexDirection: 'column' }}>
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                if (waterAnswers1[0]) {
-                                                                    setWaterAnswers1([false, false])
-                                                                    setWaterQuestion1(false)
-                                                                } else {
-                                                                    setWaterAnswers1([true, false])
-                                                                    setWaterQuestion1(true)
-                                                                }
-                                                            }}>
-                                                            <OptionButton_v1 text={'Sim, tenho'} color={waterAnswers1[0] ? colorToShow : CONST.secondaryGray} />
-                                                        </Pressable>
-                                                    </View>
-                                                    <View style={{ flexDirection: 'column' }}>
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                setWaterQuestion1(false)
-                                                                if (waterAnswers1[1]) {
-                                                                    setWaterAnswers1([false, false])
-                                                                } else {
-                                                                    setWaterAnswers1([false, true])
-                                                                }
-                                                            }}>
-                                                            <OptionButton_v1 text={'Não tenho'} color={waterAnswers1[1] ? colorToShow : CONST.secondaryGray} />
-                                                        </Pressable>
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        </View>
-                                    </>
+                            )
+                        })} 
+                    </>
+                    :
+                    <></>
                 }
+                {toShow === 'movement' && movementQuestions && movementQuestions.length > 0 &&
+                    movementQuestions.map((callbackfn, id) => (
+                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                            <View key={'movement_' + id} style={{ flexDirection: 'column' }}>
+                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                    {movementQuestions[id].description}
+                                </Text>
+                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                    {Object.keys(movementQuestions[id].options).sort().map((optionKey, idx) => {
+                                        const viewElements = [];
+                                        if (idx === 0 || idx === Math.round(Object.keys(movementQuestions[id].options).length / 2)) {
+                                            for (let i = idx; idx === 0 ? i < Math.round(Object.keys(movementQuestions[id].options).length / 2) : i < Object.keys(movementQuestions[id].options).length; i++) {
+                                                const key = Object.keys(movementQuestions[id].options).sort()[i]
+                                                const option = movementQuestions[id].options[key]
+                                                viewElements.push(
+                                                    <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                        const updatedAnswers = [...movementAnswers];
+                                                        const falseAnswers = updatedAnswers[id].map(() => false);
+
+                                                        if (!updatedAnswers[id][i]) {
+                                                            falseAnswers[i] = true;
+                                                        }
+
+                                                        updatedAnswers[id] = falseAnswers;
+                                                        setMovementAnswers(updatedAnswers);
+                                                    }}>
+                                                        <OptionButton_v1 text={key} color={movementAnswers[id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                    </Pressable>
+                                                )
+                                            }
+                                            return (
+                                                <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                    {viewElements}
+                                                </View>)
+                                        } else {
+                                            <></>
+                                        }
+                                    })}
+                                </View>
+                            </View>
+                        </View>
+                    ))}
+                {toShow === 'recycle' && recycleQuestions && recycleQuestions.length > 0 &&
+                    recycleQuestions.map((callbackfn, id) => {
+                        const printerQuestion = 1
+                        const bottleQuestion = 3
+
+                        if (id === printerQuestion + 1 && !recycleAnswers[printerQuestion][1]) {
+                            return (<></>)
+                        }
+                        if (id === bottleQuestion + 1 && ((recycleAnswers[bottleQuestion][0] || (recycleAnswers[bottleQuestion][2]) || (!recycleAnswers[bottleQuestion][0] && !recycleAnswers[bottleQuestion][1] && !recycleAnswers[bottleQuestion][2])))) {
+                            return (<></>)
+                        }
+                        return (
+                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                <View key={'recyle_' + id} style={{ flexDirection: 'column' }}>
+                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                        {recycleQuestions[id].description}
+                                    </Text>
+                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-evenly' }}>
+                                        {Object.keys(recycleQuestions[id].options).sort().map((optionKey, idx) => {
+                                            const viewElements = [];
+
+                                            if (idx === 0 || idx === Math.round(Object.keys(recycleQuestions[id].options).length / 2)) {
+                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(recycleQuestions[id].options).length / 2) : i < Object.keys(recycleQuestions[id].options).length; i++) {
+                                                    const key = Object.keys(recycleQuestions[id].options).sort()[i];
+                                                    const option = recycleQuestions[id].options[key];
+
+                                                    const isOptionSelected = recycleAnswers[id][i];
+                                                    const backgroundColor = isOptionSelected ? whichColor(categories[toShow], toShow) : CONST.secondaryGray;
+
+                                                    viewElements.push(
+                                                        <Pressable
+                                                            style={{ marginBottom: 10 }}
+                                                            onPress={() => {
+                                                                const updatedAnswers = [...recycleAnswers];
+                                                                const falseAnswers = updatedAnswers[id].map(() => false);
+
+                                                                if (!updatedAnswers[id][i]) {
+                                                                    falseAnswers[i] = true;
+                                                                }
+
+                                                                updatedAnswers[id] = falseAnswers;
+                                                                setRecycleAnswers(updatedAnswers);
+                                                            }}
+                                                        >
+                                                            <OptionButton_v1 text={key} color={backgroundColor} />
+                                                        </Pressable>
+                                                    );
+                                                }
+
+                                                return (
+                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                        {viewElements}
+                                                    </View>
+                                                );
+                                            } else {
+                                                return null; // Retorna nulo para não renderizar nada
+                                            }
+                                        })}
+                                    </View>
+                                </View>
+                            </View>
+                        )
+                    })}
+                {toShow === 'water' && waterQuestions && waterQuestions.length > 0 &&
+                    waterQuestions.map((callbackfn, id) => {
+                        const firstQuestion = 0
+
+                        if (id === firstQuestion + 1 && !waterAnswers[firstQuestion][1]) {
+                            return (<></>)
+                        }
+                        if (id === firstQuestion + 2 && !waterAnswers[firstQuestion][1]) {
+                            return (<></>)
+                        }
+                        return (
+                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                <View key={'water_' + id} style={{ flexDirection: 'column' }}>
+                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                        {waterQuestions[id].description}
+                                    </Text>
+                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                        {Object.keys(waterQuestions[id].options).sort().map((optionKey, idx) => {
+                                            const viewElements = [];
+                                            if (idx === 0 || idx === Math.round(Object.keys(waterQuestions[id].options).length / 2)) {
+                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(waterQuestions[id].options).length / 2) : i < Object.keys(waterQuestions[id].options).length; i++) {
+                                                    const key = Object.keys(waterQuestions[id].options).sort()[i]
+                                                    const option = waterQuestions[id].options[key]
+                                                    viewElements.push(
+                                                        <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                            const updatedAnswers = [...waterAnswers];
+                                                            const falseAnswers = updatedAnswers[id].map(() => false);
+
+                                                            if (!updatedAnswers[id][i]) {
+                                                                falseAnswers[i] = true;
+                                                            }
+
+                                                            updatedAnswers[id] = falseAnswers;
+                                                            setWaterAnswers(updatedAnswers);
+                                                        }}>
+                                                            <OptionButton_v1 text={key} color={waterAnswers[id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                        </Pressable>
+                                                    )
+                                                }
+                                                return (
+                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                        {viewElements}
+                                                    </View>)
+                                            } else {
+                                                <></>
+                                            }
+                                        })}
+                                    </View>
+                                </View>
+                            </View>
+                        )
+                    })}
+
+                <View style={[styles.doubleButtonsView, { paddingBottom: CONST.layoutPaddingVertical / 2 }]}>
+                    <Pressable
+                        onPress={() => {
+                           
+                        }}
+                        style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
+                        <PrimaryButton_v2 text={" Guardar "} />
+                    </Pressable>
+                    <Pressable
+                        onPress={() => {
+                            // submitAnswers(toShow)
+                        }}
+                        style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
+                        <PrimaryButton_v1 text={"Submeter"} />
+                    </Pressable>
+                </View>
             </ScrollView>
-            <View style={[styles.doubleButtonsView, { paddingBottom: CONST.layoutPaddingVertical }]}>
-                <Pressable
-                    onPress={() => {
-                        // {
-                        //     previousCategory !== "None" ?
-                        //         navigation.navigate("Category", {
-                        //             'userID': userID,
-                        //             "categories": categories,
-                        //             "categoriesColors": categoriesColors,
-                        //             "colorToShow": previousColor,
-                        //             "toShow": previousCategory
-                        //         })
-                        //         :
-                        //         navigation.navigate("Configuration", { 'userID': userID })
-                        // }
-                    }}
-                    style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
-                    <PrimaryButton_v2 text={"Cancelar"} />
-                </Pressable>
-                <Pressable
-                    onPress={() => {
-                        // submitAnswers(toShow)
-                    }}
-                    style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
-                    <PrimaryButton_v1 text={"Submeter"} />
-                </Pressable>
-            </View>
-        </SafeAreaProvider>
+        </SafeAreaProvider >
     )
 }

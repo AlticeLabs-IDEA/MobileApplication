@@ -72,6 +72,7 @@ export default function RegisterScreen({ navigation }) {
                     points: 0,
                     active_categories: { 'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0 },
                     points_categories: { 'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0 },
+                    memorized_answers: { 'air' : [], 'energy': [], 'movement': [], 'recycle': [], 'water': []},
                     admin: false,
                     authorized: false,
                 });

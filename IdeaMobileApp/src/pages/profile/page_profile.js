@@ -729,17 +729,17 @@ export default function Profile({ route, navigation }) {
           <Text style={styles.normalText}>
             <Text style={{ fontFamily: 'K2D-SemiBold' }}>Editar áreas desafiadas {"\n"}{"\n"}</Text>
             Nesta secção podes editar as áreas a que desejas ser desafiado! {"\n"}
-            Para tal, clica no ícone das áreas que queres. {"\n"}
-            Através de um clique prolongado, podes ainda alterar o tom da área.
+            Para tal, clica prolongadamente no ícone das áreas que queres. 
+            Através de um clique rápido, podes ainda alterar o tom da área.
           </Text>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Pressable
-              onLongPress={() => {
+              onPress={() => {
                 setAreaToShow("air")
                 setModalVisible(true)
                 setAirCategory(true)
               }}
-              onPress={() => {
+              onLongPress={() => {
                 activateCategory("air")
               }}>
               <AirIcon color={airCategory ? ((colorAir == 0 || colorAir == 1) ? CONST.softPurple :
@@ -747,12 +747,12 @@ export default function Profile({ route, navigation }) {
                 : CONST.secondaryGray} />
             </Pressable>
             <Pressable
-              onLongPress={() => {
+              onPress={() => {
                 setAreaToShow("energy")
                 setModalVisible(true)
                 setEnergyCategory(true)
               }}
-              onPress={() => {
+              onLongPress={() => {
                 activateCategory("energy")
               }}>
               <EnergyIcon color={energyCategory ? ((colorEnergy == 0 || colorEnergy == 1) ? CONST.softYellow :
@@ -760,12 +760,12 @@ export default function Profile({ route, navigation }) {
                 : CONST.secondaryGray} />
             </Pressable>
             <Pressable
-              onLongPress={() => {
+              onPress={() => {
                 setAreaToShow("movement")
                 setModalVisible(true)
                 setMovementCategory(true)
               }}
-              onPress={() => {
+              onLongPress={() => {
                 activateCategory("movement")
               }}>
               <MovementIcon color={movementCategory ? ((colorMovement == 0 || colorMovement == 1) ? CONST.softPink :
@@ -773,12 +773,12 @@ export default function Profile({ route, navigation }) {
                 : CONST.secondaryGray} />
             </Pressable>
             <Pressable
-              onLongPress={() => {
+              onPress={() => {
                 setAreaToShow("recycle")
                 setModalVisible(true)
                 setRecycleCategory(true)
               }}
-              onPress={() => {
+              onLongPress={() => {
                 activateCategory("recycle")
               }}>
               <RecycleIcon color={recycleCategory ? ((colorRecycle == 0 || colorRecycle == 1) ? CONST.softGreen :
@@ -786,12 +786,12 @@ export default function Profile({ route, navigation }) {
                 : CONST.secondaryGray} />
             </Pressable>
             <Pressable
-              onLongPress={() => {
+              onPress={() => {
                 setAreaToShow("water")
                 setModalVisible(true)
                 setWaterCategory(true)
               }}
-              onPress={() => {
+              onLongPress={() => {
                 activateCategory("water")
               }}>
               <WaterIcon color={waterCategory ? ((colorWater == 0 || colorWater == 1) ? CONST.softBlue :

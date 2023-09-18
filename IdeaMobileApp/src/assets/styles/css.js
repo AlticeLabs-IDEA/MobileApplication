@@ -115,19 +115,22 @@ export const styles = StyleSheet.create({
     optionButton_v1: {
         backgroundColor: 'transparent',
         borderRadius: CONST.buttonBorderRadius,
-        paddingLeft: CONST.buttonPaddingLateral - 3,
-        paddingRight: CONST.buttonPaddingLateral - 3,
+        paddingLeft: CONST.buttonPaddingLateral - 6,
+        paddingRight: CONST.buttonPaddingLateral - 6,
         paddingTop: CONST.buttonPaddingVertical - 3,
         paddingBottom: CONST.buttonPaddingVertical - 3,
         borderWidth: 1,
         justifyContent: 'center',
         flexDirection: 'row',
         borderStyle: 'solid',
+        flexWrap: 'wrap'
+
     },
     optionButtonText_v1: {
-        fontSize: CONST.normalText,
+        fontSize: CONST.subText,
         fontFamily: "K2D-SemiBold",
         letterSpacing: 0.5,
+        flexWrap: 'wrap'
     },
    
     addButton: {

@@ -145,12 +145,12 @@ export default function SettingsScreen({ route, navigation }) {
               <View style={styles.centeredView}>
                 <View style={styles.modalView}>
                   <View style={{ flexDirection: 'column', width: '100%' }}>
-                  <Pressable
-              style={{  justifyContent: 'flex-end', flexDirection: 'row', paddingLeft: 10, paddingRight: 10 }}
-              onPress={() => setModalVisible(!modalVisible)}
-            >
-              <FontAwesome name="close" size={CONST.heading6} color={CONST.mainGray} />
-            </Pressable>
+                    <Pressable
+                      style={{ justifyContent: 'flex-end', flexDirection: 'row', paddingLeft: 10, paddingRight: 10 }}
+                      onPress={() => setModalVisible(!modalVisible)}
+                    >
+                      <FontAwesome name="close" size={CONST.heading6} color={CONST.mainGray} />
+                    </Pressable>
                     <Text style={styles.normalText}>
                       Introduza o seu e-mail para concluir a ação.
                     </Text>
@@ -163,8 +163,8 @@ export default function SettingsScreen({ route, navigation }) {
                     />
                   </View>
                   <Pressable
-                    style={{marginTop: CONST.inputFieldMargin}}
-                    onPress={() => { 
+                    style={{ marginTop: CONST.inputFieldMargin }}
+                    onPress={() => {
                       let auth = getAuth()
                       let email_user = auth.currentUser.email
                       if (email_user !== deleteAccount.trim().toLowerCase()) {
