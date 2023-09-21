@@ -110,6 +110,7 @@ export default function Profile({ route, navigation }) {
   }, [userName, userDep, userDepName, userEmail])
 
   const activateCategory = async (category) => {
+    setLoading(true)
     const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
 
     switch (category) {
@@ -182,12 +183,12 @@ export default function Profile({ route, navigation }) {
 
     const doc = await firestore_user_doc.get();
     storeData(doc.data())
-
+    setLoading(false)
   }
 
   const updateUserCollection = async (category, value) => {
+    setLoading(true)
     const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
-
     switch (category) {
       case "air":
         firestore_user_doc.update({ 'active_categories.air': value })
@@ -208,6 +209,7 @@ export default function Profile({ route, navigation }) {
 
     const doc = await firestore_user_doc.get();
     storeData(doc.data())
+    setLoading(false)
   }
 
   const auth = getAuth();
@@ -270,6 +272,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorAir(1)
                     updateUserCollection('air', 1)
+                    setTextToast('Categoria cimatização ativada!')
                   }}>
                     <AirIcon
                       color={
@@ -282,6 +285,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorAir(2)
                     updateUserCollection('air', 2)
+                    setTextToast('Categoria cimatização ativada!')
                   }}>
                     <AirIcon
                       color={
@@ -294,6 +298,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorAir(3)
                     updateUserCollection('air', 3)
+                    setTextToast('Categoria cimatização ativada!')
                   }}>
                     <AirIcon
                       color={
@@ -306,6 +311,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorAir(4)
                     updateUserCollection('air', 4)
+                    setTextToast('Categoria cimatização ativada!')
                   }}>
                     <AirIcon
                       color={
@@ -353,6 +359,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorEnergy(1)
                     updateUserCollection('energy', 1)
+                    setTextToast('Categoria energia elétrica ativada!')
                   }}>
                     <EnergyIcon
                       color={
@@ -365,6 +372,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorEnergy(2)
                     updateUserCollection('energy', 2)
+                    setTextToast('Categoria energia elétrica ativada!')
                   }}>
                     <EnergyIcon
                       color={
@@ -377,6 +385,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorEnergy(3)
                     updateUserCollection('energy', 3)
+                    setTextToast('Categoria energia elétrica ativada!')
                   }}>
                     <EnergyIcon
                       color={
@@ -389,6 +398,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorEnergy(4)
                     updateUserCollection('energy', 4)
+                    setTextToast('Categoria energia elétrica ativada!')
                   }}>
                     <EnergyIcon
                       color={
@@ -436,6 +446,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorMovement(1)
                     updateUserCollection('movement', 1)
+                    setTextToast('Categoria mobilidade ativada!')
                   }}>
                     <MovementIcon
                       color={
@@ -448,6 +459,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorMovement(2)
                     updateUserCollection('movement', 2)
+                    setTextToast('Categoria mobilidade ativada!')
                   }}>
                     <MovementIcon
                       color={
@@ -460,6 +472,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorMovement(3)
                     updateUserCollection('movement', 3)
+                    setTextToast('Categoria mobilidade ativada!')
                   }}>
                     <MovementIcon
                       color={
@@ -472,6 +485,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorMovement(4)
                     updateUserCollection('movement', 4)
+                    setTextToast('Categoria mobilidade ativada!')
                   }}>
                     <MovementIcon
                       color={
@@ -519,6 +533,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorRecycle(1)
                     updateUserCollection('recycle', 1)
+                    setTextToast('Categoria reciclagem ativada!')
                   }}>
                     <RecycleIcon
                       color={
@@ -531,6 +546,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorRecycle(2)
                     updateUserCollection('recycle', 2)
+                    setTextToast('Categoria reciclagem ativada!')
                   }}>
                     <RecycleIcon
                       color={
@@ -543,6 +559,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorRecycle(3)
                     updateUserCollection('recycle', 3)
+                    setTextToast('Categoria reciclagem ativada!')
                   }}>
                     <RecycleIcon
                       color={
@@ -555,6 +572,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorRecycle(4)
                     updateUserCollection('recycle', 4)
+                    setTextToast('Categoria reciclagem ativada!')
                   }}>
                     <RecycleIcon
                       color={
@@ -602,6 +620,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorWater(1)
                     updateUserCollection('water', 1)
+                    setTextToast('Categoria recursos hídricos ativada!')
                   }}>
                     <WaterIcon
                       color={
@@ -614,6 +633,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorWater(2)
                     updateUserCollection('water', 2)
+                    setTextToast('Categoria recursos hídricos ativada!')
                   }}>
                     <WaterIcon
                       color={
@@ -626,6 +646,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorWater(3)
                     updateUserCollection('water', 3)
+                    setTextToast('Categoria recursos hídricos ativada!')
                   }}>
                     <WaterIcon
                       color={
@@ -638,6 +659,7 @@ export default function Profile({ route, navigation }) {
                   <Pressable onPress={() => {
                     setColorWater(4)
                     updateUserCollection('water', 4)
+                    setTextToast('Categoria recursos hídricos ativada!')
                   }}>
                     <WaterIcon
                       color={

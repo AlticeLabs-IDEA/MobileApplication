@@ -27,6 +27,7 @@ export default function AddActivitiesScreen({ navigation }) {
     const [categories, setCategories] = useState({})
     const [toShow, setToShow] = useState('none')
     const [modalVisible, setModalVisible] = useState(false);
+    const [modalWithoutCat, setModalWithoutCat] = useState(false)
     const [category, setCategory] = useState("")
     const [airQuestions, setAirQuestions] = useState([])
     const [airAnswers, setAirAnswers] = useState([])
@@ -41,15 +42,8 @@ export default function AddActivitiesScreen({ navigation }) {
     const [initialQuestions, setInitialQuestions] = useState({})
     const [memorizedAnswers, setMemorizedAnswers] = useState({})
 
-
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
-
-    // * saber a distância do utilizador ao trabalho
-
-    const removeFromArray = (element, array) => {
-        return (array.filter(item => item !== element));
-    }
 
     // * function to get data from async storage
     const getData = async () => {
@@ -66,6 +60,7 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to get the categories active and the first category to show
     const getActiveCategories = (doc) => {
+        console.log("** ENTREI NO GET ACTIVE CATEGORIES")
         setInitialQuestions(doc.initial_questions)
         setMemorizedAnswers(doc.memorized_answers)
         setCategories(doc.active_categories)
@@ -87,66 +82,105 @@ export default function AddActivitiesScreen({ navigation }) {
             setToShow('water')
             setCategory('de Recursos Hídricos')
         }
+        console.log("categorias ativas", Object.values(doc.active_categories))
+        if (Object.values(doc.active_categories).includes(1) || Object.values(doc.active_categories).includes(2) || Object.values(doc.active_categories).includes(3) || Object.values(doc.active_categories).includes(4)) {
+            getQuestions(doc)
+        } else {
+            console.log("Não há")
+            setModalWithoutCat(true)
+        }
     }
 
-    // * function to get the questions from database
-    const getQuestions = () => {
-        const firestore_questions = firebase.firestore().collection("questions");
-        firestore_questions.get().then((querySnapshot) => {
-            const tempDoc = querySnapshot.docs.map((doc) => doc.data());
+    const answersInAsyncStorage = async () => {
+        const formattedDate = getCurrentDate();
+        try {
+            const answers = await AsyncStorage.getItem(formattedDate);
+            return (answers != null ? JSON.parse(answers) : null);
+        } catch (e) {
+            console.log(e.message)
+            return null
+        }
+    }
 
-            const filteredAirData = (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id));
-            const initialAirAnswers = filteredAirData.map((data) => {
-                let airTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
-                return airTemp;
+    // * function to get the questions from database and check if answers are saved before or not, in case async storage doesn't have the information, we will generate
+    const getQuestions = async (doc) => {
+        try {
+            const answersAsync = await answersInAsyncStorage()
+
+            const firestore_questions = firebase.firestore().collection("questions");
+            firestore_questions.get().then((querySnapshot) => {
+                const tempDoc = querySnapshot.docs.map((doc) => doc.data());
+
+                const filteredAirData = (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id));
+                const filteredEnergyData = (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id));
+                const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
+                const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
+                const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
+
+                console.log(answersAsync)
+
+                let initialAirAnswers;
+                let deviceAnswers = {};
+                let initialMovementAnswers;
+                let initialRecycleAnswers;
+                let initialWaterAnswers;
+
+
+                if (answersAsync === null) {
+                    initialAirAnswers = filteredAirData.map((data) => {
+                        let airTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                        return airTemp;
+                    });
+                    if (doc.initial_questions.devices.length > 0) {
+                        doc.initial_questions.devices.forEach((device) => {
+                            const questionsWithDevice = filteredEnergyData.filter((question) =>
+                                question.field.includes(device)
+                            );
+                            const deviceAnswersArray = questionsWithDevice.map((data) =>
+                                Array.from({ length: Object.keys(data.options).length }, () => false)
+                            );
+                            deviceAnswers[device] = deviceAnswersArray;
+                        });
+                    }
+                    deviceAnswers['geral'] = [false, false, false]
+                    initialMovementAnswers = filteredMovementData.map((data) => {
+                        let movementTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                        return movementTemp;
+                    });
+                    initialRecycleAnswers = filteredRecycleData.map((data) => {
+                        let recycleTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                        return recycleTemp;
+                    });
+                    initialWaterAnswers = filteredWaterData.map((data) => {
+                        let waterTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
+                        return waterTemp;
+                    });
+                } else {
+                    initialAirAnswers = answersAsync[0]
+                    deviceAnswers = answersAsync[1]
+                    initialMovementAnswers = answersAsync[2]
+                    initialRecycleAnswers = answersAsync[3]
+                    initialWaterAnswers = answersAsync[4]
+
+                }
+                setAirAnswers(initialAirAnswers);
+                setAirQuestions(filteredAirData);
+                setEnergyAnswers(deviceAnswers);
+                setEnergyQuestions(filteredEnergyData)
+                setMovementAnswers(initialMovementAnswers);
+                setMovementQuestions(filteredMovementData);
+                setWaterAnswers(initialWaterAnswers);
+                setWaterQuestions(filteredWaterData)
+                setRecycleAnswers(initialRecycleAnswers);
+                setRecycleQuestions(filteredRecycleData)
             });
-            setAirAnswers(initialAirAnswers);
-            setAirQuestions(filteredAirData);
+        }
+        catch (error) {
+            console.log(error)
+        } finally {
+            setLoadingBolt(false)
 
-            const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
-            const initialMovementAnswers = filteredMovementData.map((data) => {
-                let movementTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
-                return movementTemp;
-            });
-            setMovementAnswers(initialMovementAnswers);
-            setMovementQuestions(filteredMovementData);
-
-            const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
-            const initialWaterAnswers = filteredWaterData.map((data) => {
-                let waterTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
-                return waterTemp;
-            });
-            setWaterAnswers(initialWaterAnswers);
-            setWaterQuestions(filteredWaterData)
-
-            const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
-            const initialRecycleAnswers = filteredRecycleData.map((data) => {
-                let recycleTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
-                return recycleTemp;
-            });
-            setRecycleAnswers(initialRecycleAnswers);
-            setRecycleQuestions(filteredRecycleData)
-
-            const filteredEnergyData = (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id));
-            const deviceAnswers = {'geral': [false, false, false]};
-
-            energyDevices.forEach((device) => {
-                // Filtrar as questões que têm o dispositivo no campo 'field'
-                const questionsWithDevice = filteredEnergyData.filter((question) =>
-                    question.field.includes(device)
-                );
-                // Criar um array de falses para cada pergunta encontrada
-                const deviceAnswersArray = questionsWithDevice.map((data) =>
-                    Array.from({ length: Object.keys(data.options).length }, () => false)
-                );
-                // Adicionar o array de falses ao objeto com o nome do dispositivo como chave
-                deviceAnswers[device] = deviceAnswersArray;
-            });
-            setEnergyAnswers(deviceAnswers);
-            setEnergyQuestions(filteredEnergyData)
-
-        });
-        setLoadingBolt(false)
+        }
     }
 
     const heightAnimated = useSharedValue(250);
@@ -282,39 +316,77 @@ export default function AddActivitiesScreen({ navigation }) {
         }
     }
 
-    // * function to send 
-    const submitAnswers = (value) => {
+    // * function to check if user doesn't select two sub-options -> it's a filter function!
+    const checkRules = () => {
+        // ? there is some questions that activate sub questions but user can only submit one path
+        // air first questions activate 2 sub questions:
+        if (!airAnswers[0][0] && !airAnswers[0][1]) {
+            airAnswers[1] = [false, false]
+            airAnswers[2] = [false, false]
+        }
+        else if (airAnswers[0][0]) {
+            airAnswers[1] = [false, false]
+        } else {
+            airAnswers[2] = [false, false]
+        }
+        // recycle second question activate a sub question
+        if (recycleAnswers[1][0]) {
+            recycleAnswers[2] = [false, false, false]
+        }
+        // recycle fourth question activate a sub question
+        if (!recycleAnswers[3][1]) {
+            recycleAnswers[4] = [false, false]
+        }
+        // water first question activate two sub questions
+        if (waterAnswers[0][0]) {
+            waterAnswers[1] = [false, false]
+            waterAnswers[2] = [false, false]
+        }
     }
 
+
+    // * function to send data to firebase collection answers
+    const submitAnswers = () => {
+        checkRules()
+    }
+
+    // TODO IN THIS PAGE:
+    // CHECK RULES OF ENERGY CATEGORY
+    // LOGIC OF FILTER QUESTIONS
+    // MEMORIZED QUESTIONS
+    // CHANGE RANGE
+
     // * function to save data in localStorage to edit later
-    const saveData = () => {
+    const saveData = async () => {
         const formattedDate = getCurrentDate();
         // * we save in localstorage the par key-value where key is the date and the value is a dict where key is the category and value the answers
-        // TODO: IMPLEMENT
+        console.log(formattedDate)
+        try {
+            await AsyncStorage.setItem(formattedDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
+        } catch (e) {
+            console.log(e.message)
+        }
     }
 
     // * function to get the current date in format day/month/year
     const getCurrentDate = () => {
         const today = new Date();
         const day = today.getDate();
-        const month = today.getMonth() + 1; 
+        const month = today.getMonth() + 1;
         const year = today.getFullYear();
         const formattedDate = `${day}/${month}/${year}`;
         return formattedDate;
-      }
+    }
 
     useFocusEffect(
         React.useCallback(() => {
+            setLoadingBolt(true)
             getData()
         }, [])
     );
 
     useEffect(() => {
-    }, [toShow, airAnswers, movementAnswers])
-
-    useEffect(() => {
-        getQuestions()
-    }, [])
+    }, [toShow, airAnswers, movementAnswers, energyAnswers, recycleAnswers, waterAnswers, loadingBolt, modalWithoutCat])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer, { paddingTop: 0 }]}>
@@ -361,6 +433,31 @@ export default function AddActivitiesScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalWithoutCat}
+                onRequestClose={() => {
+                    setModalWithoutCat(!modalWithoutCat);
+                }}>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.normalText}>
+                                <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainRed }}>Ups!</Text>
+                                {"\n"} {"\n"}Ainda não tens nenhuma categoria ativa! Ativa primeiro as categorias para preencheres o relatório de registos.
+                            </Text>
+                        </View>
+                        <Pressable
+                            onPress={() => {
+                                setModalWithoutCat(!modalWithoutCat)
+                                navigation.navigate("ProfileTab")
+                            }} >
+                            <PrimaryButton_v1 text={"Ativar"} />
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
             <AnimatedSvg
                 width={CONST.screenWidth}
                 height={heightAnimated.value}
@@ -385,41 +482,71 @@ export default function AddActivitiesScreen({ navigation }) {
                 </Text>
             </AnimatedSvg>
             <View style={{ positio: 'relative', top: -CONST.boxCardMargin, flexDirection: 'row', justifyContent: 'space-between', paddingLeft: CONST.layoutPaddingLateral, paddingRight: CONST.layoutPaddingLateral }}>
-                <Pressable
-                    onPress={() => {
-                        setToShow('air')
-                        setCategory('de Climatização')
-                    }}>
-                    <AirIcon color={(categories['air'] === 0 || toShow !== 'air') ? CONST.secondaryGray : whichColor(categories['air'], 'air')} />
-                </Pressable>
-                <Pressable
-                    onPress={() => {
-                        setToShow('energy')
-                        setCategory('de Energia Elétrica')
-                    }}>
-                    <EnergyIcon color={(categories['energy'] === 0 || toShow !== 'energy') ? CONST.secondaryGray : whichColor(categories['energy'], 'energy')} />
-                </Pressable>
-                <Pressable
-                    onPress={() => {
-                        setToShow('movement')
-                        setCategory('de Mobilidade')
-                    }}>
-                    <MovementIcon color={(categories['movement'] === 0 || toShow !== 'movement') ? CONST.secondaryGray : whichColor(categories['movement'], 'movement')} />
-                </Pressable>
-                <Pressable
-                    onPress={() => {
-                        setToShow('recycle')
-                        setCategory('de Reciclagem')
-                    }}>
-                    <RecycleIcon color={(categories['recycle'] === 0 || toShow !== 'recycle') ? CONST.secondaryGray : whichColor(categories['recycle'], 'recycle')} />
-                </Pressable>
-                <Pressable
-                    onPress={() => {
-                        setToShow('water')
-                        setCategory('de Recursos Hídricos')
-                    }}>
-                    <WaterIcon color={(categories['water'] === 0 || toShow !== 'water') ? CONST.secondaryGray : whichColor(categories['water'], 'water')} />
-                </Pressable>
+                {categories['air'] !== 0 ?
+                    <Pressable
+                        onPress={() => {
+                            setToShow('air')
+                            setCategory('de Climatização')
+                        }}>
+                        <AirIcon color={(categories['air'] === 0 || toShow !== 'air') ? CONST.secondaryGray : whichColor(categories['air'], 'air')} />
+                    </Pressable>
+                    :
+                    <View>
+                        <AirIcon color={(categories['air'] === 0 || toShow !== 'air') ? CONST.secondaryGray : whichColor(categories['air'], 'air')} />
+                    </View>
+                }
+                {categories['energy'] !== 0 ?
+                    <Pressable
+                        onPress={() => {
+                            setToShow('energy')
+                            setCategory('de Energia Elétrica')
+                        }}>
+                        <EnergyIcon color={(categories['energy'] === 0 || toShow !== 'energy') ? CONST.secondaryGray : whichColor(categories['energy'], 'energy')} />
+                    </Pressable>
+                    :
+                    <View>
+                        <EnergyIcon color={(categories['energy'] === 0 || toShow !== 'energy') ? CONST.secondaryGray : whichColor(categories['energy'], 'energy')} />
+                    </View>
+                }
+                {categories['movement'] !== 0 ?
+                    <Pressable
+                        onPress={() => {
+                            setToShow('movement')
+                            setCategory('de Mobilidade')
+                        }}>
+                        <MovementIcon color={(categories['movement'] === 0 || toShow !== 'movement') ? CONST.secondaryGray : whichColor(categories['movement'], 'movement')} />
+                    </Pressable>
+                    :
+                    <View>
+                        <MovementIcon color={(categories['movement'] === 0 || toShow !== 'movement') ? CONST.secondaryGray : whichColor(categories['movement'], 'movement')} />
+                    </View>
+                }
+                {categories['recycle'] !== 0 ?
+                    <Pressable
+                        onPress={() => {
+                            setToShow('recycle')
+                            setCategory('de Reciclagem')
+                        }}>
+                        <RecycleIcon color={(categories['recycle'] === 0 || toShow !== 'recycle') ? CONST.secondaryGray : whichColor(categories['recycle'], 'recycle')} />
+                    </Pressable>
+                    :
+                    <View>
+                        <RecycleIcon color={(categories['recycle'] === 0 || toShow !== 'recycle') ? CONST.secondaryGray : whichColor(categories['recycle'], 'recycle')} />
+                    </View>
+                }
+                {categories['water'] !== 0 ?
+                    <Pressable
+                        onPress={() => {
+                            setToShow('water')
+                            setCategory('de Recursos Hídricos')
+                        }}>
+                        <WaterIcon color={(categories['water'] === 0 || toShow !== 'water') ? CONST.secondaryGray : whichColor(categories['water'], 'water')} />
+                    </Pressable>
+                    :
+                    <View>
+                        <WaterIcon color={(categories['water'] === 0 || toShow !== 'water') ? CONST.secondaryGray : whichColor(categories['water'], 'water')} />
+                    </View>
+                }
             </View>
             <ScrollView
                 showsVerticalScrollIndicator={false}>
@@ -427,10 +554,10 @@ export default function AddActivitiesScreen({ navigation }) {
                     airQuestions.map((callbackfn, id) => {
                         const firstQuestion = 0
                         if (id === firstQuestion + 1 && !airAnswers[firstQuestion][1]) {
-                            return (<></>)
+                            return (<View key={'air_' + id}></View>)
                         }
                         if (id === firstQuestion + 2 && !airAnswers[firstQuestion][0]) {
-                            return (<></>)
+                            return (<View key={'air_' + id}></View>)
                         }
                         return (
                             <View style={[styles.cardBox, { marginBottom: 20 }]}>
@@ -466,7 +593,7 @@ export default function AddActivitiesScreen({ navigation }) {
                                                         {viewElements}
                                                     </View>)
                                             } else {
-                                                <></>
+                                                <View key={'air_' + id}></View>
                                             }
                                         })}
                                     </View>
@@ -475,7 +602,7 @@ export default function AddActivitiesScreen({ navigation }) {
                         )
                     })}
                 {toShow === 'energy' && energyQuestions && energyQuestions.length > 0 ?
-                    <>
+                    <View>
                         <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>GERAL</Text>
                         <View style={[styles.cardBox, { marginBottom: 20 }]}>
                             <View style={{ flexDirection: 'column' }}>
@@ -491,7 +618,7 @@ export default function AddActivitiesScreen({ navigation }) {
                                                 const option = energyQuestions[0].options[key]
                                                 viewElements.push(
                                                     <Pressable style={{ marginBottom: 10 }} onPress={() => {
-                                                        const updatedAnswers = {...energyAnswers};
+                                                        const updatedAnswers = { ...energyAnswers };
                                                         const falseAnswers = updatedAnswers['geral'].map(() => false);
 
                                                         if (!updatedAnswers['geral'][i]) {
@@ -510,19 +637,19 @@ export default function AddActivitiesScreen({ navigation }) {
                                                     {viewElements}
                                                 </View>)
                                         } else {
-                                            <></>
+                                            <View></View>
                                         }
                                     })}
                                 </View>
                             </View>
                         </View>
-                        {energyDevices.map((callbackfn, index) => {
+                        {energyDevices && energyDevices.length > 0 && energyDevices.map((callbackfn, index) => {
                             return (
-                                <>
+                                <View>
                                     <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>{whichDevice(energyDevices[index])}</Text>
                                     {energyQuestions.filter(element => element.field.includes(energyDevices[index])).map((callbackfn, id) => {
-                                        if (id != 0 && energyAnswers[energyDevices[index]][0][0]) {
-                                            return (<></>)
+                                        if (id != 0 && !energyAnswers[energyDevices[index]][0][1]) {
+                                            return (<View key={'energy_' + id}></View>)
                                         }
                                         return (
                                             <View style={[styles.cardBox, { marginBottom: 20 }]}>
@@ -541,10 +668,10 @@ export default function AddActivitiesScreen({ navigation }) {
                                                                         <Pressable style={{ marginBottom: 10 }} onPress={() => {
                                                                             const updatedAnswers = { ...energyAnswers };
                                                                             const currentDeviceAnswers = updatedAnswers[energyDevices[index]][id];
-                                                                        
+
                                                                             // Invertir a resposta para o índice 'i'
                                                                             currentDeviceAnswers[i] = !currentDeviceAnswers[i];
-                                                                        
+
                                                                             for (let j = 0; j < currentDeviceAnswers.length; j++) {
                                                                                 if (j !== i) {
                                                                                     currentDeviceAnswers[j] = false;
@@ -562,7 +689,7 @@ export default function AddActivitiesScreen({ navigation }) {
                                                                         {viewElements}
                                                                     </View>)
                                                             } else {
-                                                                <></>
+                                                                <View key={'energy__' + id}></View>
                                                             }
                                                         })}
                                                     </View>
@@ -570,12 +697,12 @@ export default function AddActivitiesScreen({ navigation }) {
                                             </View>
                                         )
                                     })}
-                                </>
+                                </View>
                             )
-                        })} 
-                    </>
+                        })}
+                    </View>
                     :
-                    <></>
+                    <View></View>
                 }
                 {toShow === 'movement' && movementQuestions && movementQuestions.length > 0 &&
                     movementQuestions.map((callbackfn, id) => (
@@ -612,7 +739,7 @@ export default function AddActivitiesScreen({ navigation }) {
                                                     {viewElements}
                                                 </View>)
                                         } else {
-                                            <></>
+                                            <View key={'movement_' + id}></View>
                                         }
                                     })}
                                 </View>
@@ -625,10 +752,10 @@ export default function AddActivitiesScreen({ navigation }) {
                         const bottleQuestion = 3
 
                         if (id === printerQuestion + 1 && !recycleAnswers[printerQuestion][1]) {
-                            return (<></>)
+                            return (<View key={'recyle_' + id}></View>)
                         }
                         if (id === bottleQuestion + 1 && ((recycleAnswers[bottleQuestion][0] || (recycleAnswers[bottleQuestion][2]) || (!recycleAnswers[bottleQuestion][0] && !recycleAnswers[bottleQuestion][1] && !recycleAnswers[bottleQuestion][2])))) {
-                            return (<></>)
+                            return (<View key={'recyle_' + id}></View>)
                         }
                         return (
                             <View style={[styles.cardBox, { marginBottom: 20 }]}>
@@ -687,10 +814,10 @@ export default function AddActivitiesScreen({ navigation }) {
                         const firstQuestion = 0
 
                         if (id === firstQuestion + 1 && !waterAnswers[firstQuestion][1]) {
-                            return (<></>)
+                            return (<View key={'water_' + id}></View>)
                         }
                         if (id === firstQuestion + 2 && !waterAnswers[firstQuestion][1]) {
-                            return (<></>)
+                            return (<View key={'water_' + id}></View>)
                         }
                         return (
                             <View style={[styles.cardBox, { marginBottom: 20 }]}>
@@ -726,7 +853,7 @@ export default function AddActivitiesScreen({ navigation }) {
                                                         {viewElements}
                                                     </View>)
                                             } else {
-                                                <></>
+                                                <View key={'water_' + id}></View>
                                             }
                                         })}
                                     </View>
@@ -734,23 +861,25 @@ export default function AddActivitiesScreen({ navigation }) {
                             </View>
                         )
                     })}
-
-                <View style={[styles.doubleButtonsView, { paddingBottom: CONST.layoutPaddingVertical / 2 }]}>
-                    <Pressable
-                        onPress={() => {
-                           
-                        }}
-                        style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
-                        <PrimaryButton_v2 text={" Guardar "} />
-                    </Pressable>
-                    <Pressable
-                        onPress={() => {
-                            // submitAnswers(toShow)
-                        }}
-                        style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
-                        <PrimaryButton_v1 text={"Submeter"} />
-                    </Pressable>
-                </View>
+                {modalWithoutCat ? <></> :
+                    <View style={[styles.doubleButtonsView, { paddingBottom: CONST.layoutPaddingVertical / 2 }]}>
+                        <Pressable
+                            onPress={() => {
+                                saveData()
+                                navigation.navigate("Dashboard")
+                            }}
+                            style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
+                            <PrimaryButton_v2 text={" Guardar "} />
+                        </Pressable>
+                        <Pressable
+                            onPress={() => {
+                                submitAnswers()
+                            }}
+                            style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
+                            <PrimaryButton_v1 text={"Submeter"} />
+                        </Pressable>
+                    </View>
+                }
             </ScrollView>
         </SafeAreaProvider >
     )
