@@ -93,7 +93,7 @@ export const layoutPaddingVertical = 60;
 // export const boxPaddingVertical = 30;
 
 // ---- margins ----
-export const titlePageMargin = 40;
+export const titlePageMargin = 20;
 export const titlePageMargin_v2 = 20;
 export const descriptionTextMargin = 40;
 export const inputFieldMargin = 20;

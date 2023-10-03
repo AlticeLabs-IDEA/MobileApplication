@@ -281,61 +281,61 @@ export default function ConfigurationScreen({ navigation }) {
                 <View style={styles.cardBox}>
                     <Text style={styles.normalText}>
                         O primeiro passo é escolheres as áreas a que desejas ser desafiado! {"\n"}
-                        Para tal, clica no ícone das áreas que queres. {"\n"}
-                        Através de um clique prolongado, podes ainda alterar o tom da área.
+                        Para tal, clica prolongadamente no ícone das áreas que queres. 
+                        Através de um clique rápido, podes ainda alterar o tom da área.
                     </Text>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                         <Pressable
-                            onLongPress={() => {
+                            onPress={() => {
                                 setAreaToShow("air")
                                 setModalVisible(true)
                                 setAirCategory(true)
                             }}
-                            onPress={() => activateCategory("air")}>
+                            onLongPress={() => activateCategory("air")}>
                             <AirIcon color={airCategory ? ((colorAir == 0 || colorAir == 1) ? CONST.softPurple :
                                 colorAir == 2 ? CONST.purple : colorAir == 3 ? CONST.grayishPurple : CONST.darkPurple)
                                 : CONST.secondaryGray} />
                         </Pressable>
                         <Pressable
-                            onLongPress={() => {
+                            onPress={() => {
                                 setAreaToShow("energy")
                                 setModalVisible(true)
                                 setEnergyCategory(true)
                             }}
-                            onPress={() => activateCategory("energy")}>
+                            onLongPress={() => activateCategory("energy")}>
                             <EnergyIcon color={energyCategory ? ((colorEnergy == 0 || colorEnergy == 1) ? CONST.softYellow :
                                 colorEnergy == 2 ? CONST.yellow : colorEnergy == 3 ? CONST.grayishYellow : CONST.darkYellow)
                                 : CONST.secondaryGray} />
                         </Pressable>
                         <Pressable
-                            onLongPress={() => {
+                            onPress={() => {
                                 setAreaToShow("movement")
                                 setModalVisible(true)
                                 setMovementCategory(true)
                             }}
-                            onPress={() => { activateCategory("movement") }}>
+                            onLongPress={() => { activateCategory("movement") }}>
                             <MovementIcon color={movementCategory ? ((colorMovement == 0 || colorMovement == 1) ? CONST.softPink :
                                 colorMovement == 2 ? CONST.pink : colorMovement == 3 ? CONST.grayishPink : CONST.darkPink)
                                 : CONST.secondaryGray} />
                         </Pressable>
                         <Pressable
-                            onLongPress={() => {
+                            onPress={() => {
                                 setAreaToShow("recycle")
                                 setModalVisible(true)
                                 setRecycleCategory(true)
                             }}
-                            onPress={() => activateCategory("recycle")}>
+                            onLongPress={() => activateCategory("recycle")}>
                             <RecycleIcon color={recycleCategory ? ((colorRecycle == 0 || colorRecycle == 1) ? CONST.softGreen :
                                 colorRecycle == 2 ? CONST.green : colorRecycle == 3 ? CONST.grayishGreen : CONST.darkGreen)
                                 : CONST.secondaryGray} />
                         </Pressable>
                         <Pressable
-                            onLongPress={() => {
+                            onPress={() => {
                                 setAreaToShow("water")
                                 setModalVisible(true)
                                 setWaterCategory(true)
                             }}
-                            onPress={() => activateCategory("water")}>
+                            onLongPress={() => activateCategory("water")}>
                             <WaterIcon color={waterCategory ? ((colorWater == 0 || colorWater == 1) ? CONST.softBlue :
                                 colorWater == 2 ? CONST.blue : colorWater == 3 ? CONST.grayishBlue : CONST.darkBlue)
                                 : CONST.secondaryGray} />

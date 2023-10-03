@@ -520,13 +520,13 @@ export default function CategoryScreen({ route, navigation }) {
                                                 <Pressable
                                                     style={{ marginBottom: 10 }}
                                                     onPress={() => {
-                                                        if (energyDevices.includes('a')) {
-                                                            setEnergyDevices(removeFromArray('a', energyDevices))
+                                                        if (energyDevices.includes('heater')) {
+                                                            setEnergyDevices(removeFromArray('heater', energyDevices))
                                                         } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'a'])
+                                                            setEnergyDevices(energyDevices => [...energyDevices, 'heater'])
                                                         }
                                                     }}>
-                                                    <OptionButton_v1 text={'Aquecedor'} color={energyDevices.includes('a') ? colorCategory : CONST.secondaryGray} />
+                                                    <OptionButton_v1 text={'Aquecedor'} color={energyDevices.includes('heater') ? colorCategory : CONST.secondaryGray} />
                                                 </Pressable>
                                                 <Pressable
                                                     style={{ marginBottom: 10 }}
@@ -643,13 +643,13 @@ export default function CategoryScreen({ route, navigation }) {
                                                 <Pressable
                                                     style={{ marginBottom: 10 }}
                                                     onPress={() => {
-                                                        if (energyDevices.includes('v')) {
-                                                            setEnergyDevices(removeFromArray('v', energyDevices))
+                                                        if (energyDevices.includes('fan')) {
+                                                            setEnergyDevices(removeFromArray('fan', energyDevices))
                                                         } else {
-                                                            setEnergyDevices(energyDevices => [...energyDevices, 'v'])
+                                                            setEnergyDevices(energyDevices => [...energyDevices, 'fan'])
                                                         }
                                                     }}>
-                                                    <OptionButton_v1 text={"Ventoinha"} color={energyDevices.includes('v') ? colorCategory : CONST.secondaryGray} />
+                                                    <OptionButton_v1 text={"Ventoinha"} color={energyDevices.includes('fan') ? colorCategory : CONST.secondaryGray} />
                                                 </Pressable>
                                             </View>
                                         </View>
@@ -828,13 +828,13 @@ export default function CategoryScreen({ route, navigation }) {
                                                         <Pressable
                                                             style={{ marginBottom: 10 }}
                                                             onPress={() => {
-                                                                if (recycleMaterials.includes('stacks')) {
-                                                                    setRecycleMaterials(removeFromArray('stacks', recycleMaterials))
+                                                                if (recycleMaterials.includes('batteries')) {
+                                                                    setRecycleMaterials(removeFromArray('batteries', recycleMaterials))
                                                                 } else {
-                                                                    setRecycleMaterials(recycleMaterials => [...recycleMaterials, 'stacks'])
+                                                                    setRecycleMaterials(recycleMaterials => [...recycleMaterials, 'batteries'])
                                                                 }
                                                             }}>
-                                                            <OptionButton_v1 text={'Pilhas'} color={recycleMaterials.includes('stacks') ? colorCategory : CONST.secondaryGray} />
+                                                            <OptionButton_v1 text={'Pilhas'} color={recycleMaterials.includes('batteries') ? colorCategory : CONST.secondaryGray} />
                                                         </Pressable>
                                                     </View>
                                                     <View style={{ flexDirection: 'column' }}>
