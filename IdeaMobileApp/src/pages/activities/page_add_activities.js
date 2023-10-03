@@ -509,7 +509,6 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // TODO IN THIS PAGE:
     // MEMORIZED QUESTIONS
-    // UPDATE FIREBASE
 
     // * function to save data in localStorage to edit later
     const saveData = async () => {
