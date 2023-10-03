@@ -2,7 +2,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, Modal, Alert, Image } from "react-native";
+import { Pressable, ScrollView, Text, View, Modal, Alert, Image, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Svg, Path } from "react-native-svg";
 import Animated, { useAnimatedProps, useSharedValue } from "react-native-reanimated";
@@ -46,13 +46,23 @@ export default function AddActivitiesScreen({ navigation }) {
     const [initialQuestions, setInitialQuestions] = useState({})
     const [memorizedAnswers, setMemorizedAnswers] = useState({})
     const [showWarning, setShowWarning] = useState(null);
-    const [userPoints, setUserPoints] = useState({}) 
+    const [userPoints, setUserPoints] = useState({})
     let airData = {}
     let energyData = {}
     let movementData = {}
     let recycleData = {}
     let waterData = {}
     let userScore = 0
+    let airPointsTotal = 0
+    let airPoints = 0
+    let recyclePointsTotal = 0
+    let recyclePoints = 0
+    let energyPointsTotal = 0
+    let energyPoints = 0
+    let movementPointsTotal = 0
+    let movementPoints = 0
+    let waterPointsTotal = 0
+    let waterPoints = 0
 
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
@@ -117,6 +127,28 @@ export default function AddActivitiesScreen({ navigation }) {
         }
     }
 
+    const calculateMaxOptionSum = (data) => {
+        let maxSum = 0;
+
+        data.forEach((item) => {
+          const options = item.options;
+          let maxOptionValue = 0;
+      
+          for (const key in options) {
+            if (options.hasOwnProperty(key)) {
+              const optionValue = options[key];
+              if (optionValue > maxOptionValue) {
+                maxOptionValue = optionValue;
+              }
+            }
+          }
+      
+          maxSum += maxOptionValue;
+        });
+        console.log(maxSum)
+        return maxSum;
+      }
+
     // * function to get the questions from database and check if answers are saved before or not, in case async storage doesn't have the information, we will generate
     const getQuestions = async (doc) => {
         try {
@@ -127,12 +159,13 @@ export default function AddActivitiesScreen({ navigation }) {
                 const tempDoc = querySnapshot.docs.map((doc) => doc.data());
 
                 const filteredAirData = (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id));
+
                 const filteredEnergyData = (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id));
                 const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
                 const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
                 const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
 
-                console.log(answersAsync)
+                console.log("ANSWERS ASYNC: " , answersAsync)
 
                 let initialAirAnswers;
                 let deviceAnswers = {};
@@ -187,6 +220,14 @@ export default function AddActivitiesScreen({ navigation }) {
                 setWaterQuestions(filteredWaterData)
                 setRecycleAnswers(initialRecycleAnswers);
                 setRecycleQuestions(filteredRecycleData)
+
+                airPointsTotal = calculateMaxOptionSum(filteredAirData);
+                energyPointsTotal = calculateMaxOptionSum(filteredEnergyData);
+                movementPointsTotal = calculateMaxOptionSum(filteredMovementData);
+                energyPointsTotal = calculateMaxOptionSum(filteredEnergyData);
+                waterPointsTotal = calculateMaxOptionSum(filteredWaterData);
+
+                console.log(airPointsTotal, " - ", energyPointsTotal) // ! 
             });
         }
         catch (error) {
@@ -442,7 +483,7 @@ export default function AddActivitiesScreen({ navigation }) {
                         let option = Object.keys(questionsForDevice[j].options).sort()[k]
                         let optionValue = questionsForDevice[j].options[option]
                         userScore = (userScore + optionValue)
-                        energyData[energyAnswersKeys[i] +  ": " + questionsForDevice[j].description] = option
+                        energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
                         break
                     }
                 }
@@ -465,11 +506,11 @@ export default function AddActivitiesScreen({ navigation }) {
         let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({
-            air : airData,
-            energy : energyData,
-            movement : movementData,
-            recycle : recycleData,
-            water : waterData,
+            air: airData,
+            energy: energyData,
+            movement: movementData,
+            recycle: recycleData,
+            water: waterData,
         });
         const updatedPoints = { ...userPoints };
         updatedPoints[getCurrentDate()] = userScore;
@@ -483,13 +524,13 @@ export default function AddActivitiesScreen({ navigation }) {
 
     const storeData = async (doc) => {
         try {
-          const jsonDoc = JSON.stringify(doc);
-          await AsyncStorage.setItem('userDoc', jsonDoc);
+            const jsonDoc = JSON.stringify(doc);
+            await AsyncStorage.setItem('userDoc', jsonDoc);
         } catch (e) {
-          console.log(e.message)
+            console.log(e.message)
         }
-      };
-    
+    };
+
     // * function to send data to firebase collection answers
     const checkToSubmit = async () => {
         try {
@@ -502,9 +543,9 @@ export default function AddActivitiesScreen({ navigation }) {
             } else {
                 checkRules()
             }
-          } catch (error) {
+        } catch (error) {
             console.error("Error checking document existence:", error);
-          }
+        }
     }
 
     // TODO IN THIS PAGE:
@@ -603,23 +644,23 @@ export default function AddActivitiesScreen({ navigation }) {
                 onRequestClose={() => {
                     setModalSubmit(!modalSubmit);
                 }}>
-               <View style={styles.centeredView}>
-                        <View style={styles.modalView}>
-                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.normalText}>
-                                    <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainRed }}>Ups!</Text>
-                                    {"\n"} {"\n"}Parece que já submeteste um registo hoje. Volta amanhã para ganhares mais pontos.
-                                </Text>
-                            </View>
-                            <Pressable
-                                onPress={() => {
-                                    setModalSubmit(!modalSubmit);
-                                    navigation.navigate("Dashboard")
-                                }} >
-                                <PrimaryButton_v1 text={"Compreendi"} />
-                            </Pressable>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.normalText}>
+                                <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainRed }}>Ups!</Text>
+                                {"\n"} {"\n"}Parece que já submeteste um registo hoje. Volta amanhã para ganhares mais pontos.
+                            </Text>
                         </View>
+                        <Pressable
+                            onPress={() => {
+                                setModalSubmit(!modalSubmit);
+                                navigation.navigate("Dashboard")
+                            }} >
+                            <PrimaryButton_v1 text={"Compreendi"} />
+                        </Pressable>
                     </View>
+                </View>
             </Modal>
             <Modal
                 animationType="fade"
@@ -646,43 +687,43 @@ export default function AddActivitiesScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
-                <Modal
-                    animationType="fade"
-                    transparent={true}
-                    visible={modalWarningSubmit}
-                    onRequestClose={() => {
-                        setModalWarningSubmit(!modalWarningSubmit);
-                    }}>
-                    <View style={styles.centeredView}>
-                        <View style={styles.modalView}>
-                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.normalText}>
-                                    <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainBlue }}>Atenção!</Text>
-                                    {"\n"} {"\n"}A ação "Submeter" só pode ser efetuada uma vez por dia. Se ainda não preencheste todos os campos que desejas preencher, opta pela opção "Guardar".
-                                </Text>
-                            </View>
-                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-                                <Checkbox
-                                    style={styles.checkbox}
-                                    value={isChecked}
-                                    onValueChange={() => { setChecked(!isChecked) }}
-                                    color={CONST.secondaryGray}
-                                    onChange={() => { setChecked(!isChecked) }}
-                                />
-                                <Text style={[styles.normalText, { color: CONST.secondaryGray, marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Não voltar a mostrar.</Text>
-                            </View>
-                            <Pressable
-                                onPress={() => {
-                                    setModalWarningSubmit(!modalWarningSubmit);
-                                    if (isChecked) {
-                                        updateAsyncToWarning();
-                                    }
-                                }} >
-                                <PrimaryButton_v1 text={"Submeter"} />
-                            </Pressable>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalWarningSubmit}
+                onRequestClose={() => {
+                    setModalWarningSubmit(!modalWarningSubmit);
+                }}>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.normalText}>
+                                <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainBlue }}>Atenção!</Text>
+                                {"\n"} {"\n"}A ação "Submeter" só pode ser efetuada uma vez por dia. Se ainda não preencheste todos os campos que desejas preencher, opta pela opção "Guardar".
+                            </Text>
                         </View>
+                        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                            <Checkbox
+                                style={styles.checkbox}
+                                value={isChecked}
+                                onValueChange={() => { setChecked(!isChecked) }}
+                                color={CONST.secondaryGray}
+                                onChange={() => { setChecked(!isChecked) }}
+                            />
+                            <Text style={[styles.normalText, { color: CONST.secondaryGray, marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Não voltar a mostrar.</Text>
+                        </View>
+                        <Pressable
+                            onPress={() => {
+                                setModalWarningSubmit(!modalWarningSubmit);
+                                if (isChecked) {
+                                    updateAsyncToWarning();
+                                }
+                            }} >
+                            <PrimaryButton_v1 text={"Submeter"} />
+                        </Pressable>
                     </View>
-                </Modal>
+                </View>
+            </Modal>
             <AnimatedSvg
                 width={CONST.screenWidth}
                 height={heightAnimated.value}
@@ -775,7 +816,7 @@ export default function AddActivitiesScreen({ navigation }) {
             </View>
             <ScrollView
                 showsVerticalScrollIndicator={false}>
-                {toShow === 'air' && airQuestions && airQuestions.length > 0 &&
+                {(toShow === 'air' && airQuestions && airQuestions.length > 0) ?
                     airQuestions.map((callbackfn, id) => {
                         const firstQuestion = 0
                         if (id === firstQuestion + 1 && !airAnswers[firstQuestion][1]) {
@@ -831,111 +872,109 @@ export default function AddActivitiesScreen({ navigation }) {
                                 </View>
                             </View>
                         )
-                    })}
-                {toShow === 'energy' && energyQuestions && energyQuestions.length > 0 ?
-                    <View>
-                        <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>GERAL</Text>
-                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                            <View style={{ flexDirection: 'column' }}>
-                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                    {energyQuestions[0].description}
-                                </Text>
-                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                    {Object.keys(energyQuestions[0].options).sort().map((optionKey, idx) => {
-                                        const viewElements = [];
-                                        if (idx === 0 || idx === Math.round(Object.keys(energyQuestions[0].options).length / 2)) {
-                                            for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions[0].options).length / 2) : i < Object.keys(energyQuestions[0].options).length; i++) {
-                                                const key = Object.keys(energyQuestions[0].options).sort()[i]
-                                                const option = energyQuestions[0].options[key]
-                                                viewElements.push(
-                                                    <Pressable style={{ marginBottom: 10 }} onPress={() => {
-                                                        const updatedAnswers = { ...energyAnswers };
-                                                        const falseAnswers = updatedAnswers['geral'].map(() => false);
+                    }) :
+                    (toShow === 'energy' && energyQuestions && energyQuestions.length > 0) ?
+                        <View>
+                            <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>GERAL</Text>
+                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                <View style={{ flexDirection: 'column' }}>
+                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                        {energyQuestions[0].description}
+                                    </Text>
+                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                        {Object.keys(energyQuestions[0].options).sort().map((optionKey, idx) => {
+                                            const viewElements = [];
+                                            if (idx === 0 || idx === Math.round(Object.keys(energyQuestions[0].options).length / 2)) {
+                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions[0].options).length / 2) : i < Object.keys(energyQuestions[0].options).length; i++) {
+                                                    const key = Object.keys(energyQuestions[0].options).sort()[i]
+                                                    const option = energyQuestions[0].options[key]
+                                                    viewElements.push(
+                                                        <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                            const updatedAnswers = { ...energyAnswers };
+                                                            const falseAnswers = updatedAnswers['geral'].map(() => false);
 
-                                                        if (!updatedAnswers['geral'][i]) {
-                                                            falseAnswers[i] = true;
-                                                        }
+                                                            if (!updatedAnswers['geral'][i]) {
+                                                                falseAnswers[i] = true;
+                                                            }
 
-                                                        updatedAnswers['geral'] = falseAnswers;
-                                                        setEnergyAnswers(updatedAnswers);
-                                                    }}>
-                                                        <OptionButton_v1 text={key} color={energyAnswers['geral'][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                )
+                                                            updatedAnswers['geral'] = falseAnswers;
+                                                            setEnergyAnswers(updatedAnswers);
+                                                        }}>
+                                                            <OptionButton_v1 text={key} color={energyAnswers['geral'][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                        </Pressable>
+                                                    )
+                                                }
+                                                return (
+                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                        {viewElements}
+                                                    </View>)
+                                            } else {
+                                                <View></View>
                                             }
-                                            return (
-                                                <View style={{ flexDirection: 'column', width: '45%' }}>
-                                                    {viewElements}
-                                                </View>)
-                                        } else {
-                                            <View></View>
-                                        }
-                                    })}
+                                        })}
+                                    </View>
                                 </View>
                             </View>
-                        </View>
-                        {energyDevices && energyDevices.length > 0 && energyDevices.map((callbackfn, index) => {
-                            return (
-                                <View>
-                                    <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>{whichDevice(energyDevices[index])}</Text>
-                                    {energyQuestions.filter(element => element.field.includes(energyDevices[index])).map((callbackfn, id) => {
-                                        if (id != 0 && !energyAnswers[energyDevices[index]][0][1]) {
-                                            return (<View key={'energy_' + id}></View>)
-                                        }
-                                        return (
-                                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                                <View key={'energy_' + id} style={{ flexDirection: 'column' }}>
-                                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                                        {energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].description}
-                                                    </Text>
-                                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                                        {Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort().map((optionKey, idx) => {
-                                                            const viewElements = [];
-                                                            if (idx === 0 || idx === Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2)) {
-                                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2) : i < Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length; i++) {
-                                                                    const key = Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort()[i]
-                                                                    const option = energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options[key]
-                                                                    viewElements.push(
-                                                                        <Pressable style={{ marginBottom: 10 }} onPress={() => {
-                                                                            const updatedAnswers = { ...energyAnswers };
-                                                                            const currentDeviceAnswers = updatedAnswers[energyDevices[index]][id];
+                            {energyDevices && energyDevices.length > 0 && energyDevices.map((callbackfn, index) => {
+                                return (
+                                    <View>
+                                        <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>{whichDevice(energyDevices[index])}</Text>
+                                        {energyQuestions.filter(element => element.field.includes(energyDevices[index])).map((callbackfn, id) => {
+                                            if (id != 0 && !energyAnswers[energyDevices[index]][0][1]) {
+                                                return (<View key={'energy_' + id}></View>)
+                                            }
+                                            return (
+                                                <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                                    <View key={'energy_' + id} style={{ flexDirection: 'column' }}>
+                                                        <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                                            {energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].description}
+                                                        </Text>
+                                                        <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                                            {Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort().map((optionKey, idx) => {
+                                                                const viewElements = [];
+                                                                if (idx === 0 || idx === Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2)) {
+                                                                    for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2) : i < Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length; i++) {
+                                                                        const key = Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort()[i]
+                                                                        const option = energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options[key]
+                                                                        viewElements.push(
+                                                                            <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                                                const updatedAnswers = { ...energyAnswers };
+                                                                                const currentDeviceAnswers = updatedAnswers[energyDevices[index]][id];
 
-                                                                            // Invertir a resposta para o índice 'i'
-                                                                            currentDeviceAnswers[i] = !currentDeviceAnswers[i];
+                                                                                // Invertir a resposta para o índice 'i'
+                                                                                currentDeviceAnswers[i] = !currentDeviceAnswers[i];
 
-                                                                            for (let j = 0; j < currentDeviceAnswers.length; j++) {
-                                                                                if (j !== i) {
-                                                                                    currentDeviceAnswers[j] = false;
+                                                                                for (let j = 0; j < currentDeviceAnswers.length; j++) {
+                                                                                    if (j !== i) {
+                                                                                        currentDeviceAnswers[j] = false;
+                                                                                    }
                                                                                 }
-                                                                            }
 
-                                                                            setEnergyAnswers({ ...updatedAnswers });
-                                                                        }}>
-                                                                            <OptionButton_v1 text={key} color={energyAnswers[energyDevices[index]][id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
-                                                                        </Pressable>
-                                                                    )
+                                                                                setEnergyAnswers({ ...updatedAnswers });
+                                                                            }}>
+                                                                                <OptionButton_v1 text={key} color={energyAnswers[energyDevices[index]][id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                                            </Pressable>
+                                                                        )
+                                                                    }
+                                                                    return (
+                                                                        <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                                            {viewElements}
+                                                                        </View>)
+                                                                } else {
+                                                                    <View key={'energy__' + id}></View>
                                                                 }
-                                                                return (
-                                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
-                                                                        {viewElements}
-                                                                    </View>)
-                                                            } else {
-                                                                <View key={'energy__' + id}></View>
-                                                            }
-                                                        })}
+                                                            })}
+                                                        </View>
                                                     </View>
                                                 </View>
-                                            </View>
-                                        )
-                                    })}
-                                </View>
-                            )
-                        })}
-                    </View>
-                    :
-                    <View></View>
-                }
-                {toShow === 'movement' && movementQuestions && movementQuestions.length > 0 &&
+                                            )
+                                        })}
+                                    </View>
+                                )
+                            })}
+                        </View>
+                        :
+                        (toShow === 'movement' && movementQuestions && movementQuestions.length > 0) ?
                     movementQuestions.map((callbackfn, id) => (
                         <View style={[styles.cardBox, { marginBottom: 20 }]}>
                             <View key={'movement_' + id} style={{ flexDirection: 'column' }}>
@@ -976,8 +1015,8 @@ export default function AddActivitiesScreen({ navigation }) {
                                 </View>
                             </View>
                         </View>
-                    ))}
-                {toShow === 'recycle' && recycleQuestions && recycleQuestions.length > 0 &&
+                    )) : 
+                    (toShow === 'recycle' && recycleQuestions && recycleQuestions.length > 0) ?
                     recycleQuestions.map((callbackfn, id) => {
                         const printerQuestion = 1
                         const bottleQuestion = 3
@@ -1045,8 +1084,8 @@ export default function AddActivitiesScreen({ navigation }) {
                                 </View>
                             </View>
                         )
-                    })}
-                {toShow === 'water' && waterQuestions && waterQuestions.length > 0 &&
+                    }) :
+                    (toShow === 'water' && waterQuestions && waterQuestions.length > 0) ?
                     waterQuestions.map((callbackfn, id) => {
                         const firstQuestion = 0
 
@@ -1097,7 +1136,9 @@ export default function AddActivitiesScreen({ navigation }) {
                                 </View>
                             </View>
                         )
-                    })}
+                    })
+                :
+                <ActivityIndicator size="large" color={whichColor(categories[toShow], toShow)} style={{marginBottom: CONST.boxCardMargin, marginTop: CONST.boxCardMargin}} />}
                 {modalWithoutCat ? <></> :
                     <View style={[styles.doubleButtonsView, { paddingBottom: CONST.layoutPaddingVertical / 2 }]}>
                         <Pressable
