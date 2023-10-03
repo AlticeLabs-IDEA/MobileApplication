@@ -10,6 +10,7 @@ import { FontAwesome5 } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import firebase from "../../../config/firebase.js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Checkbox from "expo-checkbox";
 
 // IMPORT COMPONENTS
 import { PrimaryButton_v1, PrimaryButton_v2, OptionButton_v1 } from "../../components/buttons.js";
@@ -27,7 +28,9 @@ export default function AddActivitiesScreen({ navigation }) {
     const [categories, setCategories] = useState({})
     const [toShow, setToShow] = useState('none')
     const [modalVisible, setModalVisible] = useState(false);
-    const [modalWithoutCat, setModalWithoutCat] = useState(false)
+    const [modalWithoutCat, setModalWithoutCat] = useState(false);
+    const [modalWarningSubmit, setModalWarningSubmit] = useState(false);
+    const [isChecked, setChecked] = useState(false);
     const [category, setCategory] = useState("")
     const [airQuestions, setAirQuestions] = useState([])
     const [airAnswers, setAirAnswers] = useState([])
@@ -41,6 +44,8 @@ export default function AddActivitiesScreen({ navigation }) {
     const [recycleAnswers, setRecycleAnswers] = useState([])
     const [initialQuestions, setInitialQuestions] = useState({})
     const [memorizedAnswers, setMemorizedAnswers] = useState({})
+    const [showWarning, setShowWarning] = useState(null);
+    let userScore = 0
 
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
@@ -50,8 +55,10 @@ export default function AddActivitiesScreen({ navigation }) {
         try {
             const jsonDoc = await AsyncStorage.getItem('userDoc');
             const id = await AsyncStorage.getItem('userID');
+            const warning = await AsyncStorage.getItem('submitWarning');
             setUserDOC(jsonDoc != null ? JSON.parse(jsonDoc) : null);
             setUserID(id != null ? id : null)
+            setShowWarning(warning != null ? warning : null);
             getActiveCategories(JSON.parse(jsonDoc))
         } catch (e) {
             console.log(e.message)
@@ -318,7 +325,7 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to check if user doesn't select two sub-options -> it's a filter function!
     const checkRules = () => {
-        // ? there is some questions that activate sub questions but user can only submit one path
+        // ? there is some questions that activate sub questions but user can only submit one path/way
         // air first questions activate 2 sub questions:
         if (!airAnswers[0][0] && !airAnswers[0][1]) {
             airAnswers[1] = [false, false]
@@ -342,19 +349,109 @@ export default function AddActivitiesScreen({ navigation }) {
             waterAnswers[1] = [false, false]
             waterAnswers[2] = [false, false]
         }
+        // the number of answers depend on the number of questions, which, in turn, depends on the devices
+        // the user can select the option yes for the question "did you use the device" and answer the subquestion but later can change the first answer to no
+        // we don't want add points for the sub question if user change the option to no or if the option yes isn't selected
+        for (const key in energyAnswers) {
+            if (key !== 'geral') {
+                if (!energyAnswers[key][0][1]) {
+                    for (let i = 1; i < energyAnswers[key].length; i++) {
+                        energyAnswers[key][i] = new Array(energyAnswers[key][i].length).fill(false);
+                    }
+                }
+            }
+        }
     }
 
+    // * function to calculate the score
+    const calculateScore = () => {
+        // console.log("-----------> > air ", airAnswers)
+        for (let i = 0; i < airAnswers.length; i++) {
+            for (let j = 0; j < airAnswers[i].length; j++) {
+                if (airAnswers[i][j] === true) {
+                    let option = Object.keys(airQuestions[i].options).sort()[j]
+                    let optionValue = airQuestions[i].options[option]
+                    // console.log(option, "  ->  ", optionValue)
+                    userScore = (userScore + optionValue)
+                    break
+                }
+            }
+        }
+        // console.log("-----------> > water ", waterAnswers)
+        for (let i = 0; i < waterAnswers.length; i++) {
+            for (let j = 0; j < waterAnswers[i].length; j++) {
+                if (waterAnswers[i][j] === true) {
+                    let option = Object.keys(waterQuestions[i].options).sort()[j]
+                    let optionValue = waterQuestions[i].options[option]
+                    // console.log(option, "  ->  ", optionValue)
+                    userScore = (userScore + optionValue)
+                    break
+                }
+            }
+        }
 
+        // console.log("-----------> > recycle ", recycleAnswers)
+        for (let i = 0; i < recycleAnswers.length; i++) {
+            for (let j = 0; j < recycleAnswers[i].length; j++) {
+                if (recycleAnswers[i][j] === true) {
+                    let option = Object.keys(recycleQuestions[i].options).sort()[j]
+                    let optionValue = recycleQuestions[i].options[option]
+                    // console.log(option, "  ->  ", optionValue)
+                    userScore = (userScore + optionValue)
+                    break
+                }
+            }
+        }
+
+        // console.log("-----------> > movement ", movementAnswers)
+        for (let i = 0; i < movementAnswers.length; i++) {
+            for (let j = 0; j < movementAnswers[i].length; j++) {
+                if (movementAnswers[i][j] === true) {
+                    let option = Object.keys(movementQuestions[i].options).sort()[j]
+                    let optionValue = movementQuestions[i].options[option]
+                    // * the movement category has questions with adjustments that influence the min_range
+                    // * we need check what is the min_range in elevator and distance and IF IS MIN_RANGE_2 we need do changes
+                    if (((movementQuestions[i].adjustment === "elevator" && initialQuestions.elevator === "min_range_2") || (movementQuestions[i].adjustment === "distance" && initialQuestions.distance === "min_range_2")) && optionValue < 2) {
+                        optionValue = 2
+                    }
+                    // console.log(option, "  ->  ", optionValue)
+                    userScore = (userScore + optionValue)
+                    break
+                }
+            }
+        }
+
+        // console.log("------------> > energy ", energyAnswers)
+        const energyAnswersKeys = Object.keys(energyAnswers)
+        for (let i = 0; i < energyAnswersKeys.length; i++) {
+            let questionsForDevice = energyQuestions.filter(element => element.field.includes(energyAnswersKeys[i]))
+            if (energyAnswersKeys[i] === "geral") {
+                questionsForDevice = energyQuestions[0]
+            }
+            for (let j = 0; j < questionsForDevice.length; j++) {
+                for (let k = 0; k < energyAnswers[energyAnswersKeys[i]][j].length; k++) {
+                    if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
+                        let option = Object.keys(questionsForDevice[j].options).sort()[k]
+                        let optionValue = questionsForDevice[j].options[option]
+                        userScore = (userScore + optionValue)
+                        break
+                    }
+                }
+            }
+        }
+        console.log(".... ", userScore)
+        setModalWarningSubmit(true)
+    }
     // * function to send data to firebase collection answers
     const submitAnswers = () => {
+        // FIRST CHECK IS IS ALREADY SUBMITED
         checkRules()
+        calculateScore()
     }
 
     // TODO IN THIS PAGE:
-    // CHECK RULES OF ENERGY CATEGORY
-    // LOGIC OF FILTER QUESTIONS
     // MEMORIZED QUESTIONS
-    // CHANGE RANGE
+    // UPDATE FIREBASE
 
     // * function to save data in localStorage to edit later
     const saveData = async () => {
@@ -363,6 +460,15 @@ export default function AddActivitiesScreen({ navigation }) {
         console.log(formattedDate)
         try {
             await AsyncStorage.setItem(formattedDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
+        } catch (e) {
+            console.log(e.message)
+        }
+    }
+
+    const updateAsyncToWarning = async () => {
+        try {
+            await AsyncStorage.setItem("submitWarning", "false");
+            setShowWarning("false")
         } catch (e) {
             console.log(e.message)
         }
@@ -458,6 +564,47 @@ export default function AddActivitiesScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
+            {showWarning === null ?
+                <Modal
+                    animationType="fade"
+                    transparent={true}
+                    visible={modalWarningSubmit}
+                    onRequestClose={() => {
+                        setModalWarningSubmit(!modalWarningSubmit);
+                    }}>
+                    <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+                                <Text style={styles.normalText}>
+                                    <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainBlue }}>Atenção!</Text>
+                                    {"\n"} {"\n"}A ação "Submeter" só pode ser efetuada uma vez por dia. Se ainda não preencheste todos os campos que desejas preencher, opta pela opção "Guardar".
+                                </Text>
+                            </View>
+                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                                <Checkbox
+                                    style={styles.checkbox}
+                                    value={isChecked}
+                                    onValueChange={() => { setChecked(!isChecked) }}
+                                    color={CONST.secondaryGray}
+                                    onChange={() => { setChecked(!isChecked) }}
+                                />
+                                <Text style={[styles.normalText, { color: CONST.secondaryGray, marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Não voltar a mostrar.</Text>
+                            </View>
+                            <Pressable
+                                onPress={() => {
+                                    setModalWarningSubmit(!modalWarningSubmit);
+                                    if (isChecked) {
+                                        updateAsyncToWarning();
+                                    }
+                                }} >
+                                <PrimaryButton_v1 text={"Submeter"} />
+                            </Pressable>
+                        </View>
+                    </View>
+                </Modal>
+                :
+                <></>
+            }
             <AnimatedSvg
                 width={CONST.screenWidth}
                 height={heightAnimated.value}
@@ -557,6 +704,12 @@ export default function AddActivitiesScreen({ navigation }) {
                             return (<View key={'air_' + id}></View>)
                         }
                         if (id === firstQuestion + 2 && !airAnswers[firstQuestion][0]) {
+                            return (<View key={'air_' + id}></View>)
+                        }
+                        if (airQuestions[id].adjustment === 'air' && !initialQuestions.air) {
+                            return (<View key={'air_' + id}></View>)
+                        }
+                        if (airQuestions[id].adjustment === 'windows' && !initialQuestions.windows) {
                             return (<View key={'air_' + id}></View>)
                         }
                         return (
@@ -757,6 +910,12 @@ export default function AddActivitiesScreen({ navigation }) {
                         if (id === bottleQuestion + 1 && ((recycleAnswers[bottleQuestion][0] || (recycleAnswers[bottleQuestion][2]) || (!recycleAnswers[bottleQuestion][0] && !recycleAnswers[bottleQuestion][1] && !recycleAnswers[bottleQuestion][2])))) {
                             return (<View key={'recyle_' + id}></View>)
                         }
+                        if (recycleQuestions[id].adjustment == "drink_water" && !initialQuestions.drink_water) {
+                            return (<View key={'recyle_' + id}></View>)
+                        }
+                        if (recycleQuestions[id].adjustment == "recycle" && initialQuestions.recycle.length == 0) {
+                            return (<View key={'recyle_' + id}></View>)
+                        }
                         return (
                             <View style={[styles.cardBox, { marginBottom: 20 }]}>
                                 <View key={'recyle_' + id} style={{ flexDirection: 'column' }}>
@@ -874,6 +1033,8 @@ export default function AddActivitiesScreen({ navigation }) {
                         <Pressable
                             onPress={() => {
                                 submitAnswers()
+                                saveData()
+
                             }}
                             style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                             <PrimaryButton_v1 text={"Submeter"} />
