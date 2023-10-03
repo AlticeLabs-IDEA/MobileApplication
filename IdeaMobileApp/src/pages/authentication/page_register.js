@@ -69,7 +69,7 @@ export default function RegisterScreen({ navigation }) {
                     department_name: departmentName,
                     created: currentDate,
                     last_conection: currentDate,
-                    points: 0,
+                    points: {},
                     active_categories: { 'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0 },
                     points_categories: { 'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0 },
                     memorized_answers: { 'air' : [], 'energy': [], 'movement': [], 'recycle': [], 'water': []},

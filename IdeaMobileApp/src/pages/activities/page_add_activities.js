@@ -30,6 +30,7 @@ export default function AddActivitiesScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalWithoutCat, setModalWithoutCat] = useState(false);
     const [modalWarningSubmit, setModalWarningSubmit] = useState(false);
+    const [modalSubmit, setModalSubmit] = useState(false);
     const [isChecked, setChecked] = useState(false);
     const [category, setCategory] = useState("")
     const [airQuestions, setAirQuestions] = useState([])
@@ -45,6 +46,12 @@ export default function AddActivitiesScreen({ navigation }) {
     const [initialQuestions, setInitialQuestions] = useState({})
     const [memorizedAnswers, setMemorizedAnswers] = useState({})
     const [showWarning, setShowWarning] = useState(null);
+    const [userPoints, setUserPoints] = useState({}) 
+    let airData = {}
+    let energyData = {}
+    let movementData = {}
+    let recycleData = {}
+    let waterData = {}
     let userScore = 0
 
     // * saber que equipamentos ele utiliza
@@ -72,6 +79,7 @@ export default function AddActivitiesScreen({ navigation }) {
         setMemorizedAnswers(doc.memorized_answers)
         setCategories(doc.active_categories)
         setEnergyDevices(doc.initial_questions.devices)
+        setUserPoints(doc.points)
 
         if (categories['air'] !== 0) {
             setToShow('air')
@@ -132,7 +140,6 @@ export default function AddActivitiesScreen({ navigation }) {
                 let initialRecycleAnswers;
                 let initialWaterAnswers;
 
-
                 if (answersAsync === null) {
                     initialAirAnswers = filteredAirData.map((data) => {
                         let airTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
@@ -186,7 +193,6 @@ export default function AddActivitiesScreen({ navigation }) {
             console.log(error)
         } finally {
             setLoadingBolt(false)
-
         }
     }
 
@@ -361,6 +367,7 @@ export default function AddActivitiesScreen({ navigation }) {
                 }
             }
         }
+        calculateScore()
     }
 
     // * function to calculate the score
@@ -373,6 +380,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     let optionValue = airQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
                     userScore = (userScore + optionValue)
+                    airData[airQuestions[i].description] = option
                     break
                 }
             }
@@ -385,11 +393,11 @@ export default function AddActivitiesScreen({ navigation }) {
                     let optionValue = waterQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
                     userScore = (userScore + optionValue)
+                    waterData[waterQuestions[i].description] = option
                     break
                 }
             }
         }
-
         // console.log("-----------> > recycle ", recycleAnswers)
         for (let i = 0; i < recycleAnswers.length; i++) {
             for (let j = 0; j < recycleAnswers[i].length; j++) {
@@ -398,11 +406,11 @@ export default function AddActivitiesScreen({ navigation }) {
                     let optionValue = recycleQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
                     userScore = (userScore + optionValue)
+                    recycleData[recycleQuestions[i].description] = option
                     break
                 }
             }
         }
-
         // console.log("-----------> > movement ", movementAnswers)
         for (let i = 0; i < movementAnswers.length; i++) {
             for (let j = 0; j < movementAnswers[i].length; j++) {
@@ -416,11 +424,11 @@ export default function AddActivitiesScreen({ navigation }) {
                     }
                     // console.log(option, "  ->  ", optionValue)
                     userScore = (userScore + optionValue)
+                    movementData[movementQuestions[i].description] = option
                     break
                 }
             }
         }
-
         // console.log("------------> > energy ", energyAnswers)
         const energyAnswersKeys = Object.keys(energyAnswers)
         for (let i = 0; i < energyAnswersKeys.length; i++) {
@@ -434,19 +442,69 @@ export default function AddActivitiesScreen({ navigation }) {
                         let option = Object.keys(questionsForDevice[j].options).sort()[k]
                         let optionValue = questionsForDevice[j].options[option]
                         userScore = (userScore + optionValue)
+                        energyData[energyAnswersKeys[i] +  ": " + questionsForDevice[j].description] = option
                         break
                     }
                 }
             }
         }
         console.log(".... ", userScore)
-        setModalWarningSubmit(true)
+        if (showWarning === null) {
+            setModalWarningSubmit(true)
+        } else {
+            submitAnswers()
+        }
     }
+
+    const submitAnswers = async () => {
+        console.log(airData)
+        console.log(energyData)
+        console.log(movementData)
+        console.log(recycleData)
+        console.log(waterData)
+        let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
+        const firestore_answers = firebase.firestore().collection("answers")
+        firestore_answers.doc(idDoc).set({
+            air : airData,
+            energy : energyData,
+            movement : movementData,
+            recycle : recycleData,
+            water : waterData,
+        });
+        const updatedPoints = { ...userPoints };
+        updatedPoints[getCurrentDate()] = userScore;
+        setUserPoints(updatedPoints);
+        const firestore_user_doc = firebase.firestore().collection("users").doc(userID)
+        firestore_user_doc.update({ 'points': updatedPoints })
+        const doc = await firestore_user_doc.get();
+        storeData(doc.data())
+        navigation.navigate("Dashboard")
+    }
+
+    const storeData = async (doc) => {
+        try {
+          const jsonDoc = JSON.stringify(doc);
+          await AsyncStorage.setItem('userDoc', jsonDoc);
+        } catch (e) {
+          console.log(e.message)
+        }
+      };
+    
     // * function to send data to firebase collection answers
-    const submitAnswers = () => {
-        // FIRST CHECK IS IS ALREADY SUBMITED
-        checkRules()
-        calculateScore()
+    const checkToSubmit = async () => {
+        try {
+            let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
+            // * check if record has already be submited
+            const firestore_answers_doc = firebase.firestore().collection("answers").doc(idDoc);
+            const doc = await firestore_answers_doc.get();
+            if (doc.exists) {
+                setModalSubmit(true)
+            } else {
+                checkRules()
+            }
+          } catch (error) {
+            console.error("Error checking document existence:", error);
+          }
     }
 
     // TODO IN THIS PAGE:
@@ -542,6 +600,31 @@ export default function AddActivitiesScreen({ navigation }) {
             <Modal
                 animationType="fade"
                 transparent={true}
+                visible={modalSubmit}
+                onRequestClose={() => {
+                    setModalSubmit(!modalSubmit);
+                }}>
+               <View style={styles.centeredView}>
+                        <View style={styles.modalView}>
+                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+                                <Text style={styles.normalText}>
+                                    <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainRed }}>Ups!</Text>
+                                    {"\n"} {"\n"}Parece que já submeteste um registo hoje. Volta amanhã para ganhares mais pontos.
+                                </Text>
+                            </View>
+                            <Pressable
+                                onPress={() => {
+                                    setModalSubmit(!modalSubmit);
+                                    navigation.navigate("Dashboard")
+                                }} >
+                                <PrimaryButton_v1 text={"Compreendi"} />
+                            </Pressable>
+                        </View>
+                    </View>
+            </Modal>
+            <Modal
+                animationType="fade"
+                transparent={true}
                 visible={modalWithoutCat}
                 onRequestClose={() => {
                     setModalWithoutCat(!modalWithoutCat);
@@ -564,7 +647,6 @@ export default function AddActivitiesScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
-            {showWarning === null ?
                 <Modal
                     animationType="fade"
                     transparent={true}
@@ -602,9 +684,6 @@ export default function AddActivitiesScreen({ navigation }) {
                         </View>
                     </View>
                 </Modal>
-                :
-                <></>
-            }
             <AnimatedSvg
                 width={CONST.screenWidth}
                 height={heightAnimated.value}
@@ -1032,7 +1111,7 @@ export default function AddActivitiesScreen({ navigation }) {
                         </Pressable>
                         <Pressable
                             onPress={() => {
-                                submitAnswers()
+                                checkToSubmit()
                                 saveData()
 
                             }}
