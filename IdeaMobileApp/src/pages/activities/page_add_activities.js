@@ -2,7 +2,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, Modal, Alert, Image } from "react-native";
+import { Pressable, ScrollView, Text, View, Modal, Alert, Image, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import { Svg, Path } from "react-native-svg";
 import Animated, { useAnimatedProps, useSharedValue } from "react-native-reanimated";
@@ -46,13 +46,29 @@ export default function AddActivitiesScreen({ navigation }) {
     const [initialQuestions, setInitialQuestions] = useState({})
     const [memorizedAnswers, setMemorizedAnswers] = useState({})
     const [showWarning, setShowWarning] = useState(null);
-    const [userPoints, setUserPoints] = useState({}) 
+    const [userPoints, setUserPoints] = useState({})
+    const [userAirPoints, setUserAirPoints] = useState({})
+    const [userEnergyPoints, setUserEnergyPoints] = useState({})
+    const [userMovementPoints, setUserMovementPoints] = useState({})
+    const [userWaterPoints, setUserWaterPoints] = useState({})
+    const [userRecyclePoints, setUserRecyclePoints] = useState({})
     let airData = {}
     let energyData = {}
     let movementData = {}
     let recycleData = {}
     let waterData = {}
     let userScore = 0
+    const [airPointsTotal, setAirPointsTotal] = useState(0)
+    let airPoints = 0
+    const [recyclePointsTotal, setRecyclePointsTotal] = useState(0)
+    let recyclePoints = 0
+    const [energyPointsTotal, setEnergyPointsTotal] = useState(0)
+    let energyPoints = 0
+    const [movementPointsTotal, setMovementPointsTotal] = useState(0)
+    let movementPoints = 0
+    const [waterPointsTotal, setWaterPointsTotal] = useState(0)
+    let waterPoints = 0
+
 
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
@@ -80,6 +96,11 @@ export default function AddActivitiesScreen({ navigation }) {
         setCategories(doc.active_categories)
         setEnergyDevices(doc.initial_questions.devices)
         setUserPoints(doc.points)
+        setUserAirPoints(doc.points_categories.air)
+        setUserEnergyPoints(doc.points_categories.energu)
+        setUserMovementPoints(doc.points_categories.movement)
+        setUserRecyclePoints(doc.points_categories.recycle)
+        setUserWaterPoints(doc.points_categories.water)
 
         if (categories['air'] !== 0) {
             setToShow('air')
@@ -117,6 +138,28 @@ export default function AddActivitiesScreen({ navigation }) {
         }
     }
 
+    const calculateMaxOptionSum = (data) => {
+        let maxSum = 0;
+
+        data.forEach((item) => {
+            const options = item.options;
+            let maxOptionValue = 0;
+
+            for (const key in options) {
+                if (options.hasOwnProperty(key)) {
+                    const optionValue = options[key];
+                    if (optionValue > maxOptionValue) {
+                        maxOptionValue = optionValue;
+                    }
+                }
+            }
+
+            maxSum += maxOptionValue;
+        });
+        console.log(maxSum)
+        return maxSum;
+    }
+
     // * function to get the questions from database and check if answers are saved before or not, in case async storage doesn't have the information, we will generate
     const getQuestions = async (doc) => {
         try {
@@ -127,12 +170,13 @@ export default function AddActivitiesScreen({ navigation }) {
                 const tempDoc = querySnapshot.docs.map((doc) => doc.data());
 
                 const filteredAirData = (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id));
+
                 const filteredEnergyData = (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id));
                 const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
                 const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
                 const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
 
-                console.log(answersAsync)
+                console.log("ANSWERS ASYNC: ", answersAsync)
 
                 let initialAirAnswers;
                 let deviceAnswers = {};
@@ -140,7 +184,7 @@ export default function AddActivitiesScreen({ navigation }) {
                 let initialRecycleAnswers;
                 let initialWaterAnswers;
 
-                if (answersAsync === null) {
+                if (answersAsync === null || answersAsync.every(subarray => subarray.length === 0)) {
                     initialAirAnswers = filteredAirData.map((data) => {
                         let airTemp = Array.from({ length: Object.keys(data.options).length }, () => false);
                         return airTemp;
@@ -187,6 +231,13 @@ export default function AddActivitiesScreen({ navigation }) {
                 setWaterQuestions(filteredWaterData)
                 setRecycleAnswers(initialRecycleAnswers);
                 setRecycleQuestions(filteredRecycleData)
+
+                setAirPointsTotal(calculateMaxOptionSum(filteredAirData))
+                setEnergyPointsTotal(calculateMaxOptionSum(filteredEnergyData) * 12);
+                setMovementPointsTotal(calculateMaxOptionSum(filteredMovementData));
+                setRecyclePointsTotal(calculateMaxOptionSum(filteredRecycleData));
+                setWaterPointsTotal(calculateMaxOptionSum(filteredWaterData));
+
             });
         }
         catch (error) {
@@ -379,6 +430,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     let option = Object.keys(airQuestions[i].options).sort()[j]
                     let optionValue = airQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
+                    airPoints += optionValue
                     userScore = (userScore + optionValue)
                     airData[airQuestions[i].description] = option
                     break
@@ -392,6 +444,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     let option = Object.keys(waterQuestions[i].options).sort()[j]
                     let optionValue = waterQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
+                    waterPoints += optionValue
                     userScore = (userScore + optionValue)
                     waterData[waterQuestions[i].description] = option
                     break
@@ -405,6 +458,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     let option = Object.keys(recycleQuestions[i].options).sort()[j]
                     let optionValue = recycleQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
+                    recyclePoints += optionValue
                     userScore = (userScore + optionValue)
                     recycleData[recycleQuestions[i].description] = option
                     break
@@ -423,6 +477,7 @@ export default function AddActivitiesScreen({ navigation }) {
                         optionValue = 2
                     }
                     // console.log(option, "  ->  ", optionValue)
+                    movementPoints += optionValue
                     userScore = (userScore + optionValue)
                     movementData[movementQuestions[i].description] = option
                     break
@@ -441,19 +496,16 @@ export default function AddActivitiesScreen({ navigation }) {
                     if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
                         let option = Object.keys(questionsForDevice[j].options).sort()[k]
                         let optionValue = questionsForDevice[j].options[option]
+                        energyPoints += optionValue
                         userScore = (userScore + optionValue)
-                        energyData[energyAnswersKeys[i] +  ": " + questionsForDevice[j].description] = option
+                        energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
                         break
                     }
                 }
             }
         }
         console.log(".... ", userScore)
-        if (showWarning === null) {
-            setModalWarningSubmit(true)
-        } else {
-            submitAnswers()
-        }
+        submitAnswers()
     }
 
     const submitAnswers = async () => {
@@ -465,17 +517,42 @@ export default function AddActivitiesScreen({ navigation }) {
         let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({
-            air : airData,
-            energy : energyData,
-            movement : movementData,
-            recycle : recycleData,
-            water : waterData,
+            air: airData,
+            energy: energyData,
+            movement: movementData,
+            recycle: recycleData,
+            water: waterData,
         });
         const updatedPoints = { ...userPoints };
-        updatedPoints[getCurrentDate()] = userScore;
+        updatedPoints[getCurrentDate()] = Math.round(userScore * 100 / (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal));
         setUserPoints(updatedPoints);
+        const updatedAirPoints = { ...userAirPoints };
+        const updatedEnergyPoints = { ...userEnergyPoints };
+        const updatedMovementPoints = { ...userMovementPoints };
+        const updatedRecyclePoints = { ...userRecyclePoints };
+        const updatedWaterPoints = { ...userWaterPoints };
+        console.log("total: ", airPointsTotal)
+        console.log(airPoints)
+        updatedAirPoints[getCurrentDate()] = Math.round(airPoints * 100 / airPointsTotal);
+        updatedEnergyPoints[getCurrentDate()] = Math.round(energyPoints * 100 / energyPointsTotal);
+        updatedMovementPoints[getCurrentDate()] = Math.round(movementPoints * 100 / movementPointsTotal);
+        updatedRecyclePoints[getCurrentDate()] = Math.round(recyclePoints * 100 / recyclePointsTotal);
+        updatedWaterPoints[getCurrentDate()] = Math.round(waterPoints * 100 / waterPointsTotal);
+        setUserAirPoints(updatedAirPoints);
+        setUserMovementPoints(updatedMovementPoints);
+        setUserEnergyPoints(updatedEnergyPoints);
+        setUserRecyclePoints(updatedRecyclePoints);
+        setUserWaterPoints(updatedWaterPoints);
+
         const firestore_user_doc = firebase.firestore().collection("users").doc(userID)
-        firestore_user_doc.update({ 'points': updatedPoints })
+        firestore_user_doc.update({
+            'points': updatedPoints,
+            'points_categories.air': updatedAirPoints,
+            'points_categories.energy': updatedEnergyPoints,
+            'points_categories.recycle': updatedRecyclePoints,
+            'points_categories.movement': updatedMovementPoints,
+            'points_categories.water': updatedWaterPoints,
+        })
         const doc = await firestore_user_doc.get();
         storeData(doc.data())
         navigation.navigate("Dashboard")
@@ -483,13 +560,13 @@ export default function AddActivitiesScreen({ navigation }) {
 
     const storeData = async (doc) => {
         try {
-          const jsonDoc = JSON.stringify(doc);
-          await AsyncStorage.setItem('userDoc', jsonDoc);
+            const jsonDoc = JSON.stringify(doc);
+            await AsyncStorage.setItem('userDoc', jsonDoc);
         } catch (e) {
-          console.log(e.message)
+            console.log(e.message)
         }
-      };
-    
+    };
+
     // * function to send data to firebase collection answers
     const checkToSubmit = async () => {
         try {
@@ -502,9 +579,9 @@ export default function AddActivitiesScreen({ navigation }) {
             } else {
                 checkRules()
             }
-          } catch (error) {
+        } catch (error) {
             console.error("Error checking document existence:", error);
-          }
+        }
     }
 
     // TODO IN THIS PAGE:
@@ -603,23 +680,23 @@ export default function AddActivitiesScreen({ navigation }) {
                 onRequestClose={() => {
                     setModalSubmit(!modalSubmit);
                 }}>
-               <View style={styles.centeredView}>
-                        <View style={styles.modalView}>
-                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.normalText}>
-                                    <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainRed }}>Ups!</Text>
-                                    {"\n"} {"\n"}Parece que já submeteste um registo hoje. Volta amanhã para ganhares mais pontos.
-                                </Text>
-                            </View>
-                            <Pressable
-                                onPress={() => {
-                                    setModalSubmit(!modalSubmit);
-                                    navigation.navigate("Dashboard")
-                                }} >
-                                <PrimaryButton_v1 text={"Compreendi"} />
-                            </Pressable>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.normalText}>
+                                <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainRed }}>Ups!</Text>
+                                {"\n"} {"\n"}Parece que já submeteste um registo hoje. Volta amanhã para ganhares mais pontos.
+                            </Text>
                         </View>
+                        <Pressable
+                            onPress={() => {
+                                setModalSubmit(!modalSubmit);
+                                navigation.navigate("Dashboard")
+                            }} >
+                            <PrimaryButton_v1 text={"Compreendi"} />
+                        </Pressable>
                     </View>
+                </View>
             </Modal>
             <Modal
                 animationType="fade"
@@ -646,43 +723,44 @@ export default function AddActivitiesScreen({ navigation }) {
                     </View>
                 </View>
             </Modal>
-                <Modal
-                    animationType="fade"
-                    transparent={true}
-                    visible={modalWarningSubmit}
-                    onRequestClose={() => {
-                        setModalWarningSubmit(!modalWarningSubmit);
-                    }}>
-                    <View style={styles.centeredView}>
-                        <View style={styles.modalView}>
-                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.normalText}>
-                                    <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainBlue }}>Atenção!</Text>
-                                    {"\n"} {"\n"}A ação "Submeter" só pode ser efetuada uma vez por dia. Se ainda não preencheste todos os campos que desejas preencher, opta pela opção "Guardar".
-                                </Text>
-                            </View>
-                            <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
-                                <Checkbox
-                                    style={styles.checkbox}
-                                    value={isChecked}
-                                    onValueChange={() => { setChecked(!isChecked) }}
-                                    color={CONST.secondaryGray}
-                                    onChange={() => { setChecked(!isChecked) }}
-                                />
-                                <Text style={[styles.normalText, { color: CONST.secondaryGray, marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Não voltar a mostrar.</Text>
-                            </View>
-                            <Pressable
-                                onPress={() => {
-                                    setModalWarningSubmit(!modalWarningSubmit);
-                                    if (isChecked) {
-                                        updateAsyncToWarning();
-                                    }
-                                }} >
-                                <PrimaryButton_v1 text={"Submeter"} />
-                            </Pressable>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalWarningSubmit}
+                onRequestClose={() => {
+                    setModalWarningSubmit(!modalWarningSubmit);
+                }}>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center' }}>
+                            <Text style={styles.normalText}>
+                                <Text style={{ fontFamily: 'K2D-SemiBold', color: CONST.mainBlue }}>Atenção!</Text>
+                                {"\n"} {"\n"}A ação "Submeter" só pode ser efetuada uma vez por dia. Se ainda não preencheste todos os campos que desejas preencher, opta pela opção "Guardar".
+                            </Text>
                         </View>
+                        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
+                            <Checkbox
+                                style={styles.checkbox}
+                                value={isChecked}
+                                onValueChange={() => { setChecked(!isChecked) }}
+                                color={CONST.secondaryGray}
+                                onChange={() => { setChecked(!isChecked) }}
+                            />
+                            <Text style={[styles.normalText, { color: CONST.secondaryGray, marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Não voltar a mostrar.</Text>
+                        </View>
+                        <Pressable
+                            onPress={() => {
+                                setModalWarningSubmit(!modalWarningSubmit);
+                                if (isChecked) {
+                                    updateAsyncToWarning();
+                                }
+                                checkToSubmit()
+                            }} >
+                            <PrimaryButton_v1 text={"Submeter"} />
+                        </Pressable>
                     </View>
-                </Modal>
+                </View>
+            </Modal>
             <AnimatedSvg
                 width={CONST.screenWidth}
                 height={heightAnimated.value}
@@ -775,7 +853,7 @@ export default function AddActivitiesScreen({ navigation }) {
             </View>
             <ScrollView
                 showsVerticalScrollIndicator={false}>
-                {toShow === 'air' && airQuestions && airQuestions.length > 0 &&
+                {(toShow === 'air' && airQuestions && airQuestions.length > 0) ?
                     airQuestions.map((callbackfn, id) => {
                         const firstQuestion = 0
                         if (id === firstQuestion + 1 && !airAnswers[firstQuestion][1]) {
@@ -831,257 +909,35 @@ export default function AddActivitiesScreen({ navigation }) {
                                 </View>
                             </View>
                         )
-                    })}
-                {toShow === 'energy' && energyQuestions && energyQuestions.length > 0 ?
-                    <View>
-                        <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>GERAL</Text>
-                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                            <View style={{ flexDirection: 'column' }}>
-                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                    {energyQuestions[0].description}
-                                </Text>
-                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                    {Object.keys(energyQuestions[0].options).sort().map((optionKey, idx) => {
-                                        const viewElements = [];
-                                        if (idx === 0 || idx === Math.round(Object.keys(energyQuestions[0].options).length / 2)) {
-                                            for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions[0].options).length / 2) : i < Object.keys(energyQuestions[0].options).length; i++) {
-                                                const key = Object.keys(energyQuestions[0].options).sort()[i]
-                                                const option = energyQuestions[0].options[key]
-                                                viewElements.push(
-                                                    <Pressable style={{ marginBottom: 10 }} onPress={() => {
-                                                        const updatedAnswers = { ...energyAnswers };
-                                                        const falseAnswers = updatedAnswers['geral'].map(() => false);
-
-                                                        if (!updatedAnswers['geral'][i]) {
-                                                            falseAnswers[i] = true;
-                                                        }
-
-                                                        updatedAnswers['geral'] = falseAnswers;
-                                                        setEnergyAnswers(updatedAnswers);
-                                                    }}>
-                                                        <OptionButton_v1 text={key} color={energyAnswers['geral'][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                )
-                                            }
-                                            return (
-                                                <View style={{ flexDirection: 'column', width: '45%' }}>
-                                                    {viewElements}
-                                                </View>)
-                                        } else {
-                                            <View></View>
-                                        }
-                                    })}
-                                </View>
-                            </View>
-                        </View>
-                        {energyDevices && energyDevices.length > 0 && energyDevices.map((callbackfn, index) => {
-                            return (
-                                <View>
-                                    <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>{whichDevice(energyDevices[index])}</Text>
-                                    {energyQuestions.filter(element => element.field.includes(energyDevices[index])).map((callbackfn, id) => {
-                                        if (id != 0 && !energyAnswers[energyDevices[index]][0][1]) {
-                                            return (<View key={'energy_' + id}></View>)
-                                        }
-                                        return (
-                                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                                <View key={'energy_' + id} style={{ flexDirection: 'column' }}>
-                                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                                        {energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].description}
-                                                    </Text>
-                                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                                        {Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort().map((optionKey, idx) => {
-                                                            const viewElements = [];
-                                                            if (idx === 0 || idx === Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2)) {
-                                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2) : i < Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length; i++) {
-                                                                    const key = Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort()[i]
-                                                                    const option = energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options[key]
-                                                                    viewElements.push(
-                                                                        <Pressable style={{ marginBottom: 10 }} onPress={() => {
-                                                                            const updatedAnswers = { ...energyAnswers };
-                                                                            const currentDeviceAnswers = updatedAnswers[energyDevices[index]][id];
-
-                                                                            // Invertir a resposta para o índice 'i'
-                                                                            currentDeviceAnswers[i] = !currentDeviceAnswers[i];
-
-                                                                            for (let j = 0; j < currentDeviceAnswers.length; j++) {
-                                                                                if (j !== i) {
-                                                                                    currentDeviceAnswers[j] = false;
-                                                                                }
-                                                                            }
-
-                                                                            setEnergyAnswers({ ...updatedAnswers });
-                                                                        }}>
-                                                                            <OptionButton_v1 text={key} color={energyAnswers[energyDevices[index]][id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
-                                                                        </Pressable>
-                                                                    )
-                                                                }
-                                                                return (
-                                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
-                                                                        {viewElements}
-                                                                    </View>)
-                                                            } else {
-                                                                <View key={'energy__' + id}></View>
-                                                            }
-                                                        })}
-                                                    </View>
-                                                </View>
-                                            </View>
-                                        )
-                                    })}
-                                </View>
-                            )
-                        })}
-                    </View>
-                    :
-                    <View></View>
-                }
-                {toShow === 'movement' && movementQuestions && movementQuestions.length > 0 &&
-                    movementQuestions.map((callbackfn, id) => (
-                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                            <View key={'movement_' + id} style={{ flexDirection: 'column' }}>
-                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                    {movementQuestions[id].description}
-                                </Text>
-                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                    {Object.keys(movementQuestions[id].options).sort().map((optionKey, idx) => {
-                                        const viewElements = [];
-                                        if (idx === 0 || idx === Math.round(Object.keys(movementQuestions[id].options).length / 2)) {
-                                            for (let i = idx; idx === 0 ? i < Math.round(Object.keys(movementQuestions[id].options).length / 2) : i < Object.keys(movementQuestions[id].options).length; i++) {
-                                                const key = Object.keys(movementQuestions[id].options).sort()[i]
-                                                const option = movementQuestions[id].options[key]
-                                                viewElements.push(
-                                                    <Pressable style={{ marginBottom: 10 }} onPress={() => {
-                                                        const updatedAnswers = [...movementAnswers];
-                                                        const falseAnswers = updatedAnswers[id].map(() => false);
-
-                                                        if (!updatedAnswers[id][i]) {
-                                                            falseAnswers[i] = true;
-                                                        }
-
-                                                        updatedAnswers[id] = falseAnswers;
-                                                        setMovementAnswers(updatedAnswers);
-                                                    }}>
-                                                        <OptionButton_v1 text={key} color={movementAnswers[id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
-                                                    </Pressable>
-                                                )
-                                            }
-                                            return (
-                                                <View style={{ flexDirection: 'column', width: '45%' }}>
-                                                    {viewElements}
-                                                </View>)
-                                        } else {
-                                            <View key={'movement_' + id}></View>
-                                        }
-                                    })}
-                                </View>
-                            </View>
-                        </View>
-                    ))}
-                {toShow === 'recycle' && recycleQuestions && recycleQuestions.length > 0 &&
-                    recycleQuestions.map((callbackfn, id) => {
-                        const printerQuestion = 1
-                        const bottleQuestion = 3
-
-                        if (id === printerQuestion + 1 && !recycleAnswers[printerQuestion][1]) {
-                            return (<View key={'recyle_' + id}></View>)
-                        }
-                        if (id === bottleQuestion + 1 && ((recycleAnswers[bottleQuestion][0] || (recycleAnswers[bottleQuestion][2]) || (!recycleAnswers[bottleQuestion][0] && !recycleAnswers[bottleQuestion][1] && !recycleAnswers[bottleQuestion][2])))) {
-                            return (<View key={'recyle_' + id}></View>)
-                        }
-                        if (recycleQuestions[id].adjustment == "drink_water" && !initialQuestions.drink_water) {
-                            return (<View key={'recyle_' + id}></View>)
-                        }
-                        if (recycleQuestions[id].adjustment == "recycle" && initialQuestions.recycle.length == 0) {
-                            return (<View key={'recyle_' + id}></View>)
-                        }
-                        return (
+                    }) :
+                    (toShow === 'energy' && energyQuestions && energyQuestions.length > 0) ?
+                        <View>
+                            <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>GERAL</Text>
                             <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                <View key={'recyle_' + id} style={{ flexDirection: 'column' }}>
+                                <View style={{ flexDirection: 'column' }}>
                                     <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                        {recycleQuestions[id].description}
-                                    </Text>
-                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-evenly' }}>
-                                        {Object.keys(recycleQuestions[id].options).sort().map((optionKey, idx) => {
-                                            const viewElements = [];
-
-                                            if (idx === 0 || idx === Math.round(Object.keys(recycleQuestions[id].options).length / 2)) {
-                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(recycleQuestions[id].options).length / 2) : i < Object.keys(recycleQuestions[id].options).length; i++) {
-                                                    const key = Object.keys(recycleQuestions[id].options).sort()[i];
-                                                    const option = recycleQuestions[id].options[key];
-
-                                                    const isOptionSelected = recycleAnswers[id][i];
-                                                    const backgroundColor = isOptionSelected ? whichColor(categories[toShow], toShow) : CONST.secondaryGray;
-
-                                                    viewElements.push(
-                                                        <Pressable
-                                                            style={{ marginBottom: 10 }}
-                                                            onPress={() => {
-                                                                const updatedAnswers = [...recycleAnswers];
-                                                                const falseAnswers = updatedAnswers[id].map(() => false);
-
-                                                                if (!updatedAnswers[id][i]) {
-                                                                    falseAnswers[i] = true;
-                                                                }
-
-                                                                updatedAnswers[id] = falseAnswers;
-                                                                setRecycleAnswers(updatedAnswers);
-                                                            }}
-                                                        >
-                                                            <OptionButton_v1 text={key} color={backgroundColor} />
-                                                        </Pressable>
-                                                    );
-                                                }
-
-                                                return (
-                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
-                                                        {viewElements}
-                                                    </View>
-                                                );
-                                            } else {
-                                                return null; // Retorna nulo para não renderizar nada
-                                            }
-                                        })}
-                                    </View>
-                                </View>
-                            </View>
-                        )
-                    })}
-                {toShow === 'water' && waterQuestions && waterQuestions.length > 0 &&
-                    waterQuestions.map((callbackfn, id) => {
-                        const firstQuestion = 0
-
-                        if (id === firstQuestion + 1 && !waterAnswers[firstQuestion][1]) {
-                            return (<View key={'water_' + id}></View>)
-                        }
-                        if (id === firstQuestion + 2 && !waterAnswers[firstQuestion][1]) {
-                            return (<View key={'water_' + id}></View>)
-                        }
-                        return (
-                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
-                                <View key={'water_' + id} style={{ flexDirection: 'column' }}>
-                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
-                                        {waterQuestions[id].description}
+                                        {energyQuestions[0].description}
                                     </Text>
                                     <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
-                                        {Object.keys(waterQuestions[id].options).sort().map((optionKey, idx) => {
+                                        {Object.keys(energyQuestions[0].options).sort().map((optionKey, idx) => {
                                             const viewElements = [];
-                                            if (idx === 0 || idx === Math.round(Object.keys(waterQuestions[id].options).length / 2)) {
-                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(waterQuestions[id].options).length / 2) : i < Object.keys(waterQuestions[id].options).length; i++) {
-                                                    const key = Object.keys(waterQuestions[id].options).sort()[i]
-                                                    const option = waterQuestions[id].options[key]
+                                            if (idx === 0 || idx === Math.round(Object.keys(energyQuestions[0].options).length / 2)) {
+                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions[0].options).length / 2) : i < Object.keys(energyQuestions[0].options).length; i++) {
+                                                    const key = Object.keys(energyQuestions[0].options).sort()[i]
+                                                    const option = energyQuestions[0].options[key]
                                                     viewElements.push(
                                                         <Pressable style={{ marginBottom: 10 }} onPress={() => {
-                                                            const updatedAnswers = [...waterAnswers];
-                                                            const falseAnswers = updatedAnswers[id].map(() => false);
+                                                            const updatedAnswers = { ...energyAnswers };
+                                                            const falseAnswers = updatedAnswers['geral'].map(() => false);
 
-                                                            if (!updatedAnswers[id][i]) {
+                                                            if (!updatedAnswers['geral'][i]) {
                                                                 falseAnswers[i] = true;
                                                             }
 
-                                                            updatedAnswers[id] = falseAnswers;
-                                                            setWaterAnswers(updatedAnswers);
+                                                            updatedAnswers['geral'] = falseAnswers;
+                                                            setEnergyAnswers(updatedAnswers);
                                                         }}>
-                                                            <OptionButton_v1 text={key} color={waterAnswers[id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                            <OptionButton_v1 text={key} color={energyAnswers['geral'][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
                                                         </Pressable>
                                                     )
                                                 }
@@ -1090,14 +946,236 @@ export default function AddActivitiesScreen({ navigation }) {
                                                         {viewElements}
                                                     </View>)
                                             } else {
-                                                <View key={'water_' + id}></View>
+                                                <View></View>
                                             }
                                         })}
                                     </View>
                                 </View>
                             </View>
-                        )
-                    })}
+                            {energyDevices && energyDevices.length > 0 && energyDevices.map((callbackfn, index) => {
+                                return (
+                                    <View>
+                                        <Text style={[styles.subText, { fontFamily: 'K2D-SemiBold' }]}>{whichDevice(energyDevices[index])}</Text>
+                                        {energyQuestions.filter(element => element.field.includes(energyDevices[index])).map((callbackfn, id) => {
+                                            if (id != 0 && !energyAnswers[energyDevices[index]][0][1]) {
+                                                return (<View key={'energy_' + id}></View>)
+                                            }
+                                            return (
+                                                <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                                    <View key={'energy_' + id} style={{ flexDirection: 'column' }}>
+                                                        <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                                            {energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].description}
+                                                        </Text>
+                                                        <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                                            {Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort().map((optionKey, idx) => {
+                                                                const viewElements = [];
+                                                                if (idx === 0 || idx === Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2)) {
+                                                                    for (let i = idx; idx === 0 ? i < Math.round(Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length / 2) : i < Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).length; i++) {
+                                                                        const key = Object.keys(energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options).sort()[i]
+                                                                        const option = energyQuestions.filter(element => element.field.includes(energyDevices[index]))[id].options[key]
+                                                                        viewElements.push(
+                                                                            <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                                                const updatedAnswers = { ...energyAnswers };
+                                                                                const currentDeviceAnswers = updatedAnswers[energyDevices[index]][id];
+
+                                                                                // Invertir a resposta para o índice 'i'
+                                                                                currentDeviceAnswers[i] = !currentDeviceAnswers[i];
+
+                                                                                for (let j = 0; j < currentDeviceAnswers.length; j++) {
+                                                                                    if (j !== i) {
+                                                                                        currentDeviceAnswers[j] = false;
+                                                                                    }
+                                                                                }
+
+                                                                                setEnergyAnswers({ ...updatedAnswers });
+                                                                            }}>
+                                                                                <OptionButton_v1 text={key} color={energyAnswers[energyDevices[index]][id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                                            </Pressable>
+                                                                        )
+                                                                    }
+                                                                    return (
+                                                                        <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                                            {viewElements}
+                                                                        </View>)
+                                                                } else {
+                                                                    <View key={'energy__' + id}></View>
+                                                                }
+                                                            })}
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                            )
+                                        })}
+                                    </View>
+                                )
+                            })}
+                        </View>
+                        :
+                        (toShow === 'movement' && movementQuestions && movementQuestions.length > 0) ?
+                            movementQuestions.map((callbackfn, id) => (
+                                <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                    <View key={'movement_' + id} style={{ flexDirection: 'column' }}>
+                                        <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                            {movementQuestions[id].description}
+                                        </Text>
+                                        <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                            {Object.keys(movementQuestions[id].options).sort().map((optionKey, idx) => {
+                                                const viewElements = [];
+                                                if (idx === 0 || idx === Math.round(Object.keys(movementQuestions[id].options).length / 2)) {
+                                                    for (let i = idx; idx === 0 ? i < Math.round(Object.keys(movementQuestions[id].options).length / 2) : i < Object.keys(movementQuestions[id].options).length; i++) {
+                                                        const key = Object.keys(movementQuestions[id].options).sort()[i]
+                                                        const option = movementQuestions[id].options[key]
+                                                        viewElements.push(
+                                                            <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                                const updatedAnswers = [...movementAnswers];
+                                                                const falseAnswers = updatedAnswers[id].map(() => false);
+
+                                                                if (!updatedAnswers[id][i]) {
+                                                                    falseAnswers[i] = true;
+                                                                }
+
+                                                                updatedAnswers[id] = falseAnswers;
+                                                                setMovementAnswers(updatedAnswers);
+                                                            }}>
+                                                                <OptionButton_v1 text={key} color={movementAnswers[id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                            </Pressable>
+                                                        )
+                                                    }
+                                                    return (
+                                                        <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                            {viewElements}
+                                                        </View>)
+                                                } else {
+                                                    <View key={'movement_' + id}></View>
+                                                }
+                                            })}
+                                        </View>
+                                    </View>
+                                </View>
+                            )) :
+                            (toShow === 'recycle' && recycleQuestions && recycleQuestions.length > 0) ?
+                                recycleQuestions.map((callbackfn, id) => {
+                                    const printerQuestion = 1
+                                    const bottleQuestion = 3
+
+                                    if (id === printerQuestion + 1 && !recycleAnswers[printerQuestion][1]) {
+                                        return (<View key={'recyle_' + id}></View>)
+                                    }
+                                    if (id === bottleQuestion + 1 && ((recycleAnswers[bottleQuestion][0] || (recycleAnswers[bottleQuestion][2]) || (!recycleAnswers[bottleQuestion][0] && !recycleAnswers[bottleQuestion][1] && !recycleAnswers[bottleQuestion][2])))) {
+                                        return (<View key={'recyle_' + id}></View>)
+                                    }
+                                    if (recycleQuestions[id].adjustment == "drink_water" && !initialQuestions.drink_water) {
+                                        return (<View key={'recyle_' + id}></View>)
+                                    }
+                                    if (recycleQuestions[id].adjustment == "recycle" && initialQuestions.recycle.length == 0) {
+                                        return (<View key={'recyle_' + id}></View>)
+                                    }
+                                    return (
+                                        <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                            <View key={'recyle_' + id} style={{ flexDirection: 'column' }}>
+                                                <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                                    {recycleQuestions[id].description}
+                                                </Text>
+                                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'space-evenly' }}>
+                                                    {Object.keys(recycleQuestions[id].options).sort().map((optionKey, idx) => {
+                                                        const viewElements = [];
+
+                                                        if (idx === 0 || idx === Math.round(Object.keys(recycleQuestions[id].options).length / 2)) {
+                                                            for (let i = idx; idx === 0 ? i < Math.round(Object.keys(recycleQuestions[id].options).length / 2) : i < Object.keys(recycleQuestions[id].options).length; i++) {
+                                                                const key = Object.keys(recycleQuestions[id].options).sort()[i];
+                                                                const option = recycleQuestions[id].options[key];
+
+                                                                const isOptionSelected = recycleAnswers[id][i];
+                                                                const backgroundColor = isOptionSelected ? whichColor(categories[toShow], toShow) : CONST.secondaryGray;
+
+                                                                viewElements.push(
+                                                                    <Pressable
+                                                                        style={{ marginBottom: 10 }}
+                                                                        onPress={() => {
+                                                                            const updatedAnswers = [...recycleAnswers];
+                                                                            const falseAnswers = updatedAnswers[id].map(() => false);
+
+                                                                            if (!updatedAnswers[id][i]) {
+                                                                                falseAnswers[i] = true;
+                                                                            }
+
+                                                                            updatedAnswers[id] = falseAnswers;
+                                                                            setRecycleAnswers(updatedAnswers);
+                                                                        }}
+                                                                    >
+                                                                        <OptionButton_v1 text={key} color={backgroundColor} />
+                                                                    </Pressable>
+                                                                );
+                                                            }
+
+                                                            return (
+                                                                <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                                    {viewElements}
+                                                                </View>
+                                                            );
+                                                        } else {
+                                                            return null; // Retorna nulo para não renderizar nada
+                                                        }
+                                                    })}
+                                                </View>
+                                            </View>
+                                        </View>
+                                    )
+                                }) :
+                                (toShow === 'water' && waterQuestions && waterQuestions.length > 0) ?
+                                    waterQuestions.map((callbackfn, id) => {
+                                        const firstQuestion = 0
+
+                                        if (id === firstQuestion + 1 && !waterAnswers[firstQuestion][1]) {
+                                            return (<View key={'water_' + id}></View>)
+                                        }
+                                        if (id === firstQuestion + 2 && !waterAnswers[firstQuestion][1]) {
+                                            return (<View key={'water_' + id}></View>)
+                                        }
+                                        return (
+                                            <View style={[styles.cardBox, { marginBottom: 20 }]}>
+                                                <View key={'water_' + id} style={{ flexDirection: 'column' }}>
+                                                    <Text style={[styles.normalText, { marginBottom: 20, fontFamily: 'K2D-SemiBold' }]}>
+                                                        {waterQuestions[id].description}
+                                                    </Text>
+                                                    <View style={{ flexDirection: 'row', flex: 1, justifyContent: "space-evenly" }}>
+                                                        {Object.keys(waterQuestions[id].options).sort().map((optionKey, idx) => {
+                                                            const viewElements = [];
+                                                            if (idx === 0 || idx === Math.round(Object.keys(waterQuestions[id].options).length / 2)) {
+                                                                for (let i = idx; idx === 0 ? i < Math.round(Object.keys(waterQuestions[id].options).length / 2) : i < Object.keys(waterQuestions[id].options).length; i++) {
+                                                                    const key = Object.keys(waterQuestions[id].options).sort()[i]
+                                                                    const option = waterQuestions[id].options[key]
+                                                                    viewElements.push(
+                                                                        <Pressable style={{ marginBottom: 10 }} onPress={() => {
+                                                                            const updatedAnswers = [...waterAnswers];
+                                                                            const falseAnswers = updatedAnswers[id].map(() => false);
+
+                                                                            if (!updatedAnswers[id][i]) {
+                                                                                falseAnswers[i] = true;
+                                                                            }
+
+                                                                            updatedAnswers[id] = falseAnswers;
+                                                                            setWaterAnswers(updatedAnswers);
+                                                                        }}>
+                                                                            <OptionButton_v1 text={key} color={waterAnswers[id][i] ? whichColor(categories[toShow], toShow) : CONST.secondaryGray} />
+                                                                        </Pressable>
+                                                                    )
+                                                                }
+                                                                return (
+                                                                    <View style={{ flexDirection: 'column', width: '45%' }}>
+                                                                        {viewElements}
+                                                                    </View>)
+                                                            } else {
+                                                                <View key={'water_' + id}></View>
+                                                            }
+                                                        })}
+                                                    </View>
+                                                </View>
+                                            </View>
+                                        )
+                                    })
+                                    :
+                                    <ActivityIndicator size="large" color={whichColor(categories[toShow], toShow)} style={{ marginBottom: CONST.boxCardMargin, marginTop: CONST.boxCardMargin }} />}
                 {modalWithoutCat ? <></> :
                     <View style={[styles.doubleButtonsView, { paddingBottom: CONST.layoutPaddingVertical / 2 }]}>
                         <Pressable
@@ -1110,9 +1188,12 @@ export default function AddActivitiesScreen({ navigation }) {
                         </Pressable>
                         <Pressable
                             onPress={() => {
-                                checkToSubmit()
                                 saveData()
-
+                                if (showWarning === null) {
+                                    setModalWarningSubmit(true)
+                                } else {
+                                    checkToSubmit()
+                                }
                             }}
                             style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
                             <PrimaryButton_v1 text={"Submeter"} />

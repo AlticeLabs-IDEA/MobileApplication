@@ -71,7 +71,7 @@ export default function RegisterScreen({ navigation }) {
                     last_conection: currentDate,
                     points: {},
                     active_categories: { 'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0 },
-                    points_categories: { 'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0 },
+                    points_categories: { 'air': {}, 'water': {}, 'energy': {}, 'recycle': {}, 'movement': {} },
                     memorized_answers: { 'air' : [], 'energy': [], 'movement': [], 'recycle': [], 'water': []},
                     admin: false,
                     authorized: false,
