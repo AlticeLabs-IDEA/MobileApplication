@@ -8,7 +8,6 @@ import { View } from "react-native";
 import { getAuth } from "firebase/auth";
 import firebase from "../../config/firebase.js";
 
-
 // IMPORT PAGES
 import DashboardScreen from "../pages/dashboard/page_dashboard"
 import DetailsScreen from "../pages/dashboard/page_details"
@@ -16,12 +15,13 @@ import ProfileScreen from "../pages/profile/page_profile"
 import SettingsScreen from "../pages/profile/page_settings"
 import RecordsScreen from "../pages/records/page_records"
 import StatsScreen from "../pages/stats/page_stats"
-import Onboarding from "../pages/onboarding/page_onboarding"
 import CategoryScreen from "../pages/authentication/page_category"
 import ConfigurationScreen from "../pages/authentication/page_configuration"
+import OnboardingScreen from '../pages/authentication/page_onboarding.js';
 import LoginScreen from "../pages/authentication/page_login"
 import RegisterScreen from "../pages/authentication/page_register"
-import WelcomeScreen from "../pages/authentication/page_welcome"
+import LoadingScreen from "../pages/authentication/page_loading.js"
+import WelcomeScreen from "../pages/authentication/page_welcome.js"
 import PasswordScreen from '../pages/authentication/page_password';
 
 // IMPORT STYLE
@@ -75,16 +75,26 @@ export const ProfileStackNavigation = ({ navigation }) => {
 export const AuthenticationStackNavigation = ({ navigation }) => {
     return (
         <AuthenticationStack.Navigator
-            initialRouteName='Welcome'>
+            initialRouteName='Loading'>
             <AuthenticationStack.Screen
-                name="Welcome"
+                name="Loading"
                 options={{ headerShown: false }}
-                component={WelcomeScreen}>
+                component={LoadingScreen}>
             </AuthenticationStack.Screen>
             <AuthenticationStack.Screen
                 name="Login"
                 options={{ headerShown: false }}
                 component={LoginScreen}>
+            </AuthenticationStack.Screen>
+            <AuthenticationStack.Screen
+                name="Onboarding"
+                options={{ headerShown: false }}
+                component={OnboardingScreen}>
+            </AuthenticationStack.Screen>
+            <AuthenticationStack.Screen
+                name="Welcome"
+                options={{ headerShown: false }}
+                component={WelcomeScreen}>
             </AuthenticationStack.Screen>
             <AuthenticationStack.Screen
                 name="Password"

@@ -290,6 +290,8 @@ export const styles = StyleSheet.create({
         fontSize: CONST.normalText,
         color: CONST.mainGray,
         marginBottom: CONST.normalTextMargin,
+        textShadowColor: CONST.pureWhite, 
+        textShadowRadius: 3, 
     },
 
     subText: {
