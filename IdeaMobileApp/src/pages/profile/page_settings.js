@@ -69,6 +69,7 @@ export default function SettingsScreen({ route, navigation }) {
       firestore_user_doc.update({
         'name': name,
         'department': department,
+        'department_name': departmentName,
         'email': email
       })
       if (oldEmail !== email) {

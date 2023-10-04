@@ -68,7 +68,11 @@ export default function AddActivitiesScreen({ navigation }) {
     let movementPoints = 0
     const [waterPointsTotal, setWaterPointsTotal] = useState(0)
     let waterPoints = 0
-
+    const [departmentPointsAir, setDepartmentPointsAir] = useState()
+    const [departmentPointsEnergy, setDepartmentPointsEnergy] = useState()
+    const [departmentPointsMovement, setDepartmentPointsMovement] = useState()
+    const [departmentPointsRecycle, setDepartmentPointsRecycle] = useState()
+    const [departmentPointsWater, setDepartmentPointsWater] = useState()
 
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
@@ -88,6 +92,29 @@ export default function AddActivitiesScreen({ navigation }) {
         }
     };
 
+    const getAreaPoints = (data) => {
+            setDepartmentPointsAir(data.air_points)
+            setDepartmentPointsEnergy(data.energy_points)
+            setDepartmentPointsMovement(data.movement_points)
+            setDepartmentPointsRecycle(data.recycle_points)
+            setDepartmentPointsWater(data.water_points)
+    }
+
+    const getDepartmentPoints = async (dep) => {
+        try {
+            const firestore_department_doc = firebase.firestore().collection("departments").doc(dep);
+            const doc = await firestore_department_doc.get();
+
+            if (doc.exists) {
+                getAreaPoints(doc.data());
+            } else {
+                console.log("Department doesn't exist!")
+            }
+        } catch (error) {
+            console.error("Error checking document existence:", error);
+        }
+    }
+
     // * function to get the categories active and the first category to show
     const getActiveCategories = (doc) => {
         console.log("** ENTREI NO GET ACTIVE CATEGORIES")
@@ -101,6 +128,8 @@ export default function AddActivitiesScreen({ navigation }) {
         setUserMovementPoints(doc.points_categories.movement)
         setUserRecyclePoints(doc.points_categories.recycle)
         setUserWaterPoints(doc.points_categories.water)
+
+        getDepartmentPoints(doc.department)
 
         if (categories['air'] !== 0) {
             setToShow('air')
@@ -553,8 +582,59 @@ export default function AddActivitiesScreen({ navigation }) {
             'points_categories.movement': updatedMovementPoints,
             'points_categories.water': updatedWaterPoints,
         })
+
+        const updatedAirPointsDep = { ...departmentPointsAir };
+        const updatedEnergyPointsDep = { ...departmentPointsEnergy };
+        const updatedMovementPointsDep = { ...departmentPointsMovement };
+        const updatedRecyclePointsDep = { ...departmentPointsRecycle };
+        const updatedWaterPointsDep = { ...departmentPointsWater };
+
+        if (getCurrentDate() in departmentPointsAir) {
+            updatedAirPointsDep[getCurrentDate()] = departmentPointsAir[getCurrentDate()] + airPoints
+        } else {
+            updatedAirPointsDep[getCurrentDate()] = airPoints
+        }
+        if (getCurrentDate() in departmentPointsEnergy) {
+            updatedEnergyPointsDep[getCurrentDate()] = departmentPointsEnergy[getCurrentDate()] + energyPoints
+        } else {
+            updatedEnergyPointsDep[getCurrentDate()] = energyPoints
+        }
+        if (getCurrentDate() in departmentPointsMovement) {
+            updatedMovementPointsDep[getCurrentDate()] = departmentPointsMovement[getCurrentDate()] + movementPoints
+        } else {
+            updatedMovementPointsDep[getCurrentDate()] = movementPoints
+        }
+        if (getCurrentDate() in departmentPointsRecycle) {
+            updatedRecyclePointsDep[getCurrentDate()] = departmentPointsRecycle[getCurrentDate()] + recyclePoints
+        } else {
+            updatedRecyclePointsDep[getCurrentDate()] = recyclePoints
+        }
+        if (getCurrentDate() in departmentPointsWater) {
+            updatedWaterPointsDep[getCurrentDate()] = departmentPointsWater[getCurrentDate()] + waterPoints
+        } else {
+            updatedWaterPointsDep[getCurrentDate()] = waterPoints
+        }
+       
+        setDepartmentPointsAir(updatedAirPointsDep);
+        setDepartmentPointsEnergy(updatedMovementPointsDep);
+        setDepartmentPointsMovement(updatedEnergyPointsDep);
+        setDepartmentPointsRecycle(updatedRecyclePointsDep);
+        setDepartmentPointsWater(updatedWaterPointsDep);
+        console.log(updatedAirPointsDep)
+
+        const firestore_department_doc = firebase.firestore().collection("departments").doc(userDOC.department);
+        
+        firestore_department_doc.update({
+           'air_points' : updatedAirPointsDep,
+           'energy_points' : updatedEnergyPointsDep,
+           'movement_points' : updatedMovementPointsDep,
+           'recycle_points' : updatedRecyclePointsDep,
+           'water_points' : updatedWaterPointsDep,
+        })
+
         const doc = await firestore_user_doc.get();
         storeData(doc.data())
+
         navigation.navigate("Dashboard")
     }
 
