@@ -2,7 +2,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, Modal, Image, ScrollView, Text, View, TextInput, Alert, BackHandler } from "react-native";
+import { Pressable, Modal, ImageBackground, Image, ScrollView, Text, View, TextInput, Alert, BackHandler } from "react-native";
 import { useEffect, useState } from "react";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
@@ -72,7 +72,7 @@ export default function RegisterScreen({ navigation }) {
                     points: {},
                     active_categories: { 'air': 0, 'water': 0, 'energy': 0, 'recycle': 0, 'movement': 0 },
                     points_categories: { 'air': {}, 'water': {}, 'energy': {}, 'recycle': {}, 'movement': {} },
-                    memorized_answers: { 'air' : [], 'energy': [], 'movement': [], 'recycle': [], 'water': []},
+                    memorized_answers: { 'air': [], 'energy': [], 'movement': [], 'recycle': [], 'water': [] },
                     admin: false,
                     authorized: false,
                 });
@@ -125,180 +125,170 @@ export default function RegisterScreen({ navigation }) {
     }, [visible])
 
     return (
-        <SafeAreaProvider style={[styles.mainContainer, { paddingBottom: 0 }]}>
+        <SafeAreaProvider style={[styles.mainContainer, { height: CONST.screenHeight + CONST.layoutPaddingVertical / 2, paddingTop: 0, paddingBottom: 0 }]}>
             <StatusBar style={"dark"} />
-            <Modal
-                animationType="fade"
-                transparent={true}
-                visible={loading}
-                onRequestClose={() => {
-                    setLoading(!loading);
-                }}>
-                <View style={styles.centeredView}>
-                    <View style={{ bottom: CONST.screenHeight / 2, zIndex: 1000, left: CONST.screenWidth / 2.5, position: 'absolute' }}>
-                        <Image source={require('../../assets/images/loading_bolt_blue.gif')} resizeMode="contain" style={{ tintColor: 'white', height: 80, width: 80 }} />
-                    </View>
-                </View>
-            </Modal>
-            <ScrollView
-                showsVerticalScrollIndicator={false}>
-                <Text style={styles.indicatorTitle}>
-                    Registo
-                </Text>
-            </ScrollView>
-
-            <ScrollView
-                showsVerticalScrollIndicator={false}>
-                <Text style={[styles.descriptionText, { marginBottom: CONST.descriptionTextMargin }]}>
-                    Bem-vindo à aplicação IDEA! {"\n"}Para criar uma nova conta precisamos que introduzas algumas informações sobre ti.{"\n"}
-                    Preenche todos os campos com cuidado. {"\n"}Posteriormente, podes editar a informação que inserires sempre que quiseres no teu perfil.
-                </Text>
-                <View style={[styles.cardBox]}>
-                    <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <TextInput
-                                style={[styles.inputField, { width: '100%' }]}
-                                value={name}
-                                onChangeText={(text) => { setName(text) }}
-                                placeholder={'Nome'}
-                                placeholderTextColor={CONST.neutralGray}
-                            />
+            <ImageBackground source={require('../../assets/images/background_image.png')} style={{ width: '100%', height: '100%' }} resizeMode="repeat">
+                <View style={{ backgroundColor: "rgba(255, 255, 255, 0.9)", width: '100%', height: '100%', flex: 1, flexDirection: 'column', alignItems: 'center' }}>
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={loading}
+                        onRequestClose={() => {
+                            setLoading(!loading);
+                        }}>
+                        <View style={styles.centeredView}>
+                            <View style={{ bottom: CONST.screenHeight / 2, zIndex: 1000, left: CONST.screenWidth / 2.5, position: 'absolute' }}>
+                                <Image source={require('../../assets/images/loading_bolt_blue.gif')} resizeMode="contain" style={{ tintColor: 'white', height: 80, width: 80 }} />
+                            </View>
                         </View>
-                    </View>
-                    <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <TextInput
-                                style={[styles.inputField, { width: '100%' }]}
-                                value={email}
-                                onChangeText={(text) => { setEmail(text) }}
-                                placeholder={'E-mail'}
-                                placeholderTextColor={CONST.neutralGray}
-                            />
+                    </Modal>
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}>
+                            <Text style={[styles.indicatorTitle, { paddingTop: CONST.layoutPaddingVertical }]}>
+                            Registo
+                        </Text>
+                        <Text style={[styles.descriptionText, { marginBottom: CONST.descriptionTextMargin }]}>
+                            Para te juntares à equipa precisamos que introduzas algumas informações sobre ti.{"\n"}
+                            Preenche todos os campos com cuidado.{"\n"}
+                            Posteriormente, podes editar a informação que inserires sempre que quiseres no teu perfil.
+                        </Text>
+                        <View style={[styles.cardBox]}>
+                            <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <TextInput
+                                        style={[styles.inputField, { width: '100%' }]}
+                                        value={name}
+                                        onChangeText={(text) => { setName(text) }}
+                                        placeholder={'Nome'}
+                                        placeholderTextColor={CONST.neutralGray}
+                                    />
+                                </View>
+                            </View>
+                            <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <TextInput
+                                        style={[styles.inputField, { width: '100%' }]}
+                                        value={email}
+                                        onChangeText={(text) => { setEmail(text) }}
+                                        placeholder={'E-mail'}
+                                        placeholderTextColor={CONST.neutralGray}
+                                    />
+                                </View>
+                            </View>
+                            <View style={{ flexDirection: 'column', marginBottom: open ? 220 : 20, marginTop: 10 }}>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <DropDownPicker
+                                        open={open}
+                                        value={department}
+                                        items={departments}
+                                        setOpen={setOpen}
+                                        setValue={setDepartment}
+                                        setItems={setDepartments}
+                                        style={styles.inputField}
+                                        dropDownContainerStyle={[styles.inputField, { height: 200 }]}
+                                        textStyle={[styles.normalText, { fontFamily: 'K2D-Regular', marginBottom: 0 }]}
+                                        maxHeight={200}
+                                        placeholder="Departamento"
+                                        placeholderStyle={{ color: CONST.neutralGray }}
+                                        theme="LIGHT"
+                                        closeOnBackPressed={true}
+                                        onSelectItem={(item) => { setDepartmentName(item.label) }}
+                                        listMode="SCROLLVIEW"
+                                        zIndex={10000}
+                                    />
+                                </View>
+                            </View>
+                            <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <TextInput
+                                        style={[styles.inputField, { width: '100%' }]}
+                                        value={password}
+                                        onChangeText={(text) => { setPassword(text) }}
+                                        placeholder={'Palavra-passe (Min. 6 caracteres)'}
+                                        placeholderTextColor={CONST.neutralGray}
+                                        secureTextEntry={!showPassword}
+                                    />
+                                    <Pressable
+                                        style={{ position: 'absolute', right: 0, padding: 18, zIndex: 100 }}
+                                        onPress={() => {
+                                            setShowPassword(!showPassword)
+                                        }}>
+                                        {showPassword ?
+                                            <FontAwesome name="eye-slash" size={18} color={CONST.mainGray} />
+                                            :
+                                            <FontAwesome name="eye" size={18} color={CONST.mainGray} />}
+                                    </Pressable>
+                                </View>
+                            </View>
+                            <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <TextInput
+                                        style={[styles.inputField, { width: '100%' }]}
+                                        value={passwordConfirm}
+                                        onChangeText={(text) => { setPasswordConfirm(text) }}
+                                        placeholder={'Confirmação de palavra-passe'}
+                                        placeholderTextColor={CONST.neutralGray}
+                                        secureTextEntry={!showPasswordConfirm}
+                                    />
+                                    <Pressable
+                                        style={{ position: 'absolute', right: 0, padding: 18, zIndex: 100 }}
+                                        onPress={() => {
+                                            setShowPasswordConfirm(!showPasswordConfirm)
+                                        }}>
+                                        {showPasswordConfirm ?
+                                            <FontAwesome name="eye-slash" size={18} color={CONST.mainGray} />
+                                            :
+                                            <FontAwesome name="eye" size={18} color={CONST.mainGray} />}
+                                    </Pressable>
+                                </View>
+                            </View>
                         </View>
-                    </View>
-                    <View style={{ flexDirection: 'column', marginBottom: open ? 220 : 20, marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <DropDownPicker
-                                open={open}
-                                value={department}
-                                items={departments}
-                                setOpen={setOpen}
-                                setValue={setDepartment}
-                                setItems={setDepartments}
-                                style={styles.inputField}
-                                dropDownContainerStyle={[styles.inputField, { height: 200 }]}
-                                textStyle={[styles.normalText, { fontFamily: 'K2D-Regular', marginBottom: 0 }]}
-                                maxHeight={200}
-                                placeholder="Departamento"
-                                placeholderStyle={{ color: CONST.neutralGray }}
-                                theme="LIGHT"
-                                closeOnBackPressed={true}
-                                onSelectItem={(item) => {setDepartmentName(item.label)}}
-                                listMode="SCROLLVIEW"
-                                zIndex={10000}
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
+                            <Checkbox
+                                style={styles.checkbox}
+                                value={isChecked}
+                                onValueChange={() => {
+                                    setChecked(!isChecked)
+                                    if (!isChecked) {
+                                        setVisible(false)
+                                    }
+                                }}
+                                color={isChecked ? CONST.mainGray : undefined}
+                                onChange={() => {
+                                    setChecked(!isChecked)
+                                }}
                             />
+                            <Text style={[styles.normalText, { marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Declaro que li e concordo com os termos de utilização.</Text>
                         </View>
-                    </View>
-                    <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <TextInput
-                                style={[styles.inputField, { width: '100%' }]}
-                                value={password}
-                                onChangeText={(text) => { setPassword(text) }}
-                                placeholder={'Palavra-passe (Min. 6 caracteres)'}
-                                placeholderTextColor={CONST.neutralGray}
-                                secureTextEntry={!showPassword}
-                            />
+                        {visible ?
+                            <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
+                                <Text style={[styles.subText, { color: CONST.mainRed }]}>Para criar conta na aplicação IDEA precisa de ler e concordar com os termos de utilização.</Text>
+                            </View>
+                            :
+                            <></>}
+                        <View style={[styles.doubleButtonsView, { marginTop: CONST.layoutPaddingVertical/2, marginBottom: CONST.layoutPaddingVertical/2 }]}>
                             <Pressable
-                                style={{ position: 'absolute', right: 0, padding: 18, zIndex: 100 }}
                                 onPress={() => {
-                                    setShowPassword(!showPassword)
-                                }}>
-                                {showPassword ?
-                                    <FontAwesome name="eye-slash" size={18} color={CONST.mainGray} />
-                                    :
-                                    <FontAwesome name="eye" size={18} color={CONST.mainGray} />}
+                                    navigation.navigate("Welcome")
+                                }}
+                                style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
+                                <PrimaryButton_v2 text={"\u0020\u0020Voltar\u0020\u0020"} />
+                            </Pressable>
+                            <Pressable
+                                onPress={() => {
+                                    setLoading(true)
+                                    isChecked ?
+                                        checkData()
+                                        :
+                                        setVisible(true)
+                                }}
+                                style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
+                                <PrimaryButton_v1 text={"Continuar"} />
                             </Pressable>
                         </View>
-                    </View>
-                    <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <TextInput
-                                style={[styles.inputField, { width: '100%' }]}
-                                value={passwordConfirm}
-                                onChangeText={(text) => { setPasswordConfirm(text) }}
-                                placeholder={'Confirmação de palavra-passe'}
-                                placeholderTextColor={CONST.neutralGray}
-                                secureTextEntry={!showPasswordConfirm}
-                            />
-                            <Pressable
-                                style={{ position: 'absolute', right: 0, padding: 18, zIndex: 100 }}
-                                onPress={() => {
-                                    setShowPasswordConfirm(!showPasswordConfirm)
-                                }}>
-                                {showPasswordConfirm ?
-                                    <FontAwesome name="eye-slash" size={18} color={CONST.mainGray} />
-                                    :
-                                    <FontAwesome name="eye" size={18} color={CONST.mainGray} />}
-                            </Pressable>
-                        </View>
-                    </View>
-                    {/* <View style={{ flexDirection: 'column', marginBottom: 20, marginTop: 10 }}>
-                        <View style={{ flexDirection: 'row' }}>
-                            <TextInput
-                                style={[styles.inputField, { width: '100%' }]}
-                                value={code}
-                                onChangeText={(text) => { setCode(text) }}
-                                placeholder={'Código'}
-                                placeholderTextColor={CONST.neutralGray}
-                            />
-                        </View>
-                    </View> */}
+                    </ScrollView>
                 </View>
-                <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
-                    <Checkbox
-                        style={styles.checkbox}
-                        value={isChecked}
-                        onValueChange={() => {
-                            setChecked(!isChecked)
-                            if (!isChecked) {
-                                setVisible(false)
-                            }
-                        }}
-                        color={isChecked ? CONST.mainGray : undefined}
-                        onChange={() => {
-                            setChecked(!isChecked)
-                        }}
-                    />
-                    <Text style={[styles.normalText, { marginBottom: 0, paddingLeft: CONST.labelPaddingLateral }]}>Declaro que li e concordo com os termos de utilização.</Text>
-                </View>
-                {visible ?
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: CONST.layoutPaddingLateral, marginRight: CONST.layoutPaddingLateral, marginTop: CONST.boxCardMargin }}>
-                        <Text style={[styles.subText, { color: CONST.mainRed }]}>Para criar conta na aplicação IDEA precisa de ler e concordar com os termos de utilização.</Text>
-                    </View>
-                    :
-                    <></>}
-                <View style={[styles.doubleButtonsView, { backgroundColor: CONST.lightWhite, marginTop: CONST.layoutPaddingVertical, marginBottom: CONST.layoutPaddingVertical }]}>
-                    <Pressable
-                        onPress={() => {
-                            navigation.navigate("Welcome")
-                        }}
-                        style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
-                        <PrimaryButton_v2 text={"\u0020\u0020Voltar\u0020\u0020"} />
-                    </Pressable>
-                    <Pressable
-                        onPress={() => {
-                            setLoading(true)
-                            isChecked ?
-                                checkData()
-                                :
-                                setVisible(true)
-                        }}
-                        style={{ left: 'auto', right: CONST.layoutPaddingLateral }}>
-                        <PrimaryButton_v1 text={"Continuar"} />
-                    </Pressable>
-                </View>
-            </ScrollView>
+            </ImageBackground>
 
         </SafeAreaProvider>
     )
