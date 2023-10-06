@@ -11,14 +11,39 @@ import { useFocusEffect } from '@react-navigation/native';
 import firebase from "../../../config/firebase.js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Checkbox from "expo-checkbox";
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+
 
 // IMPORT COMPONENTS
-import { PrimaryButton_v1, PrimaryButton_v2, OptionButton_v1 } from "../../components/buttons.js";
+import { PrimaryButton_v1, PrimaryButton_v2, OptionButton_v1, SecondaryButton_v1 } from "../../components/buttons.js";
 import { AirIcon, RecycleIcon, WaterIcon, EnergyIcon, MovementIcon } from "../../components/icons.js";
 
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
+
+LocaleConfig.locales['pt'] = {
+    monthNames: [
+        'Janeiro',
+        'Fevereiro',
+        'Março',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+    ],
+    monthNamesShort: ['Jan.', 'Fev.', 'Mar', 'Abr.', 'Mai.', 'Jun.', 'Jul..', 'Ago.', 'Set.', 'Otu.', 'Nov.', 'Dez.'],
+    dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+    dayNamesShort: ['Dog.', 'Seg.', 'Ter.', 'Qua.', 'Qui.', 'Sex.', 'Sab.'],
+    today: "Hoje"
+};
+
+LocaleConfig.defaultLocale = 'pt';
 
 export default function AddActivitiesScreen({ navigation }) {
 
@@ -30,18 +55,19 @@ export default function AddActivitiesScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalWithoutCat, setModalWithoutCat] = useState(false);
     const [modalWarningSubmit, setModalWarningSubmit] = useState(false);
+    const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
     const [modalSubmit, setModalSubmit] = useState(false);
     const [isChecked, setChecked] = useState(false);
     const [category, setCategory] = useState("")
-    const [airQuestions, setAirQuestions] = useState([])
+    const [airQuestions, setAirQuestions] = useState(null)
     const [airAnswers, setAirAnswers] = useState([])
-    const [waterQuestions, setWaterQuestions] = useState([])
+    const [waterQuestions, setWaterQuestions] = useState(null)
     const [waterAnswers, setWaterAnswers] = useState([])
-    const [energyQuestions, setEnergyQuestions] = useState([])
+    const [energyQuestions, setEnergyQuestions] = useState(null)
     const [energyAnswers, setEnergyAnswers] = useState([])
-    const [movementQuestions, setMovementQuestions] = useState([])
+    const [movementQuestions, setMovementQuestions] = useState(null)
     const [movementAnswers, setMovementAnswers] = useState([])
-    const [recycleQuestions, setRecycleQuestions] = useState([])
+    const [recycleQuestions, setRecycleQuestions] = useState(null)
     const [recycleAnswers, setRecycleAnswers] = useState([])
     const [initialQuestions, setInitialQuestions] = useState({})
     const [memorizedAnswers, setMemorizedAnswers] = useState({})
@@ -73,6 +99,10 @@ export default function AddActivitiesScreen({ navigation }) {
     const [departmentPointsMovement, setDepartmentPointsMovement] = useState()
     const [departmentPointsRecycle, setDepartmentPointsRecycle] = useState()
     const [departmentPointsWater, setDepartmentPointsWater] = useState()
+    const [currentDate, setCurrentDate] = useState(null)
+    const [selected, setSelected] = useState()
+    const [minDate, setMinDate] = useState();
+    const [calendarDate, setCalendarDate] = useState();
 
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
@@ -93,11 +123,11 @@ export default function AddActivitiesScreen({ navigation }) {
     };
 
     const getAreaPoints = (data) => {
-            setDepartmentPointsAir(data.air_points)
-            setDepartmentPointsEnergy(data.energy_points)
-            setDepartmentPointsMovement(data.movement_points)
-            setDepartmentPointsRecycle(data.recycle_points)
-            setDepartmentPointsWater(data.water_points)
+        setDepartmentPointsAir(data.air_points)
+        setDepartmentPointsEnergy(data.energy_points)
+        setDepartmentPointsMovement(data.movement_points)
+        setDepartmentPointsRecycle(data.recycle_points)
+        setDepartmentPointsWater(data.water_points)
     }
 
     const getDepartmentPoints = async (dep) => {
@@ -154,9 +184,8 @@ export default function AddActivitiesScreen({ navigation }) {
     }
 
     const answersInAsyncStorage = async () => {
-        const formattedDate = getCurrentDate();
         try {
-            const answers = await AsyncStorage.getItem(formattedDate);
+            const answers = await AsyncStorage.getItem(currentDate === null ? getCurrentDate() : currentDate);
             return (answers != null ? JSON.parse(answers) : null);
         } catch (e) {
             console.log(e.message)
@@ -187,25 +216,25 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to get the questions from database and check if answers are saved before or not, in case async storage doesn't have the information, we will generate
     const getQuestions = async (doc) => {
+        setLoadingBolt(true)
         try {
             const answersAsync = await answersInAsyncStorage()
-
             const firestore_questions = firebase.firestore().collection("questions");
             firestore_questions.get().then((querySnapshot) => {
                 const tempDoc = querySnapshot.docs.map((doc) => doc.data());
 
-                const filteredAirData = (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id));
-
-                const filteredEnergyData = (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id));
-                const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
-                const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
-                const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
+                const filteredAirData = airQuestions === null ? (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id)) : airQuestions;
+                const filteredEnergyData = energyQuestions === null ? (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id)) : energyQuestions;
+                const filteredMovementData = movementQuestions === null ? (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id)) : movementQuestions;
+                const filteredRecycleData = recycleQuestions === null ? (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id)) : recycleQuestions;
+                const filteredWaterData = waterQuestions === null ? (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id)) : waterQuestions;
 
                 let initialAirAnswers;
                 let deviceAnswers = {};
                 let initialMovementAnswers;
                 let initialRecycleAnswers;
                 let initialWaterAnswers;
+
 
                 if (answersAsync === null || answersAsync.every(subarray => subarray.length === 0)) {
                     initialAirAnswers = filteredAirData.map((data) => {
@@ -260,7 +289,6 @@ export default function AddActivitiesScreen({ navigation }) {
                 setMovementPointsTotal(calculateMaxOptionSum(filteredMovementData));
                 setRecyclePointsTotal(calculateMaxOptionSum(filteredRecycleData));
                 setWaterPointsTotal(calculateMaxOptionSum(filteredWaterData));
-
             });
         }
         catch (error) {
@@ -536,7 +564,7 @@ export default function AddActivitiesScreen({ navigation }) {
         // console.log(movementData)
         // console.log(recycleData)
         // console.log(waterData)
-        let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
+        let idDoc = userID.concat(currentDate).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({
             air: airData,
@@ -546,7 +574,7 @@ export default function AddActivitiesScreen({ navigation }) {
             water: waterData,
         });
         const updatedPoints = { ...userPoints };
-        updatedPoints[getCurrentDate()] = Math.round(userScore * 100 / (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal));
+        updatedPoints[currentDate] = Math.round(userScore * 100 / (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal));
         setUserPoints(updatedPoints);
         const updatedAirPoints = { ...userAirPoints };
         const updatedEnergyPoints = { ...userEnergyPoints };
@@ -554,11 +582,11 @@ export default function AddActivitiesScreen({ navigation }) {
         const updatedRecyclePoints = { ...userRecyclePoints };
         const updatedWaterPoints = { ...userWaterPoints };
 
-        updatedAirPoints[getCurrentDate()] = Math.round(airPoints * 100 / airPointsTotal);
-        updatedEnergyPoints[getCurrentDate()] = Math.round(energyPoints * 100 / energyPointsTotal);
-        updatedMovementPoints[getCurrentDate()] = Math.round(movementPoints * 100 / movementPointsTotal);
-        updatedRecyclePoints[getCurrentDate()] = Math.round(recyclePoints * 100 / recyclePointsTotal);
-        updatedWaterPoints[getCurrentDate()] = Math.round(waterPoints * 100 / waterPointsTotal);
+        updatedAirPoints[currentDate] = Math.round(airPoints * 100 / airPointsTotal);
+        updatedEnergyPoints[currentDate] = Math.round(energyPoints * 100 / energyPointsTotal);
+        updatedMovementPoints[currentDate] = Math.round(movementPoints * 100 / movementPointsTotal);
+        updatedRecyclePoints[currentDate] = Math.round(recyclePoints * 100 / recyclePointsTotal);
+        updatedWaterPoints[currentDate] = Math.round(waterPoints * 100 / waterPointsTotal);
         setUserAirPoints(updatedAirPoints);
         setUserMovementPoints(updatedMovementPoints);
         setUserEnergyPoints(updatedEnergyPoints);
@@ -581,32 +609,32 @@ export default function AddActivitiesScreen({ navigation }) {
         const updatedRecyclePointsDep = { ...departmentPointsRecycle };
         const updatedWaterPointsDep = { ...departmentPointsWater };
 
-        if (getCurrentDate() in departmentPointsAir) {
-            updatedAirPointsDep[getCurrentDate()] = departmentPointsAir[getCurrentDate()] + airPoints
+        if (currentDate in departmentPointsAir) {
+            updatedAirPointsDep[currentDate] = departmentPointsAir[currentDate] + airPoints
         } else {
-            updatedAirPointsDep[getCurrentDate()] = airPoints
+            updatedAirPointsDep[currentDate] = airPoints
         }
-        if (getCurrentDate() in departmentPointsEnergy) {
-            updatedEnergyPointsDep[getCurrentDate()] = departmentPointsEnergy[getCurrentDate()] + energyPoints
+        if (currentDate in departmentPointsEnergy) {
+            updatedEnergyPointsDep[currentDate] = departmentPointsEnergy[currentDate] + energyPoints
         } else {
-            updatedEnergyPointsDep[getCurrentDate()] = energyPoints
+            updatedEnergyPointsDep[currentDate] = energyPoints
         }
-        if (getCurrentDate() in departmentPointsMovement) {
-            updatedMovementPointsDep[getCurrentDate()] = departmentPointsMovement[getCurrentDate()] + movementPoints
+        if (currentDate in departmentPointsMovement) {
+            updatedMovementPointsDep[currentDate] = departmentPointsMovement[currentDate] + movementPoints
         } else {
-            updatedMovementPointsDep[getCurrentDate()] = movementPoints
+            updatedMovementPointsDep[currentDate] = movementPoints
         }
-        if (getCurrentDate() in departmentPointsRecycle) {
-            updatedRecyclePointsDep[getCurrentDate()] = departmentPointsRecycle[getCurrentDate()] + recyclePoints
+        if (currentDate in departmentPointsRecycle) {
+            updatedRecyclePointsDep[currentDate] = departmentPointsRecycle[currentDate] + recyclePoints
         } else {
-            updatedRecyclePointsDep[getCurrentDate()] = recyclePoints
+            updatedRecyclePointsDep[currentDate] = recyclePoints
         }
-        if (getCurrentDate() in departmentPointsWater) {
-            updatedWaterPointsDep[getCurrentDate()] = departmentPointsWater[getCurrentDate()] + waterPoints
+        if (currentDate in departmentPointsWater) {
+            updatedWaterPointsDep[currentDate] = departmentPointsWater[currentDate] + waterPoints
         } else {
-            updatedWaterPointsDep[getCurrentDate()] = waterPoints
+            updatedWaterPointsDep[currentDate] = waterPoints
         }
-       
+
         setDepartmentPointsAir(updatedAirPointsDep);
         setDepartmentPointsEnergy(updatedMovementPointsDep);
         setDepartmentPointsMovement(updatedEnergyPointsDep);
@@ -614,13 +642,13 @@ export default function AddActivitiesScreen({ navigation }) {
         setDepartmentPointsWater(updatedWaterPointsDep);
 
         const firestore_department_doc = firebase.firestore().collection("departments").doc(userDOC.department);
-        
+
         firestore_department_doc.update({
-           'air_points' : updatedAirPointsDep,
-           'energy_points' : updatedEnergyPointsDep,
-           'movement_points' : updatedMovementPointsDep,
-           'recycle_points' : updatedRecyclePointsDep,
-           'water_points' : updatedWaterPointsDep,
+            'air_points': updatedAirPointsDep,
+            'energy_points': updatedEnergyPointsDep,
+            'movement_points': updatedMovementPointsDep,
+            'recycle_points': updatedRecyclePointsDep,
+            'water_points': updatedWaterPointsDep,
         })
 
         const doc = await firestore_user_doc.get();
@@ -642,7 +670,7 @@ export default function AddActivitiesScreen({ navigation }) {
     const checkToSubmit = async () => {
         setLoadingBolt(true)
         try {
-            let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
+            let idDoc = userID.concat(currentDate).replace(/\//g, "-");
             // * check if record has already be submited
             const firestore_answers_doc = firebase.firestore().collection("answers").doc(idDoc);
             const doc = await firestore_answers_doc.get();
@@ -661,11 +689,10 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to save data in localStorage to edit later
     const saveData = async () => {
-        const formattedDate = getCurrentDate();
         // * we save in localstorage the par key-value where key is the date and the value is a dict where key is the category and value the answers
-        // console.log(formattedDate)
+        // console.log(currentDate)
         try {
-            await AsyncStorage.setItem(formattedDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
+            await AsyncStorage.setItem(currentDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
         } catch (e) {
             console.log(e.message)
         }
@@ -686,23 +713,46 @@ export default function AddActivitiesScreen({ navigation }) {
         const day = today.getDate();
         const month = today.getMonth() + 1;
         const year = today.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
-        return formattedDate;
+        setCalendarDate(`${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`)
+        return `${day}/${month}/${year}`;
+    }
+
+    const getMinDate = () => {
+        const date = new Date();
+        const sevenDaysBefore = new Date();
+        sevenDaysBefore.setDate(date.getDate() - 7);
+        const sevenDaysBeforeDay = sevenDaysBefore.getDate();
+        const sevenDaysBeforeMonth = sevenDaysBefore.getMonth() + 1;
+        const sevenDaysBeforeYear = sevenDaysBefore.getFullYear()
+        setMinDate(`${sevenDaysBeforeYear}-${sevenDaysBeforeMonth < 10 ? '0' + sevenDaysBeforeMonth : sevenDaysBeforeMonth}-${sevenDaysBeforeDay < 10 ? '0' + sevenDaysBeforeDay : sevenDaysBeforeDay}`)
     }
 
     useFocusEffect(
         React.useCallback(() => {
             setLoadingBolt(true)
             getData()
+            getMinDate()
         }, [])
     );
 
     useEffect(() => {
-    }, [toShow, airAnswers, movementAnswers, energyAnswers, recycleAnswers, waterAnswers, loadingBolt, modalWithoutCat])
+        setCurrentDate(getCurrentDate())
+    }, [])
+
+    useEffect(() => {
+        // console.log(currentDate)
+    }, [currentDate, toShow, airAnswers, movementAnswers, energyAnswers, recycleAnswers, waterAnswers, loadingBolt, modalWithoutCat])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer, { paddingTop: 0 }]}>
             <StatusBar style={"light"} />
+            <Pressable
+                onPress={() => {
+                    setModalCalendarVisible(true)
+                }}
+                style={{ zIndex: 1000, position: 'absolute', top: CONST.layoutPaddingVertical, right: CONST.layoutPaddingLateral, paddingLeft: CONST.layoutPaddingLateral }}>
+                <FontAwesome5 name="calendar-alt" size={CONST.heading6} color={CONST.pureWhite} />
+            </Pressable>
             <Modal
                 animationType="fade"
                 transparent={true}
@@ -791,6 +841,58 @@ export default function AddActivitiesScreen({ navigation }) {
                                 navigation.navigate("ProfileTab")
                             }} >
                             <PrimaryButton_v1 text={"Ativar"} />
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalCalendarVisible}
+                onRequestClose={() => {
+                    setModalCalendarVisible(!modalCalendarVisible);
+                }}>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Calendar
+                            current={calendarDate}
+                            minDate={minDate}
+                            maxDate={calendarDate}
+                            onDayPress={day => {
+                                let daySelected = day.day
+                                let yearSelected = day.year
+                                let monthSelected = day.month
+                                let formattedDate = `${daySelected}/${monthSelected}/${yearSelected}`;
+                                setSelected(`${yearSelected}-${monthSelected < 10 ? '0' + monthSelected : monthSelected}-${daySelected < 10 ? '0' + daySelected : daySelected}`)
+                                setCurrentDate(formattedDate);
+                                getQuestions(userDOC)
+                            }}
+                            markedDates={{
+                                [selected]: { selected: true, disableTouchEvent: true }
+                            }}
+                            style={{
+                                borderWidth: 0,
+                                height: 350
+                            }}
+                            theme={{
+                                backgroundColor: CONST.lightWhite,
+                                calendarBackground: CONST.lightWhite,
+                                textSectionTitleColor: CONST.mainGray,
+                                selectedDayBackgroundColor: CONST.mainBlue,
+                                selectedDayTextColor: CONST.pureWhite,
+                                todayTextColor: CONST.mainBlue,
+                                dayTextColor: CONST.secondaryGray,
+                                textDisabledColor: CONST.neutralGray,
+                                arrowColor: CONST.mainBlue,
+                                monthTextColor: CONST.mainGray,
+                                agendaDayTextColor: CONST.mainGray,
+                                textMonthFontFamily: 'K2D-Regular',
+                                textDayFontFamily: 'K2D-Regular',
+                                textDayHeaderFontFamily: 'K2D-Regular',
+                            }}
+                        />
+                        <Pressable onPress={() => { setModalCalendarVisible(false) }}>
+                            <SecondaryButton_v1 text={"Fechar"} color={CONST.mainBlue} />
                         </Pressable>
                     </View>
                 </View>
