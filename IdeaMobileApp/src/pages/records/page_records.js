@@ -14,7 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 // IMPORT COMPONENTS
 import { AirLabel, EnergyLabel, MovementLabel, RecycleLabel, WaterLabel } from "../../components/labels.js";
-import { PrimaryButton_v1, PrimaryButton_v2, SecondaryButton_v1 } from "../../components/buttons.js";
+import { PrimaryButton_v1, PrimaryButton_v2, SecondaryButton_v1, SecondaryButton_v2 } from "../../components/buttons.js";
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js";
 import * as CONST from "../../assets/constants/constants.js";
@@ -58,7 +58,7 @@ export default function RecordsScreen({ navigation }) {
   const [userDOC, setUserDOC] = useState()
   const [loading, setLoading] = useState(true);
   const [noActivity, setNoActivity] = useState({ "Sem atividade!": "Não houve registo de atividades nesta área no dia selecionado" })
-
+  const [deleteButton, setDeleteButton] = useState(false)
 
   const getCurrentDate = () => {
     const date = new Date();
@@ -137,6 +137,7 @@ export default function RecordsScreen({ navigation }) {
         setAnswersWater(noActivity)
         setAnswersMovement(noActivity)
         setAnswersRecycle(noActivity)
+        setDeleteButton(false)
       }
     } catch (error) {
       console.log(error)
@@ -146,28 +147,34 @@ export default function RecordsScreen({ navigation }) {
   }
 
   const getRecords = (data) => {
+    setDeleteButton(false)
     if (Object.keys(data.air).length > 0) {
       setAnswersAir(data.air)
+      setDeleteButton(true)
     } else {
       setAnswersAir(noActivity)
     }
     if (Object.keys(data.energy).length > 0) {
       setAnswersEnergy(data.energy)
+      setDeleteButton(true)
     } else {
       setAnswersEnergy(noActivity)
     }
     if (Object.keys(data.movement).length > 0) {
       setAnswersMovement(data.movement)
+      setDeleteButton(true)
     } else {
       setAnswersMovement(noActivity)
     }
     if (Object.keys(data.recycle).length > 0) {
       setAnswersRecycle(data.recycle)
+      setDeleteButton(true)
     } else {
       setAnswersRecycle(noActivity)
     }
     if (Object.keys(data.water).length > 0) {
       setAnswersWater(data.water)
+      setDeleteButton(true)
     } else {
       setAnswersWater(noActivity)
     }
@@ -245,6 +252,76 @@ export default function RecordsScreen({ navigation }) {
     }
   }
 
+  const deleteRegister = async () => {
+    setLoading(true)
+    // first get the user points in all categories for the selected day
+    let airPoints = userDOC.points_categories.air[currentDate]
+    let energyPoints = userDOC.points_categories.energy[currentDate]
+    let movementPoints = userDOC.points_categories.movement[currentDate]
+    let recyclePoints = userDOC.points_categories.recycle[currentDate]
+    let waterPoints = userDOC.points_categories.water[currentDate]
+
+    let idDoc = userID.concat(currentDate).replace(/\//g, "-");
+    const airData = Object.fromEntries(Object.entries(userDOC.points_categories.air).filter(([key]) => key !== currentDate));
+    const energyData = Object.fromEntries(Object.entries(userDOC.points_categories.energy).filter(([key]) => key !== currentDate));
+    const movementData = Object.fromEntries(Object.entries(userDOC.points_categories.movement).filter(([key]) => key !== currentDate));
+    const recycleData = Object.fromEntries(Object.entries(userDOC.points_categories.recycle).filter(([key]) => key !== currentDate));
+    const waterData = Object.fromEntries(Object.entries(userDOC.points_categories.water).filter(([key]) => key !== currentDate));
+    const firestore_user_doc = firebase.firestore().collection("users").doc(userID)
+
+    firestore_user_doc.update({
+      'points_categories.air': airData,
+      'points_categories.energy': energyData,
+      'points_categories.movement': movementData,
+      'points_categories.recycle': recycleData,
+      'points_categories.water': waterData,
+    });
+
+    // remove the user points from user department points
+    const firestore_department_doc = firebase.firestore().collection("departments").doc(userDOC.department);
+    const doc = await firestore_department_doc.get();
+    if (doc.exists) {
+      const airDataDep = Object.fromEntries(Object.entries(doc.data().air_points).map(([key, value]) => [key, key === currentDate ? ((value - airPoints) > 0 ? (value - airPoints) : 0) : value]));
+      const energyDataDep = Object.fromEntries(Object.entries(doc.data().energy_points).map(([key, value]) => [key, key === currentDate ? ((value - energyPoints) > 0 ? (value - energyPoints) : 0) : value]));
+      const recycleDataDep = Object.fromEntries(Object.entries(doc.data().recycle_points).map(([key, value]) => [key, key === currentDate ? ((value - recyclePoints) > 0 ? (value - recyclePoints) : 0) : value]));
+      const movementDataDep = Object.fromEntries(Object.entries(doc.data().movement_points).map(([key, value]) => [key, key === currentDate ? ((value - movementPoints) > 0 ? (value - movementPoints) : 0) : value]));
+      const waterDataDep = Object.fromEntries(Object.entries(doc.data().water_points).map(([key, value]) => [key, key === currentDate ? ((value - waterPoints) > 0 ? (value - waterPoints) : 0) : value]));
+      
+      firestore_user_doc.update({
+        'air_points': airDataDep,
+        'energy_points': energyDataDep,
+        'movement_points': movementDataDep,
+        'recycle_points': recycleDataDep,
+        'water_points': waterDataDep,
+      });
+    } else {
+      console.log("Department doesn't exist!")
+    }
+
+    // delete the answer document
+    const firestore_answers_doc = firebase.firestore().collection("answers").doc(idDoc).delete();
+    setAnswersAir(noActivity)
+        setAnswersEnergy(noActivity)
+        setAnswersWater(noActivity)
+        setAnswersMovement(noActivity)
+        setAnswersRecycle(noActivity)
+        setDeleteButton(false)
+
+    const doc_user = await firestore_user_doc.get();
+    storeData(doc_user.data())
+    setLoading(false)
+  }
+
+  
+  const storeData = async (doc) => {
+    try {
+        const jsonDoc = JSON.stringify(doc);
+        await AsyncStorage.setItem('userDoc', jsonDoc);
+    } catch (e) {
+        console.log(e.message)
+    }
+};
+
 
   useFocusEffect(
     React.useCallback(() => {
@@ -253,6 +330,9 @@ export default function RecordsScreen({ navigation }) {
       console.log(currentDate)
     }, [currentDate])
   );
+  useEffect(() => {
+
+  }, [deleteButton])
 
   useEffect(() => {
     setCurrentDate(getCurrentDate());
@@ -460,6 +540,12 @@ export default function RecordsScreen({ navigation }) {
           :
           <></>
         }
+        {deleteButton ?
+          <Pressable style={{ flexDirection: 'row', alignSelf: 'center', marginBottom: CONST.boxCardMargin }} onPress={() => { deleteRegister() }}>
+            <SecondaryButton_v2 text={"Eliminar registo"} color={CONST.mainRed} />
+          </Pressable>
+          :
+          <></>}
 
       </ScrollView>
     </SafeAreaProvider>

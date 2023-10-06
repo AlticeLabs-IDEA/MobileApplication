@@ -117,7 +117,6 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to get the categories active and the first category to show
     const getActiveCategories = (doc) => {
-        console.log("** ENTREI NO GET ACTIVE CATEGORIES")
         setInitialQuestions(doc.initial_questions)
         setMemorizedAnswers(doc.memorized_answers)
         setCategories(doc.active_categories)
@@ -147,11 +146,9 @@ export default function AddActivitiesScreen({ navigation }) {
             setToShow('water')
             setCategory('de Recursos Hídricos')
         }
-        console.log("categorias ativas", Object.values(doc.active_categories))
         if (Object.values(doc.active_categories).includes(1) || Object.values(doc.active_categories).includes(2) || Object.values(doc.active_categories).includes(3) || Object.values(doc.active_categories).includes(4)) {
             getQuestions(doc)
         } else {
-            console.log("Não há")
             setModalWithoutCat(true)
         }
     }
@@ -185,7 +182,6 @@ export default function AddActivitiesScreen({ navigation }) {
 
             maxSum += maxOptionValue;
         });
-        console.log(maxSum)
         return maxSum;
     }
 
@@ -204,8 +200,6 @@ export default function AddActivitiesScreen({ navigation }) {
                 const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
                 const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
                 const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
-
-                console.log("ANSWERS ASYNC: ", answersAsync)
 
                 let initialAirAnswers;
                 let deviceAnswers = {};
@@ -533,16 +527,15 @@ export default function AddActivitiesScreen({ navigation }) {
                 }
             }
         }
-        console.log(".... ", userScore)
         submitAnswers()
     }
 
     const submitAnswers = async () => {
-        console.log(airData)
-        console.log(energyData)
-        console.log(movementData)
-        console.log(recycleData)
-        console.log(waterData)
+        // console.log(airData)
+        // console.log(energyData)
+        // console.log(movementData)
+        // console.log(recycleData)
+        // console.log(waterData)
         let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({
@@ -560,8 +553,7 @@ export default function AddActivitiesScreen({ navigation }) {
         const updatedMovementPoints = { ...userMovementPoints };
         const updatedRecyclePoints = { ...userRecyclePoints };
         const updatedWaterPoints = { ...userWaterPoints };
-        console.log("total: ", airPointsTotal)
-        console.log(airPoints)
+
         updatedAirPoints[getCurrentDate()] = Math.round(airPoints * 100 / airPointsTotal);
         updatedEnergyPoints[getCurrentDate()] = Math.round(energyPoints * 100 / energyPointsTotal);
         updatedMovementPoints[getCurrentDate()] = Math.round(movementPoints * 100 / movementPointsTotal);
@@ -620,7 +612,6 @@ export default function AddActivitiesScreen({ navigation }) {
         setDepartmentPointsMovement(updatedEnergyPointsDep);
         setDepartmentPointsRecycle(updatedRecyclePointsDep);
         setDepartmentPointsWater(updatedWaterPointsDep);
-        console.log(updatedAirPointsDep)
 
         const firestore_department_doc = firebase.firestore().collection("departments").doc(userDOC.department);
         
@@ -649,6 +640,7 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to send data to firebase collection answers
     const checkToSubmit = async () => {
+        setLoadingBolt(true)
         try {
             let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
             // * check if record has already be submited
@@ -671,7 +663,7 @@ export default function AddActivitiesScreen({ navigation }) {
     const saveData = async () => {
         const formattedDate = getCurrentDate();
         // * we save in localstorage the par key-value where key is the date and the value is a dict where key is the category and value the answers
-        console.log(formattedDate)
+        // console.log(formattedDate)
         try {
             await AsyncStorage.setItem(formattedDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
         } catch (e) {
