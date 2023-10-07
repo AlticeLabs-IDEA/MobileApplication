@@ -11,14 +11,39 @@ import { useFocusEffect } from '@react-navigation/native';
 import firebase from "../../../config/firebase.js";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Checkbox from "expo-checkbox";
+import { Calendar, LocaleConfig } from 'react-native-calendars';
+
 
 // IMPORT COMPONENTS
-import { PrimaryButton_v1, PrimaryButton_v2, OptionButton_v1 } from "../../components/buttons.js";
+import { PrimaryButton_v1, PrimaryButton_v2, OptionButton_v1, SecondaryButton_v1 } from "../../components/buttons.js";
 import { AirIcon, RecycleIcon, WaterIcon, EnergyIcon, MovementIcon } from "../../components/icons.js";
 
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
+
+LocaleConfig.locales['pt'] = {
+    monthNames: [
+        'Janeiro',
+        'Fevereiro',
+        'Março',
+        'Abril',
+        'Maio',
+        'Junho',
+        'Julho',
+        'Agosto',
+        'Setembro',
+        'Outubro',
+        'Novembro',
+        'Dezembro'
+    ],
+    monthNamesShort: ['Jan.', 'Fev.', 'Mar', 'Abr.', 'Mai.', 'Jun.', 'Jul..', 'Ago.', 'Set.', 'Otu.', 'Nov.', 'Dez.'],
+    dayNames: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+    dayNamesShort: ['Dog.', 'Seg.', 'Ter.', 'Qua.', 'Qui.', 'Sex.', 'Sab.'],
+    today: "Hoje"
+};
+
+LocaleConfig.defaultLocale = 'pt';
 
 export default function AddActivitiesScreen({ navigation }) {
 
@@ -30,18 +55,19 @@ export default function AddActivitiesScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalWithoutCat, setModalWithoutCat] = useState(false);
     const [modalWarningSubmit, setModalWarningSubmit] = useState(false);
+    const [modalCalendarVisible, setModalCalendarVisible] = useState(false);
     const [modalSubmit, setModalSubmit] = useState(false);
     const [isChecked, setChecked] = useState(false);
     const [category, setCategory] = useState("")
-    const [airQuestions, setAirQuestions] = useState([])
+    const [airQuestions, setAirQuestions] = useState(null)
     const [airAnswers, setAirAnswers] = useState([])
-    const [waterQuestions, setWaterQuestions] = useState([])
+    const [waterQuestions, setWaterQuestions] = useState(null)
     const [waterAnswers, setWaterAnswers] = useState([])
-    const [energyQuestions, setEnergyQuestions] = useState([])
+    const [energyQuestions, setEnergyQuestions] = useState(null)
     const [energyAnswers, setEnergyAnswers] = useState([])
-    const [movementQuestions, setMovementQuestions] = useState([])
+    const [movementQuestions, setMovementQuestions] = useState(null)
     const [movementAnswers, setMovementAnswers] = useState([])
-    const [recycleQuestions, setRecycleQuestions] = useState([])
+    const [recycleQuestions, setRecycleQuestions] = useState(null)
     const [recycleAnswers, setRecycleAnswers] = useState([])
     const [initialQuestions, setInitialQuestions] = useState({})
     const [memorizedAnswers, setMemorizedAnswers] = useState({})
@@ -58,17 +84,25 @@ export default function AddActivitiesScreen({ navigation }) {
     let recycleData = {}
     let waterData = {}
     let userScore = 0
-    const [airPointsTotal, setAirPointsTotal] = useState(0)
+    let airPointsTotal = 0
     let airPoints = 0
-    const [recyclePointsTotal, setRecyclePointsTotal] = useState(0)
+    let recyclePointsTotal = 0
     let recyclePoints = 0
-    const [energyPointsTotal, setEnergyPointsTotal] = useState(0)
+    let energyPointsTotal = 0
     let energyPoints = 0
-    const [movementPointsTotal, setMovementPointsTotal] = useState(0)
+    let movementPointsTotal = 0
     let movementPoints = 0
-    const [waterPointsTotal, setWaterPointsTotal] = useState(0)
+    let waterPointsTotal = 0
     let waterPoints = 0
-
+    const [departmentPointsAir, setDepartmentPointsAir] = useState()
+    const [departmentPointsEnergy, setDepartmentPointsEnergy] = useState()
+    const [departmentPointsMovement, setDepartmentPointsMovement] = useState()
+    const [departmentPointsRecycle, setDepartmentPointsRecycle] = useState()
+    const [departmentPointsWater, setDepartmentPointsWater] = useState()
+    const [currentDate, setCurrentDate] = useState(null)
+    const [selected, setSelected] = useState()
+    const [minDate, setMinDate] = useState();
+    const [calendarDate, setCalendarDate] = useState();
 
     // * saber que equipamentos ele utiliza
     const [energyDevices, setEnergyDevices] = useState([])
@@ -88,19 +122,43 @@ export default function AddActivitiesScreen({ navigation }) {
         }
     };
 
+    const getAreaPoints = (data) => {
+        setDepartmentPointsAir(data.air_points)
+        setDepartmentPointsEnergy(data.energy_points)
+        setDepartmentPointsMovement(data.movement_points)
+        setDepartmentPointsRecycle(data.recycle_points)
+        setDepartmentPointsWater(data.water_points)
+    }
+
+    const getDepartmentPoints = async (dep) => {
+        try {
+            const firestore_department_doc = firebase.firestore().collection("departments").doc(dep);
+            const doc = await firestore_department_doc.get();
+
+            if (doc.exists) {
+                getAreaPoints(doc.data());
+            } else {
+                console.log("Department doesn't exist!")
+            }
+        } catch (error) {
+            console.error("Error checking document existence:", error);
+        }
+    }
+
     // * function to get the categories active and the first category to show
     const getActiveCategories = (doc) => {
-        console.log("** ENTREI NO GET ACTIVE CATEGORIES")
         setInitialQuestions(doc.initial_questions)
         setMemorizedAnswers(doc.memorized_answers)
         setCategories(doc.active_categories)
         setEnergyDevices(doc.initial_questions.devices)
         setUserPoints(doc.points)
         setUserAirPoints(doc.points_categories.air)
-        setUserEnergyPoints(doc.points_categories.energu)
+        setUserEnergyPoints(doc.points_categories.energy)
         setUserMovementPoints(doc.points_categories.movement)
         setUserRecyclePoints(doc.points_categories.recycle)
         setUserWaterPoints(doc.points_categories.water)
+
+        getDepartmentPoints(doc.department)
 
         if (categories['air'] !== 0) {
             setToShow('air')
@@ -118,19 +176,16 @@ export default function AddActivitiesScreen({ navigation }) {
             setToShow('water')
             setCategory('de Recursos Hídricos')
         }
-        console.log("categorias ativas", Object.values(doc.active_categories))
         if (Object.values(doc.active_categories).includes(1) || Object.values(doc.active_categories).includes(2) || Object.values(doc.active_categories).includes(3) || Object.values(doc.active_categories).includes(4)) {
             getQuestions(doc)
         } else {
-            console.log("Não há")
             setModalWithoutCat(true)
         }
     }
 
     const answersInAsyncStorage = async () => {
-        const formattedDate = getCurrentDate();
         try {
-            const answers = await AsyncStorage.getItem(formattedDate);
+            const answers = await AsyncStorage.getItem(currentDate === null ? getCurrentDate() : currentDate);
             return (answers != null ? JSON.parse(answers) : null);
         } catch (e) {
             console.log(e.message)
@@ -138,51 +193,27 @@ export default function AddActivitiesScreen({ navigation }) {
         }
     }
 
-    const calculateMaxOptionSum = (data) => {
-        let maxSum = 0;
-
-        data.forEach((item) => {
-            const options = item.options;
-            let maxOptionValue = 0;
-
-            for (const key in options) {
-                if (options.hasOwnProperty(key)) {
-                    const optionValue = options[key];
-                    if (optionValue > maxOptionValue) {
-                        maxOptionValue = optionValue;
-                    }
-                }
-            }
-
-            maxSum += maxOptionValue;
-        });
-        console.log(maxSum)
-        return maxSum;
-    }
-
     // * function to get the questions from database and check if answers are saved before or not, in case async storage doesn't have the information, we will generate
     const getQuestions = async (doc) => {
+        setLoadingBolt(true)
         try {
             const answersAsync = await answersInAsyncStorage()
-
             const firestore_questions = firebase.firestore().collection("questions");
             firestore_questions.get().then((querySnapshot) => {
                 const tempDoc = querySnapshot.docs.map((doc) => doc.data());
 
-                const filteredAirData = (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id));
-
-                const filteredEnergyData = (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id));
-                const filteredMovementData = (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id));
-                const filteredRecycleData = (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id));
-                const filteredWaterData = (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id));
-
-                console.log("ANSWERS ASYNC: ", answersAsync)
+                const filteredAirData = airQuestions === null ? (tempDoc.filter((data) => data.category === "AIR").sort((a, b) => a.id - b.id)) : airQuestions;
+                const filteredEnergyData = energyQuestions === null ? (tempDoc.filter((data) => data.category === "ENERGY").sort((a, b) => a.id - b.id)) : energyQuestions;
+                const filteredMovementData = movementQuestions === null ? (tempDoc.filter((data) => data.category === "MOVEMENT").sort((a, b) => a.id - b.id)) : movementQuestions;
+                const filteredRecycleData = recycleQuestions === null ? (tempDoc.filter((data) => data.category === "RECYCLE").sort((a, b) => a.id - b.id)) : recycleQuestions;
+                const filteredWaterData = waterQuestions === null ? (tempDoc.filter((data) => data.category === "WATER").sort((a, b) => a.id - b.id)) : waterQuestions;
 
                 let initialAirAnswers;
                 let deviceAnswers = {};
                 let initialMovementAnswers;
                 let initialRecycleAnswers;
                 let initialWaterAnswers;
+
 
                 if (answersAsync === null || answersAsync.every(subarray => subarray.length === 0)) {
                     initialAirAnswers = filteredAirData.map((data) => {
@@ -214,6 +245,7 @@ export default function AddActivitiesScreen({ navigation }) {
                         return waterTemp;
                     });
                 } else {
+
                     initialAirAnswers = answersAsync[0]
                     deviceAnswers = answersAsync[1]
                     initialMovementAnswers = answersAsync[2]
@@ -232,12 +264,11 @@ export default function AddActivitiesScreen({ navigation }) {
                 setRecycleAnswers(initialRecycleAnswers);
                 setRecycleQuestions(filteredRecycleData)
 
-                setAirPointsTotal(calculateMaxOptionSum(filteredAirData))
-                setEnergyPointsTotal(calculateMaxOptionSum(filteredEnergyData) * 12);
-                setMovementPointsTotal(calculateMaxOptionSum(filteredMovementData));
-                setRecyclePointsTotal(calculateMaxOptionSum(filteredRecycleData));
-                setWaterPointsTotal(calculateMaxOptionSum(filteredWaterData));
-
+                // setAirPointsTotal(calculateMaxOptionSum(filteredAirData))
+                // setEnergyPointsTotal(calculateMaxOptionSum(filteredEnergyData) * 6);
+                // setMovementPointsTotal(calculateMaxOptionSum(filteredMovementData));
+                // setRecyclePointsTotal(calculateMaxOptionSum(filteredRecycleData));
+                // setWaterPointsTotal(calculateMaxOptionSum(filteredWaterData));
             });
         }
         catch (error) {
@@ -421,123 +452,141 @@ export default function AddActivitiesScreen({ navigation }) {
         calculateScore()
     }
 
+    // ! tá mal
     // * function to calculate the score
     const calculateScore = () => {
         // console.log("-----------> > air ", airAnswers)
-        for (let i = 0; i < airAnswers.length; i++) {
-            for (let j = 0; j < airAnswers[i].length; j++) {
-                if (airAnswers[i][j] === true) {
-                    let option = Object.keys(airQuestions[i].options).sort()[j]
-                    let optionValue = airQuestions[i].options[option]
-                    // console.log(option, "  ->  ", optionValue)
-                    airPoints += optionValue
-                    userScore = (userScore + optionValue)
-                    airData[airQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("-----------> > water ", waterAnswers)
-        for (let i = 0; i < waterAnswers.length; i++) {
-            for (let j = 0; j < waterAnswers[i].length; j++) {
-                if (waterAnswers[i][j] === true) {
-                    let option = Object.keys(waterQuestions[i].options).sort()[j]
-                    let optionValue = waterQuestions[i].options[option]
-                    // console.log(option, "  ->  ", optionValue)
-                    waterPoints += optionValue
-                    userScore = (userScore + optionValue)
-                    waterData[waterQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("-----------> > recycle ", recycleAnswers)
-        for (let i = 0; i < recycleAnswers.length; i++) {
-            for (let j = 0; j < recycleAnswers[i].length; j++) {
-                if (recycleAnswers[i][j] === true) {
-                    let option = Object.keys(recycleQuestions[i].options).sort()[j]
-                    let optionValue = recycleQuestions[i].options[option]
-                    // console.log(option, "  ->  ", optionValue)
-                    recyclePoints += optionValue
-                    userScore = (userScore + optionValue)
-                    recycleData[recycleQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("-----------> > movement ", movementAnswers)
-        for (let i = 0; i < movementAnswers.length; i++) {
-            for (let j = 0; j < movementAnswers[i].length; j++) {
-                if (movementAnswers[i][j] === true) {
-                    let option = Object.keys(movementQuestions[i].options).sort()[j]
-                    let optionValue = movementQuestions[i].options[option]
-                    // * the movement category has questions with adjustments that influence the min_range
-                    // * we need check what is the min_range in elevator and distance and IF IS MIN_RANGE_2 we need do changes
-                    if (((movementQuestions[i].adjustment === "elevator" && initialQuestions.elevator === "min_range_2") || (movementQuestions[i].adjustment === "distance" && initialQuestions.distance === "min_range_2")) && optionValue < 2) {
-                        optionValue = 2
-                    }
-                    // console.log(option, "  ->  ", optionValue)
-                    movementPoints += optionValue
-                    userScore = (userScore + optionValue)
-                    movementData[movementQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("------------> > energy ", energyAnswers)
-        const energyAnswersKeys = Object.keys(energyAnswers)
-        for (let i = 0; i < energyAnswersKeys.length; i++) {
-            let questionsForDevice = energyQuestions.filter(element => element.field.includes(energyAnswersKeys[i]))
-            if (energyAnswersKeys[i] === "geral") {
-                questionsForDevice = energyQuestions[0]
-            }
-            for (let j = 0; j < questionsForDevice.length; j++) {
-                for (let k = 0; k < energyAnswers[energyAnswersKeys[i]][j].length; k++) {
-                    if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
-                        let option = Object.keys(questionsForDevice[j].options).sort()[k]
-                        let optionValue = questionsForDevice[j].options[option]
-                        energyPoints += optionValue
+        if (userDOC.active_categories.air !== 0) {
+            for (let i = 0; i < airAnswers.length; i++) {
+                for (let j = 0; j < airAnswers[i].length; j++) {
+                    if (airAnswers[i][j] === true) {
+                        let option = Object.keys(airQuestions[i].options).sort()[j]
+                        let optionValue = airQuestions[i].options[option]
+                        // console.log(option, "  ->  ", optionValue)
+                        airPoints += optionValue
+                        airPointsTotal += Math.max(...Object.values(airQuestions[i].options))
                         userScore = (userScore + optionValue)
-                        energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
+                        airData[airQuestions[i].description] = option
                         break
                     }
                 }
             }
         }
-        console.log(".... ", userScore)
+        if (userDOC.active_categories.water !== 0) {
+            // console.log("-----------> > water ", waterAnswers)
+            for (let i = 0; i < waterAnswers.length; i++) {
+                for (let j = 0; j < waterAnswers[i].length; j++) {
+                    if (waterAnswers[i][j] === true) {
+                        let option = Object.keys(waterQuestions[i].options).sort()[j]
+                        let optionValue = waterQuestions[i].options[option]
+                        // console.log(option, "  ->  ", optionValue)
+                        waterPoints += optionValue
+                        waterPointsTotal += Math.max(...Object.values(waterQuestions[i].options))
+                        userScore = (userScore + optionValue)
+                        waterData[waterQuestions[i].description] = option
+                        break
+                    }
+                }
+            }
+        }
+        if (userDOC.active_categories.recycle !== 0) {
+            // console.log("-----------> > recycle ", recycleAnswers)
+            for (let i = 0; i < recycleAnswers.length; i++) {
+                for (let j = 0; j < recycleAnswers[i].length; j++) {
+                    if (recycleAnswers[i][j] === true) {
+                        let option = Object.keys(recycleQuestions[i].options).sort()[j]
+                        let optionValue = recycleQuestions[i].options[option]
+                        // console.log(option, "  ->  ", optionValue)
+                        recyclePoints += optionValue
+                        recyclePointsTotal += Math.max(...Object.values(recycleQuestions[i].options))
+                        userScore = (userScore + optionValue)
+                        recycleData[recycleQuestions[i].description] = option
+                        break
+                    }
+                }
+            }
+        }
+        if (userDOC.active_categories.movement !== 0) {
+            // console.log("-----------> > movement ", movementAnswers)
+            for (let i = 0; i < movementAnswers.length; i++) {
+                for (let j = 0; j < movementAnswers[i].length; j++) {
+                    if (movementAnswers[i][j] === true) {
+                        let option = Object.keys(movementQuestions[i].options).sort()[j]
+                        let optionValue = movementQuestions[i].options[option]
+                        // * the movement category has questions with adjustments that influence the min_range
+                        // * we need check what is the min_range in elevator and distance and IF IS MIN_RANGE_2 we need do changes
+                        if (((movementQuestions[i].adjustment === "elevator" && initialQuestions.elevator === "min_range_2") || (movementQuestions[i].adjustment === "distance" && initialQuestions.distance === "min_range_2")) && optionValue < 2) {
+                            optionValue = 2
+                        }
+                        // console.log(option, "  ->  ", optionValue)
+                        movementPoints += optionValue
+                        movementPointsTotal += Math.max(...Object.values(movementQuestions[i].options))
+                        userScore = (userScore + optionValue)
+                        movementData[movementQuestions[i].description] = option
+                        break
+                    }
+                }
+            }
+        }
+        if (userDOC.active_categories.energy !== 0) {
+            // console.log("------------> > energy ", energyAnswers)
+            const energyAnswersKeys = Object.keys(energyAnswers)
+            for (let i = 0; i < energyAnswersKeys.length; i++) {
+                let questionsForDevice = energyQuestions.filter(element => element.field.includes(energyAnswersKeys[i]))
+                if (energyAnswersKeys[i] === "geral") {
+                    questionsForDevice = energyQuestions[0]
+                }
+                for (let j = 0; j < questionsForDevice.length; j++) {
+                    for (let k = 0; k < energyAnswers[energyAnswersKeys[i]][j].length; k++) {
+                        if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
+                            let option = Object.keys(questionsForDevice[j].options).sort()[k]
+                            let optionValue = questionsForDevice[j].options[option]
+                            energyPoints += optionValue
+                            energyPointsTotal += Math.max(...Object.values(questionsForDevice[j].options))
+                            userScore = (userScore + optionValue)
+                            energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
+                            break
+                        }
+                    }
+                }
+            }
+        }
         submitAnswers()
     }
 
     const submitAnswers = async () => {
-        console.log(airData)
-        console.log(energyData)
-        console.log(movementData)
-        console.log(recycleData)
-        console.log(waterData)
-        let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
+        // console.log(airData)
+        // console.log(energyData)
+        // console.log(movementData)
+        // console.log(recycleData)
+        // console.log(waterData)
+        console.log("points: ", airPoints, " ", energyPoints, " ", movementPoints, " ", recyclePoints, " ", waterPoints)
+        console.log("pointsTotal: ", airPointsTotal, " ", energyPointsTotal, " ", movementPointsTotal, " ", recyclePointsTotal, " ", waterPointsTotal)
+        console.log(userPoints)
+        let idDoc = userID.concat(currentDate).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({
-            air: airData,
-            energy: energyData,
-            movement: movementData,
-            recycle: recycleData,
-            water: waterData,
+            air: userDOC.active_categories.air !== 0 ? airData : {},
+            energy: userDOC.active_categories.energy !== 0 ? energyData : {},
+            movement: userDOC.active_categories.movement !== 0 ? movementData : {},
+            recycle: userDOC.active_categories.recycle !== 0 ? recycleData : {},
+            water: userDOC.active_categories.water !== 0 ? waterData : {},
         });
         const updatedPoints = { ...userPoints };
-        updatedPoints[getCurrentDate()] = Math.round(userScore * 100 / (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal));
+        console.log(userScore)
+        updatedPoints[currentDate] = Math.round((100/ (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal) )* userScore);
         setUserPoints(updatedPoints);
         const updatedAirPoints = { ...userAirPoints };
         const updatedEnergyPoints = { ...userEnergyPoints };
         const updatedMovementPoints = { ...userMovementPoints };
         const updatedRecyclePoints = { ...userRecyclePoints };
         const updatedWaterPoints = { ...userWaterPoints };
-        console.log("total: ", airPointsTotal)
-        console.log(airPoints)
-        updatedAirPoints[getCurrentDate()] = Math.round(airPoints * 100 / airPointsTotal);
-        updatedEnergyPoints[getCurrentDate()] = Math.round(energyPoints * 100 / energyPointsTotal);
-        updatedMovementPoints[getCurrentDate()] = Math.round(movementPoints * 100 / movementPointsTotal);
-        updatedRecyclePoints[getCurrentDate()] = Math.round(recyclePoints * 100 / recyclePointsTotal);
-        updatedWaterPoints[getCurrentDate()] = Math.round(waterPoints * 100 / waterPointsTotal);
+
+        updatedAirPoints[currentDate] = userDOC.active_categories.air !== 0 ? Math.round(airPoints * 100 / airPointsTotal) : 0;
+        updatedEnergyPoints[currentDate] = userDOC.active_categories.energy !== 0 ? Math.round(energyPoints * 100 / energyPointsTotal) : 0;
+        updatedMovementPoints[currentDate] = userDOC.active_categories.movement !== 0 ? Math.round(movementPoints * 100 / movementPointsTotal) : 0;
+        updatedRecyclePoints[currentDate] = userDOC.active_categories.recycle !== 0 ? Math.round(recyclePoints * 100 / recyclePointsTotal) : 0;
+        updatedWaterPoints[currentDate] = userDOC.active_categories.water !== 0 ? Math.round(waterPoints * 100 / waterPointsTotal) : 0;
         setUserAirPoints(updatedAirPoints);
         setUserMovementPoints(updatedMovementPoints);
         setUserEnergyPoints(updatedEnergyPoints);
@@ -553,8 +602,58 @@ export default function AddActivitiesScreen({ navigation }) {
             'points_categories.movement': updatedMovementPoints,
             'points_categories.water': updatedWaterPoints,
         })
+
+        const updatedAirPointsDep = { ...departmentPointsAir };
+        const updatedEnergyPointsDep = { ...departmentPointsEnergy };
+        const updatedMovementPointsDep = { ...departmentPointsMovement };
+        const updatedRecyclePointsDep = { ...departmentPointsRecycle };
+        const updatedWaterPointsDep = { ...departmentPointsWater };
+
+        if (currentDate in departmentPointsAir) {
+            updatedAirPointsDep[currentDate] = departmentPointsAir[currentDate] + (airPoints/airPointsTotal)*100
+        } else {
+            updatedAirPointsDep[currentDate] = (airPoints/airPointsTotal)*100
+        }
+        if (currentDate in departmentPointsEnergy) {
+            updatedEnergyPointsDep[currentDate] = departmentPointsEnergy[currentDate] + Math.round(energyPoints/energyPointsTotal)*100
+        } else {
+            updatedEnergyPointsDep[currentDate] = Math.round(energyPoints/energyPointsTotal)*100
+        }
+        if (currentDate in departmentPointsMovement) {
+            updatedMovementPointsDep[currentDate] = departmentPointsMovement[currentDate] + Math.round(movementPoints/movementPointsTotal)*100
+        } else {
+            updatedMovementPointsDep[currentDate] = Math.round(movementPoints/movementPointsTotal)*100
+        }
+        if (currentDate in departmentPointsRecycle) {
+            updatedRecyclePointsDep[currentDate] = departmentPointsRecycle[currentDate] + Math.round(recyclePoints/recyclePointsTotal)*100
+        } else {
+            updatedRecyclePointsDep[currentDate] = Math.round(recyclePoints/recyclePointsTotal)*100
+        }
+        if (currentDate in departmentPointsWater) {
+            updatedWaterPointsDep[currentDate] = departmentPointsWater[currentDate] + Math.round(waterPoints/waterPointsTotal)*100
+        } else {
+            updatedWaterPointsDep[currentDate] = Math.round(waterPoints/waterPointsTotal)*100
+        }
+
+        setDepartmentPointsAir(updatedAirPointsDep);
+        setDepartmentPointsEnergy(updatedMovementPointsDep);
+        setDepartmentPointsMovement(updatedEnergyPointsDep);
+        setDepartmentPointsRecycle(updatedRecyclePointsDep);
+        setDepartmentPointsWater(updatedWaterPointsDep);
+
+        const firestore_department_doc = firebase.firestore().collection("departments").doc(userDOC.department);
+
+        firestore_department_doc.update({
+            'air_points': updatedAirPointsDep,
+            'energy_points': updatedEnergyPointsDep,
+            'movement_points': updatedMovementPointsDep,
+            'recycle_points': updatedRecyclePointsDep,
+            'water_points': updatedWaterPointsDep,
+        })
+
         const doc = await firestore_user_doc.get();
         storeData(doc.data())
+
         navigation.navigate("Dashboard")
     }
 
@@ -569,8 +668,9 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to send data to firebase collection answers
     const checkToSubmit = async () => {
+        setLoadingBolt(true)
         try {
-            let idDoc = userID.concat(getCurrentDate()).replace(/\//g, "-");
+            let idDoc = userID.concat(currentDate).replace(/\//g, "-");
             // * check if record has already be submited
             const firestore_answers_doc = firebase.firestore().collection("answers").doc(idDoc);
             const doc = await firestore_answers_doc.get();
@@ -589,11 +689,10 @@ export default function AddActivitiesScreen({ navigation }) {
 
     // * function to save data in localStorage to edit later
     const saveData = async () => {
-        const formattedDate = getCurrentDate();
         // * we save in localstorage the par key-value where key is the date and the value is a dict where key is the category and value the answers
-        console.log(formattedDate)
+        // console.log(currentDate)
         try {
-            await AsyncStorage.setItem(formattedDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
+            await AsyncStorage.setItem(currentDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
         } catch (e) {
             console.log(e.message)
         }
@@ -614,23 +713,46 @@ export default function AddActivitiesScreen({ navigation }) {
         const day = today.getDate();
         const month = today.getMonth() + 1;
         const year = today.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
-        return formattedDate;
+        setCalendarDate(`${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`)
+        return `${day}/${month}/${year}`;
+    }
+
+    const getMinDate = () => {
+        const date = new Date();
+        const sevenDaysBefore = new Date();
+        sevenDaysBefore.setDate(date.getDate() - 7);
+        const sevenDaysBeforeDay = sevenDaysBefore.getDate();
+        const sevenDaysBeforeMonth = sevenDaysBefore.getMonth() + 1;
+        const sevenDaysBeforeYear = sevenDaysBefore.getFullYear()
+        setMinDate(`${sevenDaysBeforeYear}-${sevenDaysBeforeMonth < 10 ? '0' + sevenDaysBeforeMonth : sevenDaysBeforeMonth}-${sevenDaysBeforeDay < 10 ? '0' + sevenDaysBeforeDay : sevenDaysBeforeDay}`)
     }
 
     useFocusEffect(
         React.useCallback(() => {
             setLoadingBolt(true)
             getData()
+            getMinDate()
         }, [])
     );
 
     useEffect(() => {
-    }, [toShow, airAnswers, movementAnswers, energyAnswers, recycleAnswers, waterAnswers, loadingBolt, modalWithoutCat])
+        setCurrentDate(getCurrentDate())
+    }, [])
+
+    useEffect(() => {
+        // console.log(currentDate)
+    }, [currentDate, toShow, airAnswers, movementAnswers, energyAnswers, recycleAnswers, waterAnswers, loadingBolt, modalWithoutCat])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer, { paddingTop: 0 }]}>
             <StatusBar style={"light"} />
+            <Pressable
+                onPress={() => {
+                    setModalCalendarVisible(true)
+                }}
+                style={{ zIndex: 1000, position: 'absolute', top: CONST.layoutPaddingVertical, right: CONST.layoutPaddingLateral, paddingLeft: CONST.layoutPaddingLateral }}>
+                <FontAwesome5 name="calendar-alt" size={CONST.heading6} color={CONST.pureWhite} />
+            </Pressable>
             <Modal
                 animationType="fade"
                 transparent={true}
@@ -719,6 +841,58 @@ export default function AddActivitiesScreen({ navigation }) {
                                 navigation.navigate("ProfileTab")
                             }} >
                             <PrimaryButton_v1 text={"Ativar"} />
+                        </Pressable>
+                    </View>
+                </View>
+            </Modal>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalCalendarVisible}
+                onRequestClose={() => {
+                    setModalCalendarVisible(!modalCalendarVisible);
+                }}>
+                <View style={styles.centeredView}>
+                    <View style={styles.modalView}>
+                        <Calendar
+                            current={calendarDate}
+                            minDate={minDate}
+                            maxDate={calendarDate}
+                            onDayPress={day => {
+                                let daySelected = day.day
+                                let yearSelected = day.year
+                                let monthSelected = day.month
+                                let formattedDate = `${daySelected}/${monthSelected}/${yearSelected}`;
+                                setSelected(`${yearSelected}-${monthSelected < 10 ? '0' + monthSelected : monthSelected}-${daySelected < 10 ? '0' + daySelected : daySelected}`)
+                                setCurrentDate(formattedDate);
+                                getQuestions(userDOC)
+                            }}
+                            markedDates={{
+                                [selected]: { selected: true, disableTouchEvent: true }
+                            }}
+                            style={{
+                                borderWidth: 0,
+                                height: 350
+                            }}
+                            theme={{
+                                backgroundColor: CONST.lightWhite,
+                                calendarBackground: CONST.lightWhite,
+                                textSectionTitleColor: CONST.mainGray,
+                                selectedDayBackgroundColor: CONST.mainBlue,
+                                selectedDayTextColor: CONST.pureWhite,
+                                todayTextColor: CONST.mainBlue,
+                                dayTextColor: CONST.secondaryGray,
+                                textDisabledColor: CONST.neutralGray,
+                                arrowColor: CONST.mainBlue,
+                                monthTextColor: CONST.mainGray,
+                                agendaDayTextColor: CONST.mainGray,
+                                textMonthFontFamily: 'K2D-Regular',
+                                textDayFontFamily: 'K2D-Regular',
+                                textDayHeaderFontFamily: 'K2D-Regular',
+                            }}
+                        />
+                        <Pressable onPress={() => { setModalCalendarVisible(false) }}>
+                            <SecondaryButton_v1 text={"Fechar"} color={CONST.mainBlue} />
                         </Pressable>
                     </View>
                 </View>
@@ -1192,6 +1366,7 @@ export default function AddActivitiesScreen({ navigation }) {
                                 if (showWarning === null) {
                                     setModalWarningSubmit(true)
                                 } else {
+                                    setLoadingBolt(true)
                                     checkToSubmit()
                                 }
                             }}
