@@ -153,7 +153,7 @@ export default function AddActivitiesScreen({ navigation }) {
         setEnergyDevices(doc.initial_questions.devices)
         setUserPoints(doc.points)
         setUserAirPoints(doc.points_categories.air)
-        setUserEnergyPoints(doc.points_categories.energu)
+        setUserEnergyPoints(doc.points_categories.energy)
         setUserMovementPoints(doc.points_categories.movement)
         setUserRecyclePoints(doc.points_categories.recycle)
         setUserWaterPoints(doc.points_categories.water)
@@ -191,27 +191,6 @@ export default function AddActivitiesScreen({ navigation }) {
             console.log(e.message)
             return null
         }
-    }
-
-    const calculateMaxOptionSum = (data) => {
-        let maxSum = 0;
-
-        data.forEach((item) => {
-            const options = item.options;
-            let maxOptionValue = 0;
-
-            for (const key in options) {
-                if (options.hasOwnProperty(key)) {
-                    const optionValue = options[key];
-                    if (optionValue > maxOptionValue) {
-                        maxOptionValue = optionValue;
-                    }
-                }
-            }
-
-            maxSum += maxOptionValue;
-        });
-        return maxSum;
     }
 
     // * function to get the questions from database and check if answers are saved before or not, in case async storage doesn't have the information, we will generate
@@ -266,6 +245,7 @@ export default function AddActivitiesScreen({ navigation }) {
                         return waterTemp;
                     });
                 } else {
+
                     initialAirAnswers = answersAsync[0]
                     deviceAnswers = answersAsync[1]
                     initialMovementAnswers = answersAsync[2]
@@ -476,87 +456,97 @@ export default function AddActivitiesScreen({ navigation }) {
     // * function to calculate the score
     const calculateScore = () => {
         // console.log("-----------> > air ", airAnswers)
-        for (let i = 0; i < airAnswers.length; i++) {
-            for (let j = 0; j < airAnswers[i].length; j++) {
-                if (airAnswers[i][j] === true) {
-                    let option = Object.keys(airQuestions[i].options).sort()[j]
-                    let optionValue = airQuestions[i].options[option]
-                    // console.log(option, "  ->  ", optionValue)
-                    airPoints += optionValue
-                    airPointsTotal += Math.max(...Object.values(airQuestions[i].options))
-                    userScore = (userScore + optionValue)
-                    airData[airQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("-----------> > water ", waterAnswers)
-        for (let i = 0; i < waterAnswers.length; i++) {
-            for (let j = 0; j < waterAnswers[i].length; j++) {
-                if (waterAnswers[i][j] === true) {
-                    let option = Object.keys(waterQuestions[i].options).sort()[j]
-                    let optionValue = waterQuestions[i].options[option]
-                    // console.log(option, "  ->  ", optionValue)
-                    waterPoints += optionValue
-                    waterPointsTotal += Math.max(...Object.values(waterQuestions[i].options))
-                    userScore = (userScore + optionValue)
-                    waterData[waterQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("-----------> > recycle ", recycleAnswers)
-        for (let i = 0; i < recycleAnswers.length; i++) {
-            for (let j = 0; j < recycleAnswers[i].length; j++) {
-                if (recycleAnswers[i][j] === true) {
-                    let option = Object.keys(recycleQuestions[i].options).sort()[j]
-                    let optionValue = recycleQuestions[i].options[option]
-                    // console.log(option, "  ->  ", optionValue)
-                    recyclePoints += optionValue
-                    recyclePointsTotal += Math.max(...Object.values(recycleQuestions[i].options))
-                    userScore = (userScore + optionValue)
-                    recycleData[recycleQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("-----------> > movement ", movementAnswers)
-        for (let i = 0; i < movementAnswers.length; i++) {
-            for (let j = 0; j < movementAnswers[i].length; j++) {
-                if (movementAnswers[i][j] === true) {
-                    let option = Object.keys(movementQuestions[i].options).sort()[j]
-                    let optionValue = movementQuestions[i].options[option]
-                    // * the movement category has questions with adjustments that influence the min_range
-                    // * we need check what is the min_range in elevator and distance and IF IS MIN_RANGE_2 we need do changes
-                    if (((movementQuestions[i].adjustment === "elevator" && initialQuestions.elevator === "min_range_2") || (movementQuestions[i].adjustment === "distance" && initialQuestions.distance === "min_range_2")) && optionValue < 2) {
-                        optionValue = 2
-                    }
-                    // console.log(option, "  ->  ", optionValue)
-                    movementPoints += optionValue
-                    movementPointsTotal += Math.max(...Object.values(movementQuestions[i].options))
-                    userScore = (userScore + optionValue)
-                    movementData[movementQuestions[i].description] = option
-                    break
-                }
-            }
-        }
-        // console.log("------------> > energy ", energyAnswers)
-        const energyAnswersKeys = Object.keys(energyAnswers)
-        for (let i = 0; i < energyAnswersKeys.length; i++) {
-            let questionsForDevice = energyQuestions.filter(element => element.field.includes(energyAnswersKeys[i]))
-            if (energyAnswersKeys[i] === "geral") {
-                questionsForDevice = energyQuestions[0]
-            }
-            for (let j = 0; j < questionsForDevice.length; j++) {
-                for (let k = 0; k < energyAnswers[energyAnswersKeys[i]][j].length; k++) {
-                    if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
-                        let option = Object.keys(questionsForDevice[j].options).sort()[k]
-                        let optionValue = questionsForDevice[j].options[option]
-                        energyPoints += optionValue
-                        energyPointsTotal += Math.max(...Object.values( questionsForDevice[j].options))
+        if (userDOC.active_categories.air !== 0) {
+            for (let i = 0; i < airAnswers.length; i++) {
+                for (let j = 0; j < airAnswers[i].length; j++) {
+                    if (airAnswers[i][j] === true) {
+                        let option = Object.keys(airQuestions[i].options).sort()[j]
+                        let optionValue = airQuestions[i].options[option]
+                        // console.log(option, "  ->  ", optionValue)
+                        airPoints += optionValue
+                        airPointsTotal += Math.max(...Object.values(airQuestions[i].options))
                         userScore = (userScore + optionValue)
-                        energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
+                        airData[airQuestions[i].description] = option
                         break
+                    }
+                }
+            }
+        }
+        if (userDOC.active_categories.water !== 0) {
+            // console.log("-----------> > water ", waterAnswers)
+            for (let i = 0; i < waterAnswers.length; i++) {
+                for (let j = 0; j < waterAnswers[i].length; j++) {
+                    if (waterAnswers[i][j] === true) {
+                        let option = Object.keys(waterQuestions[i].options).sort()[j]
+                        let optionValue = waterQuestions[i].options[option]
+                        // console.log(option, "  ->  ", optionValue)
+                        waterPoints += optionValue
+                        waterPointsTotal += Math.max(...Object.values(waterQuestions[i].options))
+                        userScore = (userScore + optionValue)
+                        waterData[waterQuestions[i].description] = option
+                        break
+                    }
+                }
+            }
+        }
+        if (userDOC.active_categories.recycle !== 0) {
+            // console.log("-----------> > recycle ", recycleAnswers)
+            for (let i = 0; i < recycleAnswers.length; i++) {
+                for (let j = 0; j < recycleAnswers[i].length; j++) {
+                    if (recycleAnswers[i][j] === true) {
+                        let option = Object.keys(recycleQuestions[i].options).sort()[j]
+                        let optionValue = recycleQuestions[i].options[option]
+                        // console.log(option, "  ->  ", optionValue)
+                        recyclePoints += optionValue
+                        recyclePointsTotal += Math.max(...Object.values(recycleQuestions[i].options))
+                        userScore = (userScore + optionValue)
+                        recycleData[recycleQuestions[i].description] = option
+                        break
+                    }
+                }
+            }
+        }
+        if (userDOC.active_categories.movement !== 0) {
+            // console.log("-----------> > movement ", movementAnswers)
+            for (let i = 0; i < movementAnswers.length; i++) {
+                for (let j = 0; j < movementAnswers[i].length; j++) {
+                    if (movementAnswers[i][j] === true) {
+                        let option = Object.keys(movementQuestions[i].options).sort()[j]
+                        let optionValue = movementQuestions[i].options[option]
+                        // * the movement category has questions with adjustments that influence the min_range
+                        // * we need check what is the min_range in elevator and distance and IF IS MIN_RANGE_2 we need do changes
+                        if (((movementQuestions[i].adjustment === "elevator" && initialQuestions.elevator === "min_range_2") || (movementQuestions[i].adjustment === "distance" && initialQuestions.distance === "min_range_2")) && optionValue < 2) {
+                            optionValue = 2
+                        }
+                        // console.log(option, "  ->  ", optionValue)
+                        movementPoints += optionValue
+                        movementPointsTotal += Math.max(...Object.values(movementQuestions[i].options))
+                        userScore = (userScore + optionValue)
+                        movementData[movementQuestions[i].description] = option
+                        break
+                    }
+                }
+            }
+        }
+        if (userDOC.active_categories.energy !== 0) {
+            // console.log("------------> > energy ", energyAnswers)
+            const energyAnswersKeys = Object.keys(energyAnswers)
+            for (let i = 0; i < energyAnswersKeys.length; i++) {
+                let questionsForDevice = energyQuestions.filter(element => element.field.includes(energyAnswersKeys[i]))
+                if (energyAnswersKeys[i] === "geral") {
+                    questionsForDevice = energyQuestions[0]
+                }
+                for (let j = 0; j < questionsForDevice.length; j++) {
+                    for (let k = 0; k < energyAnswers[energyAnswersKeys[i]][j].length; k++) {
+                        if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
+                            let option = Object.keys(questionsForDevice[j].options).sort()[k]
+                            let optionValue = questionsForDevice[j].options[option]
+                            energyPoints += optionValue
+                            energyPointsTotal += Math.max(...Object.values(questionsForDevice[j].options))
+                            userScore = (userScore + optionValue)
+                            energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
+                            break
+                        }
                     }
                 }
             }
@@ -570,20 +560,21 @@ export default function AddActivitiesScreen({ navigation }) {
         // console.log(movementData)
         // console.log(recycleData)
         // console.log(waterData)
-        console.log("points: ", airPoints , " " , energyPoints, " ", movementPoints, " ", recyclePoints, " ", waterPoints)
-        console.log("pointsTotal: ", airPointsTotal , " " , energyPointsTotal, " ", movementPointsTotal, " ", recyclePointsTotal, " ", waterPointsTotal)
+        console.log("points: ", airPoints, " ", energyPoints, " ", movementPoints, " ", recyclePoints, " ", waterPoints)
+        console.log("pointsTotal: ", airPointsTotal, " ", energyPointsTotal, " ", movementPointsTotal, " ", recyclePointsTotal, " ", waterPointsTotal)
         console.log(userPoints)
         let idDoc = userID.concat(currentDate).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({
-            air: airData,
-            energy: energyData,
-            movement: movementData,
-            recycle: recycleData,
-            water: waterData,
+            air: userDOC.active_categories.air !== 0 ? airData : {},
+            energy: userDOC.active_categories.energy !== 0 ? energyData : {},
+            movement: userDOC.active_categories.movement !== 0 ? movementData : {},
+            recycle: userDOC.active_categories.recycle !== 0 ? recycleData : {},
+            water: userDOC.active_categories.water !== 0 ? waterData : {},
         });
         const updatedPoints = { ...userPoints };
-        updatedPoints[currentDate] = Math.round(userScore * 100 / (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal));
+        console.log(userScore)
+        updatedPoints[currentDate] = Math.round((100/ (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal) )* userScore);
         setUserPoints(updatedPoints);
         const updatedAirPoints = { ...userAirPoints };
         const updatedEnergyPoints = { ...userEnergyPoints };
@@ -591,11 +582,11 @@ export default function AddActivitiesScreen({ navigation }) {
         const updatedRecyclePoints = { ...userRecyclePoints };
         const updatedWaterPoints = { ...userWaterPoints };
 
-        updatedAirPoints[currentDate] = Math.round(airPoints * 100 / airPointsTotal);
-        updatedEnergyPoints[currentDate] = Math.round(energyPoints * 100 / energyPointsTotal);
-        updatedMovementPoints[currentDate] = Math.round(movementPoints * 100 / movementPointsTotal);
-        updatedRecyclePoints[currentDate] = Math.round(recyclePoints * 100 / recyclePointsTotal);
-        updatedWaterPoints[currentDate] = Math.round(waterPoints * 100 / waterPointsTotal);
+        updatedAirPoints[currentDate] = userDOC.active_categories.air !== 0 ? Math.round(airPoints * 100 / airPointsTotal) : 0;
+        updatedEnergyPoints[currentDate] = userDOC.active_categories.energy !== 0 ? Math.round(energyPoints * 100 / energyPointsTotal) : 0;
+        updatedMovementPoints[currentDate] = userDOC.active_categories.movement !== 0 ? Math.round(movementPoints * 100 / movementPointsTotal) : 0;
+        updatedRecyclePoints[currentDate] = userDOC.active_categories.recycle !== 0 ? Math.round(recyclePoints * 100 / recyclePointsTotal) : 0;
+        updatedWaterPoints[currentDate] = userDOC.active_categories.water !== 0 ? Math.round(waterPoints * 100 / waterPointsTotal) : 0;
         setUserAirPoints(updatedAirPoints);
         setUserMovementPoints(updatedMovementPoints);
         setUserEnergyPoints(updatedEnergyPoints);
@@ -619,29 +610,29 @@ export default function AddActivitiesScreen({ navigation }) {
         const updatedWaterPointsDep = { ...departmentPointsWater };
 
         if (currentDate in departmentPointsAir) {
-            updatedAirPointsDep[currentDate] = departmentPointsAir[currentDate] + airPoints
+            updatedAirPointsDep[currentDate] = departmentPointsAir[currentDate] + (airPoints/airPointsTotal)*100
         } else {
-            updatedAirPointsDep[currentDate] = airPoints
+            updatedAirPointsDep[currentDate] = (airPoints/airPointsTotal)*100
         }
         if (currentDate in departmentPointsEnergy) {
-            updatedEnergyPointsDep[currentDate] = departmentPointsEnergy[currentDate] + energyPoints
+            updatedEnergyPointsDep[currentDate] = departmentPointsEnergy[currentDate] + Math.round(energyPoints/energyPointsTotal)*100
         } else {
-            updatedEnergyPointsDep[currentDate] = energyPoints
+            updatedEnergyPointsDep[currentDate] = Math.round(energyPoints/energyPointsTotal)*100
         }
         if (currentDate in departmentPointsMovement) {
-            updatedMovementPointsDep[currentDate] = departmentPointsMovement[currentDate] + movementPoints
+            updatedMovementPointsDep[currentDate] = departmentPointsMovement[currentDate] + Math.round(movementPoints/movementPointsTotal)*100
         } else {
-            updatedMovementPointsDep[currentDate] = movementPoints
+            updatedMovementPointsDep[currentDate] = Math.round(movementPoints/movementPointsTotal)*100
         }
         if (currentDate in departmentPointsRecycle) {
-            updatedRecyclePointsDep[currentDate] = departmentPointsRecycle[currentDate] + recyclePoints
+            updatedRecyclePointsDep[currentDate] = departmentPointsRecycle[currentDate] + Math.round(recyclePoints/recyclePointsTotal)*100
         } else {
-            updatedRecyclePointsDep[currentDate] = recyclePoints
+            updatedRecyclePointsDep[currentDate] = Math.round(recyclePoints/recyclePointsTotal)*100
         }
         if (currentDate in departmentPointsWater) {
-            updatedWaterPointsDep[currentDate] = departmentPointsWater[currentDate] + waterPoints
+            updatedWaterPointsDep[currentDate] = departmentPointsWater[currentDate] + Math.round(waterPoints/waterPointsTotal)*100
         } else {
-            updatedWaterPointsDep[currentDate] = waterPoints
+            updatedWaterPointsDep[currentDate] = Math.round(waterPoints/waterPointsTotal)*100
         }
 
         setDepartmentPointsAir(updatedAirPointsDep);
@@ -1375,6 +1366,7 @@ export default function AddActivitiesScreen({ navigation }) {
                                 if (showWarning === null) {
                                     setModalWarningSubmit(true)
                                 } else {
+                                    setLoadingBolt(true)
                                     checkToSubmit()
                                 }
                             }}
