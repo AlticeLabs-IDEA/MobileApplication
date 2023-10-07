@@ -84,15 +84,15 @@ export default function AddActivitiesScreen({ navigation }) {
     let recycleData = {}
     let waterData = {}
     let userScore = 0
-    const [airPointsTotal, setAirPointsTotal] = useState(0)
+    let airPointsTotal = 0
     let airPoints = 0
-    const [recyclePointsTotal, setRecyclePointsTotal] = useState(0)
+    let recyclePointsTotal = 0
     let recyclePoints = 0
-    const [energyPointsTotal, setEnergyPointsTotal] = useState(0)
+    let energyPointsTotal = 0
     let energyPoints = 0
-    const [movementPointsTotal, setMovementPointsTotal] = useState(0)
+    let movementPointsTotal = 0
     let movementPoints = 0
-    const [waterPointsTotal, setWaterPointsTotal] = useState(0)
+    let waterPointsTotal = 0
     let waterPoints = 0
     const [departmentPointsAir, setDepartmentPointsAir] = useState()
     const [departmentPointsEnergy, setDepartmentPointsEnergy] = useState()
@@ -284,11 +284,11 @@ export default function AddActivitiesScreen({ navigation }) {
                 setRecycleAnswers(initialRecycleAnswers);
                 setRecycleQuestions(filteredRecycleData)
 
-                setAirPointsTotal(calculateMaxOptionSum(filteredAirData))
-                setEnergyPointsTotal(calculateMaxOptionSum(filteredEnergyData) * 12);
-                setMovementPointsTotal(calculateMaxOptionSum(filteredMovementData));
-                setRecyclePointsTotal(calculateMaxOptionSum(filteredRecycleData));
-                setWaterPointsTotal(calculateMaxOptionSum(filteredWaterData));
+                // setAirPointsTotal(calculateMaxOptionSum(filteredAirData))
+                // setEnergyPointsTotal(calculateMaxOptionSum(filteredEnergyData) * 6);
+                // setMovementPointsTotal(calculateMaxOptionSum(filteredMovementData));
+                // setRecyclePointsTotal(calculateMaxOptionSum(filteredRecycleData));
+                // setWaterPointsTotal(calculateMaxOptionSum(filteredWaterData));
             });
         }
         catch (error) {
@@ -472,6 +472,7 @@ export default function AddActivitiesScreen({ navigation }) {
         calculateScore()
     }
 
+    // ! tá mal
     // * function to calculate the score
     const calculateScore = () => {
         // console.log("-----------> > air ", airAnswers)
@@ -482,6 +483,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     let optionValue = airQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
                     airPoints += optionValue
+                    airPointsTotal += Math.max(...Object.values(airQuestions[i].options))
                     userScore = (userScore + optionValue)
                     airData[airQuestions[i].description] = option
                     break
@@ -496,6 +498,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     let optionValue = waterQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
                     waterPoints += optionValue
+                    waterPointsTotal += Math.max(...Object.values(waterQuestions[i].options))
                     userScore = (userScore + optionValue)
                     waterData[waterQuestions[i].description] = option
                     break
@@ -510,6 +513,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     let optionValue = recycleQuestions[i].options[option]
                     // console.log(option, "  ->  ", optionValue)
                     recyclePoints += optionValue
+                    recyclePointsTotal += Math.max(...Object.values(recycleQuestions[i].options))
                     userScore = (userScore + optionValue)
                     recycleData[recycleQuestions[i].description] = option
                     break
@@ -529,6 +533,7 @@ export default function AddActivitiesScreen({ navigation }) {
                     }
                     // console.log(option, "  ->  ", optionValue)
                     movementPoints += optionValue
+                    movementPointsTotal += Math.max(...Object.values(movementQuestions[i].options))
                     userScore = (userScore + optionValue)
                     movementData[movementQuestions[i].description] = option
                     break
@@ -548,6 +553,7 @@ export default function AddActivitiesScreen({ navigation }) {
                         let option = Object.keys(questionsForDevice[j].options).sort()[k]
                         let optionValue = questionsForDevice[j].options[option]
                         energyPoints += optionValue
+                        energyPointsTotal += Math.max(...Object.values( questionsForDevice[j].options))
                         userScore = (userScore + optionValue)
                         energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
                         break
@@ -564,6 +570,9 @@ export default function AddActivitiesScreen({ navigation }) {
         // console.log(movementData)
         // console.log(recycleData)
         // console.log(waterData)
+        console.log("points: ", airPoints , " " , energyPoints, " ", movementPoints, " ", recyclePoints, " ", waterPoints)
+        console.log("pointsTotal: ", airPointsTotal , " " , energyPointsTotal, " ", movementPointsTotal, " ", recyclePointsTotal, " ", waterPointsTotal)
+        console.log(userPoints)
         let idDoc = userID.concat(currentDate).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({

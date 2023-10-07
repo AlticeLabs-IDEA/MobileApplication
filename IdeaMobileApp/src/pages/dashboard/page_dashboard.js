@@ -3,11 +3,13 @@ import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Pressable, ScrollView, Text, View, TextInput } from "react-native";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import CircularProgress from "react-native-circular-progress-indicator";
 import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 import { useFonts } from "expo-font";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import firebase from "../../../config/firebase.js";
+import { useFocusEffect } from '@react-navigation/native';
 
 // IMPORT COMPONENTS
 import { AirBox, EnergyBox, MovementBox, RecycleBox, WaterBox } from "../../components/areaBoxes.js";
@@ -20,9 +22,46 @@ import * as CONST from "../../assets/constants/constants.js"
 export default function DashboardScreen({ navigation }) {
     const [valueDep, setValueDep] = useState(90)
     const [valueOrg, setValueOrg] = useState(20)
-    const [valuePer, setValuePer] = useState(60)
+    const [valuePer, setValuePer] = useState()
     const [values, setValues] = useState([]) // default is departamental, individual, empresarial
     const [selected, setSelected] = useState("personal")
+    const [loadingBolt, setLoadingBolt] = useState(true);
+    
+    const [userID, setUserID] = useState()
+    const [userDOC, setUserDOC] = useState()
+
+    const getData = async () => {
+        try {
+            const jsonDoc = await AsyncStorage.getItem('userDoc');
+            const id = await AsyncStorage.getItem('userID');
+            setUserDOC(jsonDoc != null ? JSON.parse(jsonDoc) : null);
+            setUserID(id != null ? id : null)
+            getValues(JSON.parse(jsonDoc))
+            setLoadingBolt(false)
+        } catch (e) {
+            console.log(e.message)
+        }
+    };
+
+    const getCurrentDate = () => {
+        const date = new Date();
+        const day = date.getDate();
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        const formattedDate = `${day}/${month}/${year}`;
+        return (formattedDate);
+      };
+
+    const getValues = (doc) => {
+        setValuePer(getCurrentDate() in doc.points ? doc.points[getCurrentDate()] : 0)
+    }
+    
+    useFocusEffect(
+        React.useCallback(() => {
+            setLoadingBolt(true)
+            getData()
+        }, [])
+    );
 
     useEffect(() => {
         if (selected === 'personal') {
