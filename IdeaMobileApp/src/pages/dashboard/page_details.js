@@ -471,8 +471,6 @@ export default function DetailsScreen({ route, navigation }) {
                     </View>
                 ))}
             </View>
-
-
         </SafeAreaProvider>
     )
 }

@@ -50,9 +50,9 @@ export default function DashboardScreen({ navigation }) {
         "organizational":
         {
             "green": "Os resultados da empresa revelam um bom grau de sustentabilidade. Parabéns!",
-            "blue": "Estão num bom caminho! Mais um pouco de esforço e terão uma empresa verde.",
+            "blue": "Estão num bom caminho! Mais um pouco de esforço e terão uma empresa mais verde.",
             "red": "Precisamos de mudar alguns comportamentos para obter mais pontos de sustentabilidade."
-        },
+        }
     }
 
     const getCurrentDate = () => {
@@ -109,6 +109,8 @@ export default function DashboardScreen({ navigation }) {
         for (const element of departments.docs) {
             const department = element.data();
             const department_score = await calculateDepartmentPoints(department, doc, currentDate)
+            
+        console.log(department_score)
             totalPoints += department_score
         }
         setValueOrg(Math.round(totalPoints / departments.size))
@@ -119,6 +121,10 @@ export default function DashboardScreen({ navigation }) {
         if (doc.authorized) {
             setAuthorized(true)
             calculateOrgPoints(doc, currentDate)
+        } else {
+            setAuthorized(false)
+            setValueDep(-1)
+            setValueOrg(-1)
         }
         setLoadingBolt(false)
     }
@@ -286,18 +292,18 @@ export default function DashboardScreen({ navigation }) {
                                         }
                                     }}>
                                     <CircularProgress
-                                        value={values[0]}
+                                        value={(values[0] < 0) ? 100 :values[0]}
                                         maxValue={100}
                                         progressValueStyle={{ display: 'none' }}
                                         radius={CONST.screenWidth / 12}
                                         progressValueColor={CONST.mainGray}
-                                        activeStrokeSecondaryColor={(values[0] < 25) ? CONST.secondaryRed : (values[0] > 66) ? CONST.secondaryGreen : CONST.secondaryBlue}
-                                        activeStrokeColor={(values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue}
+                                        activeStrokeSecondaryColor={(values[0] < 0) ? CONST.neutralGray : (values[0] < 25) ? CONST.secondaryRed : (values[0] > 66) ? CONST.secondaryGreen : CONST.secondaryBlue}
+                                        activeStrokeColor={ (values[0] < 0) ? CONST.secondaryGray : (values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue}
                                         inActiveStrokeColor={CONST.neutralGray}
                                         inActiveStrokeOpacity={0.5}
                                         inActiveStrokeWidth={2}
                                         activeStrokeWidth={8}
-                                        title={<><Text>{values[0]} </Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue} />
+                                        title={<><Text>{(values[0] < 0) ?"":values[0]}</Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[0] < 0) ? CONST.secondaryGray : (values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue} />
                                         </>}
                                         titleStyle={styles.progressBarText}
                                     />
@@ -316,21 +322,27 @@ export default function DashboardScreen({ navigation }) {
                                         }
                                     }}>
                                     <CircularProgress
-                                        value={values[1]}
+                                        value={(values[1] < 0) ? 100 :values[1]}
                                         maxValue={100}
                                         progressValueStyle={{ display: 'none' }}
                                         radius={CONST.screenWidth / 5}
                                         progressValueColor={CONST.mainGray}
-                                        activeStrokeColor={(values[1] < 25) ? CONST.mainRed : (values[1] > 66) ? CONST.mainGreen : CONST.mainBlue}
-                                        activeStrokeSecondaryColor={(values[1] < 25) ? CONST.secondaryRed : (values[1] > 66) ? CONST.secondaryGreen : CONST.secondaryBlue}
+                                        activeStrokeColor={(values[1] < 0) ? CONST.secondaryGray : (values[1] < 25) ? CONST.mainRed : (values[1] > 66) ? CONST.mainGreen : CONST.mainBlue}
+                                        activeStrokeSecondaryColor={(values[1] < 0) ? CONST.neutralGray : (values[1] < 25) ? CONST.secondaryRed : (values[1] > 66) ? CONST.secondaryGreen : CONST.secondaryBlue}
                                         inActiveStrokeColor={CONST.neutralGray}
                                         inActiveStrokeOpacity={0.5}
                                         inActiveStrokeWidth={4}
                                         activeStrokeWidth={12}
-                                        title={<><Text>{values[1]} </Text><FontAwesome5 name="seedling" size={CONST.heading6} color={(values[1] < 25) ? CONST.mainRed : (values[1] > 66) ? CONST.mainGreen : CONST.mainBlue} />
+                                        title={(values[1] < 0) ? 
+                                          <>
+                                          <Text style={{fontSize: CONST.heading6}}>Não</Text>
+                                          </>  
+                                        : 
+                                        <>
+                                        <Text>{values[1]} </Text><FontAwesome5 name="seedling" size={CONST.heading6} color={(values[1] < 0) ? CONST.secondaryGray : (values[1] < 25) ? CONST.mainRed : (values[1] > 66) ? CONST.mainGreen : CONST.mainBlue} />
                                         </>}
                                         titleStyle={styles.mainProgressBarText}
-                                        subtitle={'pontos'}
+                                        subtitle={(values[1] < 0) ? 'autorizado' : 'pontos'}
                                         subtitleStyle={styles.mainProgressBarSubText}
                                     />
                                 </Pressable>
@@ -345,18 +357,18 @@ export default function DashboardScreen({ navigation }) {
                                         }
                                     }}>
                                     <CircularProgress
-                                        value={values[2]}
+                                        value={(values[2] < 0) ? 100 :values[2]}
                                         maxValue={100}
                                         progressValueStyle={{ display: 'none' }}
                                         radius={CONST.screenWidth / 12}
                                         progressValueColor={CONST.mainGray}
-                                        activeStrokeColor={(values[2] < 25) ? CONST.mainRed : (values[2] > 66) ? CONST.mainGreen : CONST.mainBlue}
-                                        activeStrokeSecondaryColor={(values[2] < 25) ? CONST.secondaryRed : (values[2] > 66) ? CONST.secondaryGreen : CONST.secondaryBlue}
+                                        activeStrokeColor={(values[2] < 0) ? CONST.secondaryGray : (values[2] < 25) ? CONST.mainRed : (values[2] > 66) ? CONST.mainGreen : CONST.mainBlue}
+                                        activeStrokeSecondaryColor={(values[2] < 0) ? CONST.neutralGray : (values[2] < 25) ? CONST.secondaryRed : (values[2] > 66) ? CONST.secondaryGreen : CONST.secondaryBlue}
                                         inActiveStrokeColor={CONST.neutralGray}
                                         inActiveStrokeOpacity={0.5}
                                         inActiveStrokeWidth={2}
                                         activeStrokeWidth={8}
-                                        title={<><Text>{values[2]} </Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[2] < 25) ? CONST.mainRed : (values[2] > 66) ? CONST.mainGreen : CONST.mainBlue} />
+                                        title={<><Text>{(values[2] < 0) ?"":values[2]} </Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[2] < 0) ? CONST.secondaryGray : (values[2] < 25) ? CONST.mainRed : (values[2] > 66) ? CONST.mainGreen : CONST.mainBlue} />
                                         </>}
                                         titleStyle={styles.progressBarText}
                                     />
@@ -395,7 +407,7 @@ export default function DashboardScreen({ navigation }) {
                     horizontal={true}
                     showsHorizontalScrollIndicator={true}
                     style={{ marginBottom: CONST.boxCardMargin / 2 }}>
-                    {activeCategories && Object.keys(activeCategories).length > 0 && Object.keys(activeCategories).sort().map((category, index) => {
+                    {userDOC && activeCategories && Object.keys(activeCategories).length > 0 && Object.keys(activeCategories).sort().map((category, index) => {
                         return (
                             <Pressable
                                 key={index}
@@ -420,7 +432,7 @@ export default function DashboardScreen({ navigation }) {
                             </Pressable>
                         )
                     })}
-                    {inactiveCategories && Object.keys(inactiveCategories).length > 0 && Object.keys(inactiveCategories).sort().map((category, index) => {
+                    {userDOC && inactiveCategories && Object.keys(inactiveCategories).length > 0 && Object.keys(inactiveCategories).sort().map((category, index) => {
                         return (
                             <View
                                 key={index}

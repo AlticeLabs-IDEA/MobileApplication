@@ -417,12 +417,9 @@ export default function AddActivitiesScreen({ navigation }) {
         // air first questions activate 2 sub questions:
         if (!airAnswers[0][0] && !airAnswers[0][1]) {
             airAnswers[1] = [false, false]
-            airAnswers[2] = [false, false]
         }
         else if (airAnswers[0][0]) {
             airAnswers[1] = [false, false]
-        } else {
-            airAnswers[2] = [false, false]
         }
         // recycle second question activate a sub question
         if (recycleAnswers[1][0]) {
@@ -452,19 +449,18 @@ export default function AddActivitiesScreen({ navigation }) {
         calculateScore()
     }
 
-    // ! tá mal
     // * function to calculate the score
     const calculateScore = () => {
-        // console.log("-----------> > air ", airAnswers)
         if (userDOC.active_categories.air !== 0) {
+        console.log("-----------> > air ", airAnswers)
             for (let i = 0; i < airAnswers.length; i++) {
                 for (let j = 0; j < airAnswers[i].length; j++) {
+                    airPointsTotal += Math.max(...Object.values(airQuestions[i].options))
                     if (airAnswers[i][j] === true) {
                         let option = Object.keys(airQuestions[i].options).sort()[j]
                         let optionValue = airQuestions[i].options[option]
                         // console.log(option, "  ->  ", optionValue)
                         airPoints += optionValue
-                        airPointsTotal += Math.max(...Object.values(airQuestions[i].options))
                         userScore = (userScore + optionValue)
                         airData[airQuestions[i].description] = option
                         break
@@ -473,15 +469,15 @@ export default function AddActivitiesScreen({ navigation }) {
             }
         }
         if (userDOC.active_categories.water !== 0) {
-            // console.log("-----------> > water ", waterAnswers)
+            console.log("-----------> > water ", waterAnswers)
             for (let i = 0; i < waterAnswers.length; i++) {
                 for (let j = 0; j < waterAnswers[i].length; j++) {
+                    waterPointsTotal += Math.max(...Object.values(waterQuestions[i].options))
                     if (waterAnswers[i][j] === true) {
                         let option = Object.keys(waterQuestions[i].options).sort()[j]
                         let optionValue = waterQuestions[i].options[option]
                         // console.log(option, "  ->  ", optionValue)
                         waterPoints += optionValue
-                        waterPointsTotal += Math.max(...Object.values(waterQuestions[i].options))
                         userScore = (userScore + optionValue)
                         waterData[waterQuestions[i].description] = option
                         break
@@ -493,12 +489,12 @@ export default function AddActivitiesScreen({ navigation }) {
             // console.log("-----------> > recycle ", recycleAnswers)
             for (let i = 0; i < recycleAnswers.length; i++) {
                 for (let j = 0; j < recycleAnswers[i].length; j++) {
+                    recyclePointsTotal += Math.max(...Object.values(recycleQuestions[i].options))
                     if (recycleAnswers[i][j] === true) {
                         let option = Object.keys(recycleQuestions[i].options).sort()[j]
                         let optionValue = recycleQuestions[i].options[option]
                         // console.log(option, "  ->  ", optionValue)
                         recyclePoints += optionValue
-                        recyclePointsTotal += Math.max(...Object.values(recycleQuestions[i].options))
                         userScore = (userScore + optionValue)
                         recycleData[recycleQuestions[i].description] = option
                         break
@@ -510,6 +506,7 @@ export default function AddActivitiesScreen({ navigation }) {
             // console.log("-----------> > movement ", movementAnswers)
             for (let i = 0; i < movementAnswers.length; i++) {
                 for (let j = 0; j < movementAnswers[i].length; j++) {
+                    movementPointsTotal += Math.max(...Object.values(movementQuestions[i].options))
                     if (movementAnswers[i][j] === true) {
                         let option = Object.keys(movementQuestions[i].options).sort()[j]
                         let optionValue = movementQuestions[i].options[option]
@@ -520,7 +517,6 @@ export default function AddActivitiesScreen({ navigation }) {
                         }
                         // console.log(option, "  ->  ", optionValue)
                         movementPoints += optionValue
-                        movementPointsTotal += Math.max(...Object.values(movementQuestions[i].options))
                         userScore = (userScore + optionValue)
                         movementData[movementQuestions[i].description] = option
                         break
@@ -538,11 +534,11 @@ export default function AddActivitiesScreen({ navigation }) {
                 }
                 for (let j = 0; j < questionsForDevice.length; j++) {
                     for (let k = 0; k < energyAnswers[energyAnswersKeys[i]][j].length; k++) {
+                        energyPointsTotal += Math.max(...Object.values(questionsForDevice[j].options))
                         if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
                             let option = Object.keys(questionsForDevice[j].options).sort()[k]
                             let optionValue = questionsForDevice[j].options[option]
                             energyPoints += optionValue
-                            energyPointsTotal += Math.max(...Object.values(questionsForDevice[j].options))
                             userScore = (userScore + optionValue)
                             energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
                             break
@@ -1031,9 +1027,6 @@ export default function AddActivitiesScreen({ navigation }) {
                     airQuestions.map((callbackfn, id) => {
                         const firstQuestion = 0
                         if (id === firstQuestion + 1 && !airAnswers[firstQuestion][1]) {
-                            return (<View key={'air_' + id}></View>)
-                        }
-                        if (id === firstQuestion + 2 && !airAnswers[firstQuestion][0]) {
                             return (<View key={'air_' + id}></View>)
                         }
                         if (airQuestions[id].adjustment === 'air' && !initialQuestions.air) {
