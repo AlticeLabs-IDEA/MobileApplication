@@ -19,7 +19,6 @@ import { AddButton } from "../../components/buttons.js";
 // IMPORT STYLES
 import { styles } from "../../assets/styles/css.js"
 import * as CONST from "../../assets/constants/constants.js"
-import { GeralLabel } from "../../components/labels.js";
 
 export default function StatsScreen({ navigation }) {
     const [loadingBolt, setLoadingBolt] = useState(true);
@@ -34,6 +33,7 @@ export default function StatsScreen({ navigation }) {
     const [statsMap, setStatsMaps] = useState({})
     const [colors, setColors] = useState([])
     const [area, setArea] = useState('personal')
+    const [inactiveCategories, setInactiveCategories] = useState()
 
     const calculateTheStatsMap = (temp) => {
         let total = Object.values(temp).reduce((ac, value) => ac + value, 0);
@@ -47,7 +47,6 @@ export default function StatsScreen({ navigation }) {
         setColors(tempColors)
     }
 
-
     const getData = async (daysArray) => {
         try {
             const jsonDoc = await AsyncStorage.getItem('userDoc');
@@ -60,11 +59,14 @@ export default function StatsScreen({ navigation }) {
         }
     };
 
+    const getDocumentInfo = async (doc, daysArray) => {
+        const avgTemp = { ...avgPoints }; // * map to save the avg score per category
+        let totalPoints = 0 // * variable to save the sum of avg score in all categories
 
-    const getDocumentInfo = (doc, daysArray) => {
-        const avgTemp = { ...avgPoints };
-        let totalPoints = 0
         setActiveCategories(Object.keys(doc.active_categories).filter(key => doc.active_categories[key] > 0))
+        setInactiveCategories(Object.keys(doc.active_categories).filter(key => doc.active_categories[key] == 0))
+
+        // * loop to get the avg points per category and the total points
         for (const element of Object.keys(doc.active_categories).filter(key => doc.active_categories[key] > 0)) {
             const tempArray = []
             for (const d of daysArray) {
@@ -73,10 +75,22 @@ export default function StatsScreen({ navigation }) {
             avgTemp[element] = Math.round(tempArray.reduce((a, b) => a + b, 0) / daysArray.length)
             totalPoints += Math.round(tempArray.reduce((a, b) => a + b, 0) / daysArray.length)
         }
+
+        // * sort in ascending order of values
         const sortedObj = Object.fromEntries(Object.entries(avgTemp).sort((a, b) => b[1] - a[1]));
         setAvgTotal(Math.round(totalPoints / Object.keys(doc.active_categories).filter(key => doc.active_categories[key] > 0).length))
         setAvgPoints(sortedObj)
+
+        // * calculate the percentage contribution of each area to the pie chart
         calculateTheStatsMap(sortedObj)
+
+        // ! organizational 
+
+        // * function to get user organization because in user document we just have the department, but not the organization
+        const firestore_department_doc = firebase.firestore().collection('departments').doc(doc.department)
+        const department_doc = await firestore_department_doc.get()
+        const organizationID = department_doc.data().organization
+
         setLoadingBolt(false)
     }
 
@@ -113,7 +127,6 @@ export default function StatsScreen({ navigation }) {
                 return CONST.secondaryGray
         }
     }
-
 
     function getDays() {
         const currentDate = new Date();
@@ -171,6 +184,13 @@ export default function StatsScreen({ navigation }) {
                     pagingEnabled={true}
                     onMomentumScrollEnd={(e) => {
                         var x = e.nativeEvent.contentOffset.x;
+                        if (x == 0) {
+                            setArea("personal")
+                        } else if ((x < CONST.screenWidth + 1)) {
+                            setArea("departmental")
+                        } else {
+                            setArea("organizational")
+                        }
                     }}>
 
                     {avgTotal && statsMap && Object.keys(statsMap).length > 0 && colors && Object.keys(statsMap).length === colors.length && avgPoints && Object.keys(avgPoints).length > 0 && activeCategories ?
@@ -236,7 +256,7 @@ export default function StatsScreen({ navigation }) {
                                         <Text style={styles.subText}>Progresso nas tuas áreas nos últimos sete dias</Text>
                                     </View>
                                     <View style={{ alignItems: 'center' }}>
-                                        {avgPoints && Object.keys(avgPoints).length > 0
+                                    {avgPoints && Object.keys(avgPoints).length > 0
                                             && Object.keys(avgPoints).map((element, idx) => {
                                                 return (
                                                     <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', marginBottom: CONST.boxCardMargin / 2, justifyContent: 'space-between' }}>
@@ -257,6 +277,23 @@ export default function StatsScreen({ navigation }) {
                                                 )
                                             })
                                         }
+                                         {inactiveCategories && inactiveCategories.length > 0
+                                            && inactiveCategories.map((element, idx) => {
+                                                return (
+                                                    <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', marginBottom: CONST.boxCardMargin / 2, justifyContent: 'space-between' }}>
+                                                        <View style={{ flexDirection: 'row' }}>
+                                                            <View style={{ width: '10%', alignItems: 'center', marginRight: CONST.iconPadding }}>
+                                                                {element === 'energy' ? <FontAwesome name="bolt" size={CONST.heading6} color={CONST.secondaryGray} />
+                                                                    : <FontAwesome5 name={element === 'air' ? 'wind' : element === 'water' ? 'faucet' : element === 'movement' ? 'walking' : 'recycle'} size={CONST.heading6} color={whichColor(element)} />}
+                                                            </View>
+                                                            <View style={{  backgroundColor: CONST.secondaryGray, opacity: 0.1, height: CONST.heading6, width: CONST.screenWidth / 2, flexDirection: 'row' }}>
+                                                            </View>
+                                                        </View>
+                                                       
+                                                    </View>
+                                                )
+                                            })
+                                        }
                                     </View>
 
                                 </View>
@@ -264,7 +301,7 @@ export default function StatsScreen({ navigation }) {
                             </ScrollView>
                         </View> : <></>}
 
-                    {/* {avgTotal && statsMap && Object.keys(statsMap).length > 0 && avgPoints && Object.keys(avgPoints).length > 0 && activeCategories ?
+                    {avgTotal && statsMap && Object.keys(statsMap).length > 0 && avgPoints && Object.keys(avgPoints).length > 0 && activeCategories ?
                         <View style={{ flexDirection: 'column' }}>
                             <View>
                                 <Text style={styles.indicatorTitle}>
@@ -444,7 +481,7 @@ export default function StatsScreen({ navigation }) {
                                 </View>
 
                             </ScrollView>
-                        </View> : <></>} */}
+                        </View> : <></>}
 
                 </ScrollView>
 
