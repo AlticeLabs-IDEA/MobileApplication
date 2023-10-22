@@ -39,10 +39,15 @@ export default function StatsScreen({ navigation }) {
     const [depsScoreCats, setDepsScoreCats] = useState({})
     const [userDepScore, setUserDepScore] = useState({})
     const [depsAvg, setDepsAvg] = useState({})
-    const [depPointsAvg, setDepPointsAvg] = useState()
+    const [depPointsAvg, setDepPointsAvg] = useState() // to show in the first box
     const [depSorted, setDepSorted] = useState({})
     const [depColors, setDepColors] = useState([])
-
+    const [orgScoreTotal, setOrgScoreTotal] = useState() // to show in the first box
+    const [orgCats, setOrgCats] = useState({})
+    const [orgColors, setOrgColors] = useState([])
+    const [orgDepsColors, setOrgDepsColors] = useState([])
+    const [orgDepsSorted, setOrgDepsSorted] = useState({})
+    const systemColors = ['red', 'pink', 'orange', 'yellow', 'green', 'blue', 'purple', 'black', 'gray', 'brown']
 
     const calculateTheStatsMap = (temp) => {
         let total = Object.values(temp).reduce((ac, value) => ac + value, 0);
@@ -127,6 +132,7 @@ export default function StatsScreen({ navigation }) {
                 }
                 deps_score_per_cat[department.name] = Object.fromEntries(Object.entries(tempArray).map(([key, value]) => [key, value / daysArray.length]));
             }
+            // calculate the user department score
             if (department.uid === doc.department) {
                 let depTotal = Object.values(tempArray).reduce((acc, value) => (acc + value), 0)
                 let tempColors = []
@@ -147,6 +153,7 @@ export default function StatsScreen({ navigation }) {
             }
         }
         setDepsScoreCats(deps_score_per_cat)
+        console.log("deps_score_per_cate", deps_score_per_cat)
 
         const deps_score = Object.keys(deps_score_per_cat).reduce((result, department) => {
             const sum = cats.reduce((acc, point) => Math.round(acc + deps_score_per_cat[department][point]), 0);
@@ -155,6 +162,45 @@ export default function StatsScreen({ navigation }) {
         }, {});
 
         setDepsAvg(deps_score);
+        console.log("deps_score", deps_score)
+        setOrgScoreTotal(Object.values(deps_score).reduce((acumulador, valor) => acumulador + valor, 0))
+
+        let org_categories = { "air_points": 0, "energy_points": 0, "movement_points": 0, "recycle_points": 0, "water_points": 0 }
+        for (const dep in deps_score_per_cat) {
+            for (const c in org_categories) {
+                org_categories[c] += deps_score_per_cat[dep][c];
+            }
+        }
+
+        let orgTotal = Object.values(org_categories).reduce((acc, value) => (acc + value), 0)
+        let orgTempColors = []
+
+        const filteredTempOrg = Object.fromEntries(Object.entries(org_categories).sort(([, a], [, b]) => b - a))
+
+        const updatedOrgScores = Object.keys(filteredTempOrg).reduce((result, key, idx) => {
+            orgTempColors.push(whichColor(key))
+            result[key] = Math.round(filteredTempOrg[key] * 100 / orgTotal);
+            return result;
+        }, {});
+
+        setOrgCats(updatedOrgScores)
+        setOrgColors(orgTempColors)
+
+        let orgDepsTotal = Object.values(deps_score).reduce((acc, value) => (acc + value), 0)
+
+        const filteredTempOrgDeps = Object.fromEntries(Object.entries(deps_score).sort(([, a], [, b]) => b - a))
+        const orgDepsTempColors = []
+
+        const updatedOrgDepsScores = Object.keys(filteredTempOrgDeps).reduce((result, key, idx) => {
+            orgDepsTempColors.push(systemColors[(idx + 1) % systemColors.length ])
+            result[key] = Math.round(filteredTempOrgDeps[key] * 100 / orgDepsTotal);
+            return result;
+        }, {});
+
+        console.log(Object.fromEntries(Object.entries(updatedOrgDepsScores).sort(([, a], [, b]) => b - a)))
+        console.log(orgDepsTempColors)
+        setOrgDepsColors(orgDepsTempColors)
+        setOrgDepsSorted(updatedOrgDepsScores)
 
     }
 
@@ -293,7 +339,7 @@ export default function StatsScreen({ navigation }) {
                                 <View style={styles.cardBox}>
                                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                         <View style={{ width: '70%', justifyContent: 'flex-start' }}>
-                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de sustentabilidade nos últimos sete dias: </Text>
+                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de sustentabilidade em percentagem nos últimos sete dias: </Text>
                                         </View>
                                         <View style={{ width: '30%', justifyContent: 'flex-end' }}>
                                             <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: avgTotal < 25 ? CONST.mainRed : avgTotal > 66 ? CONST.mainGreen : CONST.mainBlue }]}>{avgTotal} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
@@ -483,7 +529,7 @@ export default function StatsScreen({ navigation }) {
                             </ScrollView>
                         </View> : <></>}
 
-                    {authorized && avgTotal && statsMap && Object.keys(statsMap).length > 0 && avgPoints && Object.keys(avgPoints).length > 0 && activeCategories ?
+                    {authorized && orgScoreTotal && orgDepsSorted && orgDepsColors && Object.keys(orgDepsSorted).length > 0  && depsScoreCats && orgCats && orgColors && Object.keys(orgCats).length > 0  && depsAvg && Object.keys(depsAvg).length > 0 && Object.keys(depsScoreCats).length > 0 ?
                         <View style={{ flexDirection: 'column' }}>
                             <View>
                                 <Text style={styles.indicatorTitle}>
@@ -494,32 +540,32 @@ export default function StatsScreen({ navigation }) {
                                 style={{ width: CONST.screenWidth }}
                                 showsVerticalScrollIndicator={false}>
                                 <Text style={styles.descriptionText}>
-                                    Aqui podes visualizar estatísticas sobre os teus comportamentos sustentáveis por semana. Verifica a área em que realizaste mais desafios.</Text>
+                                    Aqui podes visualizar estatísticas sobre os comportamentos sustentáveis da tua empresa por semana. Verifica as percentagens de contribuição de cada departamento.</Text>
                                 <View style={styles.cardBox}>
                                     <View style={{ flexDirection: 'row' }}>
                                         <View style={{ width: '70%', justifyContent: 'flex-start' }}>
-                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de sustentabilidade para nos últimos sete dias: </Text>
+                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de pontos totais obtidos por dia nos últimos sete dias: </Text>
                                         </View>
                                         <View style={{ width: '30%', justifyContent: 'flex-end' }}>
-                                            <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: avgTotal < 25 ? CONST.mainRed : avgTotal > 66 ? CONST.mainGreen : CONST.mainBlue }]}>{avgTotal} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
+                                            <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: orgScoreTotal < 25 ? CONST.mainRed : orgScoreTotal > 66 ? CONST.mainGreen : CONST.mainBlue }]}>{orgScoreTotal} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                         </View>
                                     </View>
                                     <View style={{ backgroundColor: CONST.neutralGray, height: 1, opacity: 0.5, marginTop: CONST.boxCardMargin }}>
                                     </View>
                                     <View>
-                                        <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(avgPoints)[0])}</Text> foi a área que te rendeu mais pontos. </Text>
+                                        <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(orgCats)[0])}</Text> foi a área rendeu mais pontos. </Text>
                                     </View>
                                 </View>
                                 <View style={[styles.cardBox, { marginTop: CONST.boxCardMargin }]}>
                                     <View style={{ marginBottom: CONST.boxCardMargin }}>
-                                        <Text style={styles.subText}>Distribuição dos teus contributos sustentáveis nos últimos sete dias</Text>
+                                        <Text style={styles.subText}>Distribuição dos vossos contributos sustentáveis por categorias nos últimos sete dias</Text>
                                     </View>
                                     <View style={{ alignItems: 'center' }}>
-                                        {statsMap && Object.keys(statsMap).length > 0 && colors && colors.length > 0 ?
+                                        {orgCats && Object.keys(orgCats).length > 0 && orgColors && orgColors.length > 0 ?
                                             <PieChart
                                                 widthAndHeight={CONST.screenWidth / 5 * 2}
-                                                series={Object.values(statsMap)}
-                                                sliceColor={colors}
+                                                series={Object.values(orgCats)}
+                                                sliceColor={orgColors}
                                                 coverRadius={0.65}
                                                 coverFill={'#FFF'}
                                             />
@@ -529,13 +575,13 @@ export default function StatsScreen({ navigation }) {
                                     </View>
                                     <View
                                         style={{ marginTop: CONST.boxCardMargin, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
-                                        {activeCategories && (activeCategories).length > 0 &&
-                                            (activeCategories).sort().map((callback, idx) => {
+                                        {allCategories && (allCategories).length > 0 &&
+                                            (allCategories).sort().map((callback, idx) => {
                                                 return (
                                                     <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', margin: CONST.boxCardMargin / 2, width: (CONST.screenWidth) / 5 }}>
-                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}> {(statsMap)[activeCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
-                                                        <View style={{ backgroundColor: whichColor(activeCategories[idx]), borderRadius: 20, height: 4, width: '50%' }} />
-                                                        <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{whichCategory(activeCategories[idx])}</Text>
+                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}> {(orgCats)[allCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
+                                                        <View style={{ backgroundColor: whichColor(allCategories[idx]), borderRadius: 20, height: 4, width: '50%' }} />
+                                                        <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{whichCategory(allCategories[idx])}</Text>
                                                     </View>)
                                             })}
 
@@ -543,32 +589,34 @@ export default function StatsScreen({ navigation }) {
                                 </View>
                                 <View style={[styles.cardBox, { marginTop: CONST.boxCardMargin }]}>
                                     <View style={{ marginBottom: CONST.boxCardMargin }}>
-                                        <Text style={styles.subText}>Progresso nas tuas áreas nos últimos sete dias</Text>
+                                        <Text style={styles.subText}>Distribuição dos vossos contributos sustentáveis por departamentos nos últimos sete dias</Text>
                                     </View>
                                     <View style={{ alignItems: 'center' }}>
-                                        {avgPoints && Object.keys(avgPoints).length > 0
-                                            && Object.keys(avgPoints).map((element, idx) => {
-                                                return (
-                                                    <View style={{ flexDirection: 'row', width: '100%', alignItems: 'center', marginBottom: CONST.boxCardMargin / 2, justifyContent: 'space-between' }}>
-                                                        <View style={{ flexDirection: 'row' }}>
-                                                            <View style={{ width: '10%', alignItems: 'center', marginRight: CONST.iconPadding }}>
-                                                                {element === 'energy' ? <FontAwesome name="bolt" size={CONST.heading6} color={whichColor(element)} />
-                                                                    : <FontAwesome5 name={element === 'air' ? 'wind' : element === 'water' ? 'faucet' : element === 'movement' ? 'walking' : 'recycle'} size={CONST.heading6} color={whichColor(element)} />}
-                                                            </View>
-                                                            <View style={{ height: CONST.heading6, width: CONST.screenWidth / 2, flexDirection: 'row' }}>
-                                                                <View style={{ backgroundColor: whichColor(element), opacity: 1, width: CONST.screenWidth / 2 * (avgPoints[element] / 100) }}></View>
-                                                                <View style={{ backgroundColor: whichColor(element), opacity: 0.1, width: CONST.screenWidth / 2 * ((100 - avgPoints[element]) / 100) }}></View>
-                                                            </View>
-                                                        </View>
-                                                        <View style={{ justifyContent: 'flex-end' }}>
-                                                            <Text style={[styles.normalText, { marginBottom: 0 }]}>{avgPoints[element]}<Text style={{ fontFamily: 'K2D-Regular', fontSize: CONST.smallText, color: CONST.secondaryGray }}>%</Text></Text>
-                                                        </View>
-                                                    </View>
-                                                )
-                                            })
+                                        {orgDepsSorted && Object.keys(orgDepsSorted).length > 0 && orgDepsColors && orgDepsColors.length > 0 ?
+                                            <PieChart
+                                                widthAndHeight={CONST.screenWidth / 5 * 2}
+                                                series={Object.values(orgDepsSorted)}
+                                                sliceColor={orgDepsColors}
+                                                coverRadius={0.65}
+                                                coverFill={'#FFF'}
+                                            />
+                                            :
+                                            <></>
                                         }
                                     </View>
+                                    <View
+                                        style={{ marginTop: CONST.boxCardMargin, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                                        {orgDepsSorted && (Object.keys(orgDepsSorted)).length > 0 &&
+                                            (Object.keys(orgDepsSorted)).sort().map((callback, idx) => {
+                                                return (
+                                                    <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', margin: CONST.boxCardMargin / 2, width: (CONST.screenWidth) / 5 }}>
+                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}> {(Object.values(orgDepsSorted))[idx]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
+                                                        <View style={{ backgroundColor: orgDepsColors[idx], borderRadius: 20, height: 4, width: '50%' }} />
+                                                        <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{(Object.keys(orgDepsSorted))[idx]}</Text>
+                                                    </View>)
+                                            })}
 
+                                    </View>
                                 </View>
 
                             </ScrollView>
