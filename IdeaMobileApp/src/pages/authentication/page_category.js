@@ -8,6 +8,7 @@ import { Svg, Path } from "react-native-svg";
 import Animated, { useAnimatedProps, useSharedValue } from "react-native-reanimated";
 import { FontAwesome5 } from '@expo/vector-icons';
 import firebase from "../../../config/firebase.js";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // IMPORT COMPONENTS
 import { PrimaryButton_v1, PrimaryButton_v2, OptionButton_v1 } from "../../components/buttons.js";
@@ -246,6 +247,44 @@ export default function CategoryScreen({ route, navigation }) {
         }
     }
 
+    const getCurrentDate = () => {
+        const today = new Date();
+        const day = today.getDate();
+        const month = today.getMonth() + 1;
+        const year = today.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
+
+    const storeData = async () => {
+        if (back==='profile') {
+            const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
+            const doc = await firestore_user_doc.get();
+            const userDoc = doc.data()
+            userDoc.initial_questions = {
+                'air': airQuestion1,
+                'windows': airQuestion2, 
+                'drink_water': waterQuestion1,
+                'devices': energyDevices,
+                'distance': movementQuestion1,
+                'elevator': movementQuestion3,
+                'recycle': recycleMaterials,
+
+            }
+            try {
+                const jsonDoc = JSON.stringify(userDoc);
+                await AsyncStorage.setItem('userDoc', jsonDoc);
+                await AsyncStorage.removeItem(getCurrentDate())
+              } catch (e) {
+                console.log(e.message)
+              }
+        } else {
+            
+        }
+        navigation.navigate(back==='profile' ? "Tabbar" : "Login", { 'userID': userID, 'firstTime': back==='profile' ? false : true })
+
+      };
+    
+
     const submitAnswers = (value) => {
         const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
         switch (value) {
@@ -358,7 +397,7 @@ export default function CategoryScreen({ route, navigation }) {
                                             "toShow": nextCategory
                                         })
                                         :
-                                        navigation.navigate("Tabbar", { 'userID': userID, 'firstTime': back==='profile' ? false : true })
+                                        storeData()
 
                                 }
                             }} >

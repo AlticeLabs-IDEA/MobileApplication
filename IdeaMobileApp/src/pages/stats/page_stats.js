@@ -27,7 +27,7 @@ export default function StatsScreen({ navigation }) {
     const [daysLabel, setDaysLabel] = useState([])
     const scrollViewRef = useRef(null);
     const [avgPoints, setAvgPoints] = useState({})
-    const [avgTotal, setAvgTotal] = useState()
+    const [avgTotal, setAvgTotal] = useState(0)
     const [userID, setUserID] = useState()
     const [userDOC, setUserDOC] = useState()
     const [activeCategories, setActiveCategories] = useState([])
@@ -39,28 +39,44 @@ export default function StatsScreen({ navigation }) {
     const [depsScoreCats, setDepsScoreCats] = useState({})
     const [userDepScore, setUserDepScore] = useState({})
     const [depsAvg, setDepsAvg] = useState({})
-    const [depPointsAvg, setDepPointsAvg] = useState() // to show in the first box
+    const [depPointsAvg, setDepPointsAvg] = useState(0) // to show in the first box
     const [depSorted, setDepSorted] = useState({})
     const [depColors, setDepColors] = useState([])
-    const [orgScoreTotal, setOrgScoreTotal] = useState() // to show in the first box
+    const [orgScoreTotal, setOrgScoreTotal] = useState(0) // to show in the first box
     const [orgCats, setOrgCats] = useState({})
     const [orgColors, setOrgColors] = useState([])
     const [orgDepsColors, setOrgDepsColors] = useState([])
     const [orgDepsSorted, setOrgDepsSorted] = useState({})
-    const systemColors = ['red', 'pink', 'orange', 'yellow', 'green', 'blue', 'purple', 'black', 'gray', 'brown']
+    const systemColors = [CONST.department_color_1, CONST.department_color_2, CONST.department_color_3, CONST.department_color_4, CONST.department_color_5, CONST.department_color_6, CONST.department_color_7, CONST.department_color_8, CONST.department_color_9, CONST.department_color_10]
 
-    const calculateTheStatsMap = (temp) => {
-        let total = Object.values(temp).reduce((ac, value) => ac + value, 0);
-        const tempColors = []
-        const updatedTempStats = Object.keys(temp).reduce((result, key, idx) => {
-            tempColors.push(whichColor(key))
-            result[key] = Math.round(temp[key] * 100 / total);
-            return result;
-        }, {});
-        setStatsMaps(updatedTempStats)
-        setColors(tempColors)
+
+    const chartParameters = (obj) => {
+        let maxPoints = Object.values(obj).reduce((ac, value) => ac + value, 0);
+        const arrayColors = []
+        const objSorted = Object.fromEntries(Object.entries(obj).sort(([, a], [, b]) => b - a))
+
+        if (maxPoints > 0) {
+            const updatedTempStats = Object.keys(objSorted).reduce((result, key, idx) => {
+                arrayColors.push(whichColor(key))
+                result[key] = ((objSorted[key] * 100 / maxPoints)).toFixed(0);
+                return result;
+            }, {});
+            return [updatedTempStats, arrayColors]
+
+        }
+        else {
+            const updatedTempStats = Object.keys(objSorted).reduce((result, key, idx) => {
+                arrayColors.push(whichColor(key))
+                result[key] = ((objSorted[key])).toFixed(0);
+                return result;
+            }, {});
+            updatedTempStats['none'] = 100
+            const updatedTempStatsSorted = Object.fromEntries(Object.entries(updatedTempStats).sort(([, a], [, b]) => b - a))
+            arrayColors.unshift(whichColor())
+            return [updatedTempStatsSorted, arrayColors]
+
+        }
     }
-
     const getData = async (daysArray) => {
         try {
             const jsonDoc = await AsyncStorage.getItem('userDoc');
@@ -92,17 +108,20 @@ export default function StatsScreen({ navigation }) {
             for (const d of daysArray) {
                 tempArray.push(d in doc.points_categories[element] ? doc.points_categories[element][d] : 0)
             }
-            avgTemp[element] = Math.round(tempArray.reduce((a, b) => a + b, 0) / daysArray.length)
-            totalPoints += Math.round(tempArray.reduce((a, b) => a + b, 0) / daysArray.length)
+            avgTemp[element] = (tempArray.reduce((a, b) => a + b, 0) / daysArray.length)
+            totalPoints += (tempArray.reduce((a, b) => a + b, 0) / daysArray.length)
         }
 
         // * sort in ascending order of values
         const sortedObj = Object.fromEntries(Object.entries(avgTemp).sort((a, b) => b[1] - a[1]));
-        setAvgTotal(Math.round(totalPoints / Object.keys(doc.active_categories).filter(key => doc.active_categories[key] > 0).length))
+        setAvgTotal((totalPoints / Object.keys(doc.active_categories).filter(key => doc.active_categories[key] > 0).length))
         setAvgPoints(sortedObj)
 
         // * calculate the percentage contribution of each area to the pie chart
-        calculateTheStatsMap(sortedObj)
+        const [updatedTempStats, arrayColors] = chartParameters(sortedObj)
+        setStatsMaps(updatedTempStats)
+        setColors(arrayColors)
+        // calculateTheStatsMap(sortedObj)
 
         // ! organizational 
         calculateOrgPoints(doc, daysArray)
@@ -134,36 +153,36 @@ export default function StatsScreen({ navigation }) {
             }
             // calculate the user department score
             if (department.uid === doc.department) {
-                let depTotal = Object.values(tempArray).reduce((acc, value) => (acc + value), 0)
-                let tempColors = []
-
-                const filteredTempAvg = Object.fromEntries(Object.entries(tempArray).sort(([, a], [, b]) => b - a))
-
-                const updatedDepScores = Object.keys(filteredTempAvg).reduce((result, key, idx) => {
-                    tempColors.push(whichColor(key))
-                    result[key] = Math.round(filteredTempAvg[key] * 100 / depTotal);
-                    return result;
-                }, {});
-                setDepSorted(updatedDepScores)
-                setDepColors(tempColors)
-                const tempAvg = {}
-                Object.keys(tempArray).map(key => { tempAvg[key] = Math.round(tempArray[key] / daysArray.length) })
-                setUserDepScore(tempAvg)
-                setDepPointsAvg(Math.round((Object.values(tempArray).reduce((acc, value) => (acc + value), 0)) / daysArray.length))
+                const firestore_users = firebase.firestore().collection('users');
+                const users = await firestore_users.where('department', '==', doc.department).get();
+                const [updatedTempStats, arrayColors] = chartParameters(tempArray)
+                setDepSorted(updatedTempStats)
+                setDepColors(arrayColors)
+                setDepPointsAvg(Math.round((Object.values(tempArray).reduce((acc, value) => (acc + value), 0)) / (daysArray.length * users.docs.length)))
             }
         }
         setDepsScoreCats(deps_score_per_cat)
-        console.log("deps_score_per_cate", deps_score_per_cat)
+        const depsSum = Object.keys(deps_score_per_cat).reduce((acc, key) => ({ ...acc, [key]: Object.values(deps_score_per_cat[key]).reduce((sum, value) => sum + value, 0) }), {})
 
-        const deps_score = Object.keys(deps_score_per_cat).reduce((result, department) => {
-            const sum = cats.reduce((acc, point) => Math.round(acc + deps_score_per_cat[department][point]), 0);
-            result[department] = sum;
-            return result;
-        }, {});
 
-        setDepsAvg(deps_score);
-        console.log("deps_score", deps_score)
-        setOrgScoreTotal(Object.values(deps_score).reduce((acumulador, valor) => acumulador + valor, 0))
+        const [updatedTempStats__, arrayColors__] = chartParameters(depsSum)
+        setDepsAvg(updatedTempStats__)
+        console.log(updatedTempStats__)
+        if (!Object.keys(updatedTempStats__).includes('none')) {
+            let tempColors = []
+            for (let i = 0; i < Object.keys(updatedTempStats__).length; i++) {
+                tempColors.push(systemColors[i % systemColors.length])
+            }
+            console.log(tempColors)
+            setOrgDepsColors(tempColors)
+        } else {
+            setOrgDepsColors(arrayColors__)
+        }
+
+        setOrgDepsSorted(updatedTempStats__)
+
+        // console.log("deps_score", deps_score)
+        setOrgScoreTotal(Object.values(updatedTempStats__).reduce((acumulador, valor) => acumulador + valor, 0))
 
         let org_categories = { "air_points": 0, "energy_points": 0, "movement_points": 0, "recycle_points": 0, "water_points": 0 }
         for (const dep in deps_score_per_cat) {
@@ -172,35 +191,11 @@ export default function StatsScreen({ navigation }) {
             }
         }
 
-        let orgTotal = Object.values(org_categories).reduce((acc, value) => (acc + value), 0)
-        let orgTempColors = []
+        setOrgScoreTotal(Math.round(Object.values(org_categories).reduce((sum, value) => sum + value, 0) / ((departments.docs).length * 5 * daysArray.length)))
 
-        const filteredTempOrg = Object.fromEntries(Object.entries(org_categories).sort(([, a], [, b]) => b - a))
-
-        const updatedOrgScores = Object.keys(filteredTempOrg).reduce((result, key, idx) => {
-            orgTempColors.push(whichColor(key))
-            result[key] = Math.round(filteredTempOrg[key] * 100 / orgTotal);
-            return result;
-        }, {});
-
-        setOrgCats(updatedOrgScores)
-        setOrgColors(orgTempColors)
-
-        let orgDepsTotal = Object.values(deps_score).reduce((acc, value) => (acc + value), 0)
-
-        const filteredTempOrgDeps = Object.fromEntries(Object.entries(deps_score).sort(([, a], [, b]) => b - a))
-        const orgDepsTempColors = []
-
-        const updatedOrgDepsScores = Object.keys(filteredTempOrgDeps).reduce((result, key, idx) => {
-            orgDepsTempColors.push(systemColors[(idx + 1) % systemColors.length ])
-            result[key] = Math.round(filteredTempOrgDeps[key] * 100 / orgDepsTotal);
-            return result;
-        }, {});
-
-        console.log(Object.fromEntries(Object.entries(updatedOrgDepsScores).sort(([, a], [, b]) => b - a)))
-        console.log(orgDepsTempColors)
-        setOrgDepsColors(orgDepsTempColors)
-        setOrgDepsSorted(updatedOrgDepsScores)
+        const [updatedTempStats_, arrayColors_] = chartParameters(org_categories)
+        setOrgCats(updatedTempStats_)
+        setOrgColors(arrayColors_)
 
     }
 
@@ -288,8 +283,7 @@ export default function StatsScreen({ navigation }) {
     );
 
     useEffect(() => {
-
-    }, [area, statsMap])
+    }, [area, avgTotal, orgScoreTotal, depPointsAvg, statsMap, depsAvg, depSorted, userDepScore, orgDepsSorted, orgCats])
 
     return (
         <SafeAreaProvider style={[styles.mainContainer]}>
@@ -324,7 +318,7 @@ export default function StatsScreen({ navigation }) {
                         }
                     }}>
 
-                    {avgTotal && statsMap && Object.keys(statsMap).length > 0 && colors && Object.keys(statsMap).length === colors.length && avgPoints && Object.keys(avgPoints).length > 0 && activeCategories ?
+                    {statsMap && Object.keys(statsMap).length > 0 && colors && Object.keys(statsMap).length === colors.length && avgPoints && Object.keys(avgPoints).length > 0 && activeCategories ?
                         <View style={{ flexDirection: 'column' }}>
                             <View>
                                 <Text style={styles.indicatorTitle}>
@@ -342,14 +336,20 @@ export default function StatsScreen({ navigation }) {
                                             <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de sustentabilidade em percentagem nos últimos sete dias: </Text>
                                         </View>
                                         <View style={{ width: '30%', justifyContent: 'flex-end' }}>
-                                            <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: avgTotal < 25 ? CONST.mainRed : avgTotal > 66 ? CONST.mainGreen : CONST.mainBlue }]}>{avgTotal} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
+                                            <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: avgTotal < 25 ? CONST.mainRed : avgTotal > 66 ? CONST.mainGreen : CONST.mainBlue }]}>{Math.round(avgTotal)} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                         </View>
                                     </View>
-                                    <View style={{ backgroundColor: CONST.neutralGray, height: 1, opacity: 0.5, marginTop: CONST.boxCardMargin }}>
-                                    </View>
-                                    <View>
-                                        <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(avgPoints)[0])}</Text> foi a área que te rendeu mais pontos. </Text>
-                                    </View>
+                                    {avgTotal && avgTotal > 0 ?
+                                        <>
+                                            <View style={{ backgroundColor: CONST.neutralGray, height: 1, opacity: 0.5, marginTop: CONST.boxCardMargin }}>
+                                            </View>
+                                            <View>
+                                                <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(avgPoints)[0])}</Text> foi a área que te rendeu mais pontos. </Text>
+                                            </View>
+                                        </>
+                                        :
+                                        <></>
+                                    }
                                 </View>
                                 <View style={[styles.cardBox, { marginTop: CONST.boxCardMargin }]}>
                                     <View style={{ marginBottom: CONST.boxCardMargin }}>
@@ -374,7 +374,7 @@ export default function StatsScreen({ navigation }) {
                                             (activeCategories).sort().map((callback, idx) => {
                                                 return (
                                                     <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', margin: CONST.boxCardMargin / 2, width: (CONST.screenWidth) / 5 }}>
-                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}> {(statsMap)[activeCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
+                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}><Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>≈</Text> {(statsMap)[activeCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
                                                         <View style={{ backgroundColor: whichColor(activeCategories[idx]), borderRadius: 20, height: 4, width: '50%' }} />
                                                         <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{whichCategory(activeCategories[idx])}</Text>
                                                     </View>)
@@ -402,7 +402,7 @@ export default function StatsScreen({ navigation }) {
                                                             </View>
                                                         </View>
                                                         <View style={{ justifyContent: 'flex-end' }}>
-                                                            <Text style={[styles.normalText, { marginBottom: 0 }]}>{avgPoints[element]}<Text style={{ fontFamily: 'K2D-Regular', fontSize: CONST.smallText, color: CONST.secondaryGray }}>%</Text></Text>
+                                                            <Text style={[styles.normalText, { marginBottom: 0 }]}>{Math.round(avgPoints[element])}<Text style={{ fontFamily: 'K2D-Regular', fontSize: CONST.smallText, color: CONST.secondaryGray }}>%</Text></Text>
                                                         </View>
                                                     </View>
                                                 )
@@ -432,7 +432,7 @@ export default function StatsScreen({ navigation }) {
                             </ScrollView>
                         </View> : <></>}
 
-                    {authorized && depPointsAvg && depsAvg && Object.keys(userDepScore).length > 0 ?
+                    {authorized && (depsAvg && Object.keys(depsAvg).length > 0) ?
                         <View style={{ flexDirection: 'column' }}>
                             <View>
                                 <Text style={styles.indicatorTitle}>
@@ -447,17 +447,23 @@ export default function StatsScreen({ navigation }) {
                                 <View style={styles.cardBox}>
                                     <View style={{ flexDirection: 'row', alignItems: "center" }}>
                                         <View style={{ width: '70%', justifyContent: 'flex-start' }}>
-                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de pontos totais obtidos por dia nos últimos sete dias: </Text>
+                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de sustentabilidade em percentagem nos últimos sete dias: </Text>
                                         </View>
                                         <View style={{ width: '30%', justifyContent: 'flex-end' }}>
                                             <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: depPointsAvg < 25 ? CONST.mainRed : depPointsAvg > 66 ? CONST.mainGreen : CONST.mainBlue }]}>{depPointsAvg} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                         </View>
                                     </View>
-                                    <View style={{ backgroundColor: CONST.neutralGray, height: 1, opacity: 0.5, marginTop: CONST.boxCardMargin }}>
-                                    </View>
-                                    <View>
-                                        <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(depSorted)[0])}</Text> foi a área que vos rendeu mais pontos. </Text>
-                                    </View>
+                                    {depPointsAvg && depPointsAvg > 0 ?
+                                        <>
+                                            <View style={{ backgroundColor: CONST.neutralGray, height: 1, opacity: 0.5, marginTop: CONST.boxCardMargin }}>
+                                            </View>
+                                            <View>
+                                                <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(depSorted)[0])}</Text> foi a área que vos rendeu mais pontos. </Text>
+                                            </View>
+                                        </>
+                                        :
+                                        <></>
+                                    }
                                 </View>
                                 <View style={[styles.cardBox, { marginTop: CONST.boxCardMargin }]}>
                                     <View style={{ marginBottom: CONST.boxCardMargin }}>
@@ -482,7 +488,7 @@ export default function StatsScreen({ navigation }) {
                                             (allCategories).sort().map((callback, idx) => {
                                                 return (
                                                     <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', margin: CONST.boxCardMargin / 2, width: (CONST.screenWidth) / 5 }}>
-                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}> {(depSorted)[allCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
+                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}><Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>≈</Text> {(depSorted)[allCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
                                                         <View style={{ backgroundColor: whichColor(allCategories[idx]), borderRadius: 20, height: 4, width: '50%' }} />
                                                         <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{whichCategory(allCategories[idx])}</Text>
                                                     </View>)
@@ -495,7 +501,7 @@ export default function StatsScreen({ navigation }) {
                                         <Text style={styles.subText}>Ranking de pontuação dos departamentos nos últimos sete dias</Text>
                                     </View>
                                     <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-                                        {userDOC && depsAvg && Object.keys(depsAvg).length > 0 && Object.keys(depsAvg).map((item, index) => {
+                                        {userDOC && depsAvg && Object.keys(depsAvg).length > 0 && Object.keys(depsAvg).filter(key => key !== 'none').map((item, index) => {
                                             if (index < 3) {
                                                 return (
                                                     <View style={{ margin: CONST.labelPaddingVertical * 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
@@ -503,19 +509,19 @@ export default function StatsScreen({ navigation }) {
                                                             <Text style={styles.smallText}>{parseInt(index) + 1}º</Text>
                                                         </View>
                                                         <View style={{ width: '90%', alignItems: 'center', backgroundColor: CONST.fadeBlue, padding: CONST.labelPaddingLateral / 3 * 2, borderRadius: CONST.inputRadius, justifyContent: 'center' }}>
-                                                            <Text style={[styles.smallText, { textAlign: 'center', color: CONST.mainGray, fontFamily: 'K2D-SemiBold', flexWrap: 'wrap' }]}>{Object.keys(depsAvg)[index]}</Text>
+                                                            <Text style={[styles.smallText, { textAlign: 'center', color: CONST.mainGray, fontFamily: 'K2D-SemiBold', flexWrap: 'wrap' }]}>{Object.keys(depsAvg).filter(key => key !== 'none')[index]}</Text>
                                                         </View>
                                                     </View>
                                                 )
                                             }
-                                            if (index >= 3 && Object.keys(depsAvg)[index] === userDOC.department_name) {
+                                            if (index >= 3 && Object.keys(depsAvg).filter(key => key !== 'none')[index] === userDOC.department_name) {
                                                 return (
                                                     <View style={{ margin: CONST.labelPaddingVertical * 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
                                                         <View style={{ width: '10%' }}>
                                                             <Text style={styles.smallText}>{parseInt(index) + 1}º</Text>
                                                         </View>
                                                         <View style={{ width: '90%', alignItems: 'center', backgroundColor: CONST.neutralGray, padding: CONST.labelPaddingLateral / 3 * 2, borderRadius: CONST.inputRadius, justifyContent: 'center' }}>
-                                                            <Text style={[styles.smallText, { textAlign: 'center', color: CONST.mainGray, fontFamily: 'K2D-SemiBold', flexWrap: 'wrap' }]}>{Object.keys(depsAvg)[index]}</Text>
+                                                            <Text style={[styles.smallText, { textAlign: 'center', color: CONST.mainGray, fontFamily: 'K2D-SemiBold', flexWrap: 'wrap' }]}>{Object.keys(depsAvg).filter(key => key !== 'none')[index]}</Text>
                                                         </View>
                                                     </View>
                                                 )
@@ -529,7 +535,7 @@ export default function StatsScreen({ navigation }) {
                             </ScrollView>
                         </View> : <></>}
 
-                    {authorized && orgScoreTotal && orgDepsSorted && orgDepsColors && Object.keys(orgDepsSorted).length > 0  && depsScoreCats && orgCats && orgColors && Object.keys(orgCats).length > 0  && depsAvg && Object.keys(depsAvg).length > 0 && Object.keys(depsScoreCats).length > 0 ?
+                    {authorized && depsScoreCats && depsAvg && Object.keys(depsAvg).length > 0 && Object.keys(depsScoreCats).length > 0 ?
                         <View style={{ flexDirection: 'column' }}>
                             <View>
                                 <Text style={styles.indicatorTitle}>
@@ -544,17 +550,23 @@ export default function StatsScreen({ navigation }) {
                                 <View style={styles.cardBox}>
                                     <View style={{ flexDirection: 'row' }}>
                                         <View style={{ width: '70%', justifyContent: 'flex-start' }}>
-                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de pontos totais obtidos por dia nos últimos sete dias: </Text>
+                                            <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, textAlign: 'left' }]}>Média de sustentabilidade em percentagem nos últimos sete dias: </Text>
                                         </View>
                                         <View style={{ width: '30%', justifyContent: 'flex-end' }}>
                                             <Text style={[styles.normalText, { fontSize: CONST.heading5, marginBottom: 0, textAlign: 'center', color: orgScoreTotal < 25 ? CONST.mainRed : orgScoreTotal > 66 ? CONST.mainGreen : CONST.mainBlue }]}>{orgScoreTotal} <FontAwesome5 name="seedling" size={CONST.heading6} color={CONST.mainGray} /></Text>
                                         </View>
                                     </View>
-                                    <View style={{ backgroundColor: CONST.neutralGray, height: 1, opacity: 0.5, marginTop: CONST.boxCardMargin }}>
-                                    </View>
-                                    <View>
-                                        <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(orgCats)[0])}</Text> foi a área rendeu mais pontos. </Text>
-                                    </View>
+                                    {orgScoreTotal && orgScoreTotal > 0 ?
+                                        <>
+                                            <View style={{ backgroundColor: CONST.neutralGray, height: 1, opacity: 0.5, marginTop: CONST.boxCardMargin }}>
+                                            </View>
+                                            <View>
+                                                <Text style={[styles.normalText, { marginTop: CONST.boxCardMargin, marginBottom: 0, textAlign: 'left' }]}>A área de <Text style={{ fontFamily: 'K2D-SemiBold' }}>{whichCategory(Object.keys(orgCats)[0])}</Text> foi a área rendeu mais pontos. </Text>
+                                            </View>
+                                        </>
+                                        :
+                                        <></>
+                                    }
                                 </View>
                                 <View style={[styles.cardBox, { marginTop: CONST.boxCardMargin }]}>
                                     <View style={{ marginBottom: CONST.boxCardMargin }}>
@@ -579,7 +591,7 @@ export default function StatsScreen({ navigation }) {
                                             (allCategories).sort().map((callback, idx) => {
                                                 return (
                                                     <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', margin: CONST.boxCardMargin / 2, width: (CONST.screenWidth) / 5 }}>
-                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}> {(orgCats)[allCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
+                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}><Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>≈</Text> {(orgCats)[allCategories[idx]]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
                                                         <View style={{ backgroundColor: whichColor(allCategories[idx]), borderRadius: 20, height: 4, width: '50%' }} />
                                                         <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{whichCategory(allCategories[idx])}</Text>
                                                     </View>)
@@ -607,12 +619,12 @@ export default function StatsScreen({ navigation }) {
                                     <View
                                         style={{ marginTop: CONST.boxCardMargin, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
                                         {orgDepsSorted && (Object.keys(orgDepsSorted)).length > 0 &&
-                                            (Object.keys(orgDepsSorted)).sort().map((callback, idx) => {
+                                            (Object.keys(orgDepsSorted)).filter(key => key !== 'none').map((value, idx) => {
                                                 return (
                                                     <View style={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', margin: CONST.boxCardMargin / 2, width: (CONST.screenWidth) / 5 }}>
-                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}> {(Object.values(orgDepsSorted))[idx]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
+                                                        <Text style={[styles.normalText, { fontFamily: 'K2D-SemiBold', marginBottom: 0, fontSize: CONST.normalText }]}><Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>≈</Text> {orgDepsSorted[value]}<Text style={{ fontSize: CONST.smallText, fontFamily: 'K2D-Regular', color: CONST.secondaryGray }}>%</Text></Text>
                                                         <View style={{ backgroundColor: orgDepsColors[idx], borderRadius: 20, height: 4, width: '50%' }} />
-                                                        <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{(Object.keys(orgDepsSorted))[idx]}</Text>
+                                                        <Text style={[styles.subText, { fontSize: CONST.smallText }]}>{value}</Text>
                                                     </View>)
                                             })}
 
@@ -627,8 +639,14 @@ export default function StatsScreen({ navigation }) {
             </View>
             <View style={{ justifyContent: 'center', flexDirection: 'row', marginTop: CONST.dotsMargin, marginBottom: CONST.dotsMargin }}>
                 <View style={{ backgroundColor: CONST.secondaryGray, opacity: (area === 'personal') ? 1 : 0.5, width: (area === 'personal') ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
-                <View style={{ backgroundColor: CONST.secondaryGray, opacity: (area === 'departmental') ? 1 : 0.5, width: (area === 'departmental') ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
-                <View style={{ backgroundColor: CONST.secondaryGray, opacity: (area === 'organizational') ? 1 : 0.5, width: (area === 'organizational') ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
+                {authorized ?
+                    <>
+                        <View style={{ backgroundColor: CONST.secondaryGray, opacity: (area === 'departmental') ? 1 : 0.5, width: (area === 'departmental') ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
+                        <View style={{ backgroundColor: CONST.secondaryGray, opacity: (area === 'organizational') ? 1 : 0.5, width: (area === 'organizational') ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
+                    </>
+                    :
+                    <></>
+                }
             </View>
 
 

@@ -24,9 +24,9 @@ export default function OnboardingScreen({ navigation }) {
         <SafeAreaProvider style={[styles.mainContainer, { paddingTop: 0, paddingBottom: 0 }]}>
             <StatusBar style={"dark"} />
             <ImageBackground source={require('../../assets/images/background_image.png')} style={{ width: '100%', height: '100%' }} resizeMode="repeat">
-                <View style={{ backgroundColor: "rgba(255, 255, 255, 0.8)", width: '100%', height: '100%', flex: 1, flexDirection: 'column', alignItems: 'center' }}>
+                <ScrollView style={{ backgroundColor: "rgba(255, 255, 255, 0.8)", width: '100%', height: '100%', flex: 1, flexDirection: 'column'}}>
                     <Pressable
-                        onPress={() => {navigation.navigate("Register")}} 
+                        onPress={() => { navigation.navigate("Register") }}
                         style={{ width: '100%', paddingTop: CONST.layoutPaddingVertical, paddingRight: CONST.layoutPaddingLateral, marginBottom: 0 }}>
                         <Text style={[styles.subText, { textAlign: 'right' }]}>Avançar</Text>
                     </Pressable>
@@ -40,9 +40,9 @@ export default function OnboardingScreen({ navigation }) {
                                 var x = e.nativeEvent.contentOffset.x;
                                 if (x == 0) {
                                     setPage(0)
-                                } else if (x < CONST.screenWidth) {
+                                } else if (x < CONST.screenWidth + 1) {
                                     setPage(1)
-                                } else if (x < CONST.screenWidth * 2) {
+                                } else if (x < CONST.screenWidth * 2 + 1) {
                                     setPage(2)
                                 } else {
                                     setPage(3)
@@ -56,7 +56,7 @@ export default function OnboardingScreen({ navigation }) {
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
                                                 Podes fazer a diferença e cuidar do <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>nosso planeta</Text>, com as <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>ações</Text> do teu dia-a-dia.
                                             </Text>
-                                            <Image source={require('../../assets/images/black_logotipo.png')} resizeMode="contain" style={{ width: '20%' }} />
+                                            <Image source={require('../../assets/images/onboarding_1.png')} resizeMode="contain" style={{ height: '60%', marginTop: CONST.boxCardMargin, marginBottom: CONST.boxCardMargin }} />
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
                                                 Reduzir a tua <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>pegada ecológica</Text> vai contribuir para um futuro <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>mais verde.</Text>
                                             </Text>
@@ -71,9 +71,9 @@ export default function OnboardingScreen({ navigation }) {
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
                                                 Cada <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>ação sustentável</Text> que registes na plataforma IDEA vai <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>dar-te pontos</Text>.
                                             </Text>
-                                            <Image source={require('../../assets/images/black_logotipo.png')} resizeMode="contain" style={{ width: '20%' }} />
+                                            <Image source={require('../../assets/images/onboarding_2.png')} resizeMode="contain" style={{ height: '60%', marginTop: CONST.boxCardMargin, marginBottom: CONST.boxCardMargin }} />
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
-                                                Os pontos obtidos traduzem <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>o teu impacto </Text>, quantos mais pontos obteres <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>maior ele será</Text>.
+                                                Os pontos obtidos traduzem <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>o teu impacto</Text>, quantos mais pontos obteres <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>maior ele será</Text>.
                                             </Text>
                                         </View>
                                     </View>
@@ -86,7 +86,7 @@ export default function OnboardingScreen({ navigation }) {
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
                                                 Ajuda <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>o teu departamento</Text> a ser o melhor da empresa em <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>práticas sustentáveis</Text>.
                                             </Text>
-                                            <Image source={require('../../assets/images/black_logotipo.png')} resizeMode="contain" style={{ width: '20%' }} />
+                                            <Image source={require('../../assets/images/onboarding_3.png')} resizeMode="contain" style={{ height: '60%', marginTop: CONST.boxCardMargin, marginBottom: CONST.boxCardMargin }} />
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
                                                 Faz a <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>diferença</Text> e contribui para uma <Text style={{ color: CONST.mainGreen, fontFamily: 'K2D-SemiBold' }}>imagem corporativa</Text> mais sustentável.
                                             </Text>
@@ -101,30 +101,32 @@ export default function OnboardingScreen({ navigation }) {
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
                                                 Vem descobrir os <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>benefícios</Text> enquanto contribuis para a <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>mudança ambiental</Text>.
                                             </Text>
-                                            <Image source={require('../../assets/images/black_logotipo.png')} resizeMode="contain" style={{ width: '20%' }} />
+                                            <Image source={require('../../assets/images/onboarding_4.png')} resizeMode="contain" style={{ height: '60%', marginTop: CONST.boxCardMargin, marginBottom: CONST.boxCardMargin }} />
                                             <Text style={[styles.normalText, { marginBottom: 0, textAlign: 'center' }]}>
                                                 Junta-te à <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>comunidade</Text> e juntos vamos <Text style={{ color: CONST.mainBlue, fontFamily: 'K2D-SemiBold' }}>semear</Text> um mundo mais sustentável.
                                             </Text>
                                         </View>
+                                        <Pressable style={{ alignItems: 'center', width: '100%' }}
+                                            onPress={() => {
+                                                navigation.navigate("Register")
+                                            }}>
+                                            <PrimaryButton_v1 color={CONST.mainGray} text={"Juntar-me"} />
+                                        </Pressable>
                                     </View>
                                 </View>
-                                <Pressable style={{ position: 'absolute', alignItems: 'center', width: '100%', bottom: CONST.navbarHeight / 2 }}
-                                    onPress={() => {
-                                        navigation.navigate("Register")
-                                    }}>
-                                    <PrimaryButton_v1 color={CONST.mainGray} text={"Juntar-me"} />
-                                </Pressable>
+
                             </View>
                         </ScrollView>
                     </View>
                     <View
-                        style={{ position: 'absolute', justifyContent: 'center', flexDirection: 'row', bottom: CONST.navbarHeight / 2 }}>
+                        style={{  justifyContent: 'center', flexDirection: 'row', marginTop: CONST.navbarHeight / 2 }}>
                         <View style={{ backgroundColor: page === 0 ? CONST.secondaryGray : CONST.neutralGray, width: page === 0 ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
                         <View style={{ backgroundColor: page === 1 ? CONST.secondaryGray : CONST.neutralGray, width: page === 1 ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
                         <View style={{ backgroundColor: page === 2 ? CONST.secondaryGray : CONST.neutralGray, width: page === 2 ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
                         <View style={{ backgroundColor: page === 3 ? CONST.secondaryGray : CONST.neutralGray, width: page === 3 ? 20 : 8, height: 8, margin: 5, borderRadius: 10 }} />
                     </View>
-                </View>
+                </ScrollView>
+              
             </ImageBackground>
 
 

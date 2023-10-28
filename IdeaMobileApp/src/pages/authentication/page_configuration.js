@@ -33,12 +33,15 @@ export default function ConfigurationScreen({ navigation }) {
     const [colorRecycle, setColorRecycle] = useState(0)
     const [textToast, setTextToast] = useState("")
     const [loading, setLoading] = useState(true)
+    const initial_questions= {"air": true, "devices": [], "distance": "min_range_1", "drink_water": true, "elevator": "min_range_1", "recycle": [], "windows": true}
 
     const storeData = async (doc) => {
         try {
             const jsonDoc = JSON.stringify(doc);
+            console.log("doc----------------:", doc)
             await AsyncStorage.setItem('userDoc', jsonDoc);
-        } catch (e) {
+        } 
+        catch (e) {
             console.log(e.message)
         }
     };
@@ -48,6 +51,7 @@ export default function ConfigurationScreen({ navigation }) {
         try {
             const id = await AsyncStorage.getItem('userID');
             setUserID(id != null ? id : null)
+            console.log("its meeeeeeeeee-------------",id)
         } catch (e) {
             console.log(e.message)
         }
@@ -184,6 +188,13 @@ export default function ConfigurationScreen({ navigation }) {
         setLoading(false)
     }
 
+    const updateInitialQuetions = () => {
+        const firestore_user_doc = firebase.firestore().collection("users").doc(userID);
+        firestore_user_doc.update({
+            "initial_questions" : initial_questions
+        })
+    }
+
     return (
         <SafeAreaProvider style={[styles.mainContainer, { paddingBottom: CONST.layoutPaddingVertical }]}>
             <StatusBar style={"dark"} />
@@ -222,6 +233,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorAir(1)
                                         updateUserCollection('air', 1)
                                         setTextToast('Categoria cimatização ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <AirIcon
                                             color={
@@ -235,6 +247,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorAir(2)
                                         updateUserCollection('air', 2)
                                         setTextToast('Categoria cimatização ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <AirIcon
                                             color={
@@ -248,6 +261,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorAir(3)
                                         updateUserCollection('air', 3)
                                         setTextToast('Categoria cimatização ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <AirIcon
                                             color={
@@ -261,6 +275,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorAir(4)
                                         updateUserCollection('air', 4)
                                         setTextToast('Categoria cimatização ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <AirIcon
                                             color={
@@ -309,6 +324,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorEnergy(1)
                                         updateUserCollection('energy', 1)
                                         setTextToast('Categoria energia elétrica ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <EnergyIcon
                                             color={
@@ -322,6 +338,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorEnergy(2)
                                         updateUserCollection('energy', 2)
                                         setTextToast('Categoria energia elétrica ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <EnergyIcon
                                             color={
@@ -335,6 +352,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorEnergy(3)
                                         updateUserCollection('energy', 3)
                                         setTextToast('Categoria energia elétrica ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <EnergyIcon
                                             color={
@@ -348,6 +366,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorEnergy(4)
                                         updateUserCollection('energy', 4)
                                         setTextToast('Categoria energia elétrica ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <EnergyIcon
                                             color={
@@ -396,6 +415,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorMovement(1)
                                         updateUserCollection('movement', 1)
                                         setTextToast('Categoria mobilidade ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <MovementIcon
                                             color={
@@ -409,6 +429,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorMovement(2)
                                         updateUserCollection('movement', 2)
                                         setTextToast('Categoria mobilidade ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <MovementIcon
                                             color={
@@ -422,6 +443,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorMovement(3)
                                         updateUserCollection('movement', 3)
                                         setTextToast('Categoria mobilidade ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <MovementIcon
                                             color={
@@ -435,6 +457,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorMovement(4)
                                         updateUserCollection('movement', 4)
                                         setTextToast('Categoria mobilidade ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <MovementIcon
                                             color={
@@ -483,6 +506,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorRecycle(1)
                                         updateUserCollection('recycle', 1)
                                         setTextToast('Categoria reciclagem ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <RecycleIcon
                                             color={
@@ -496,6 +520,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorRecycle(2)
                                         updateUserCollection('recycle', 2)
                                         setTextToast('Categoria reciclagem ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <RecycleIcon
                                             color={
@@ -509,6 +534,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorRecycle(3)
                                         updateUserCollection('recycle', 3)
                                         setTextToast('Categoria reciclagem ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <RecycleIcon
                                             color={
@@ -522,6 +548,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorRecycle(4)
                                         updateUserCollection('recycle', 4)
                                         setTextToast('Categoria reciclagem ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <RecycleIcon
                                             color={
@@ -570,6 +597,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorWater(1)
                                         updateUserCollection('water', 1)
                                         setTextToast('Categoria recursos hídricos ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <WaterIcon
                                             color={
@@ -583,6 +611,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorWater(2)
                                         updateUserCollection('water', 2)
                                         setTextToast('Categoria recursos hídricos ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <WaterIcon
                                             color={
@@ -595,7 +624,8 @@ export default function ConfigurationScreen({ navigation }) {
                                     <Pressable onPress={() => {
                                         setColorWater(3)
                                         updateUserCollection('water', 3)
-                                        setTextToast('Categoria recursos hídricos ativada!')
+                                        setTextToast('Categoria recursos hídricos ativada!')           
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <WaterIcon
                                             color={
@@ -609,6 +639,7 @@ export default function ConfigurationScreen({ navigation }) {
                                         setColorWater(4)
                                         updateUserCollection('water', 4)
                                         setTextToast('Categoria recursos hídricos ativada!')
+                                        setModalVisible(!modalVisible)
                                     }}>
                                         <WaterIcon
                                             color={
@@ -645,11 +676,13 @@ export default function ConfigurationScreen({ navigation }) {
                                 </View>
                             </>
                         )}
-                        <Pressable
+                        {/* <Pressable
                             style={{ marginTop: CONST.titlePageMargin }}
-                            onPress={() => setModalVisible(!modalVisible)} >
+                            onPress={() => {
+                                setModalVisible(!modalVisible)
+                            }} >
                             <PrimaryButton_v1 text={"Guardar alterações"} />
-                        </Pressable>
+                        </Pressable> */}
                     </View>
                 </View>
             </Modal>
@@ -674,6 +707,7 @@ export default function ConfigurationScreen({ navigation }) {
                         <Pressable
                             onPress={() => {
                                 setAreaToShow("air")
+                                updateUserCollection('air', 1)
                                 setModalVisible(true)
                                 setAirCategory(true)
                             }}
@@ -684,6 +718,7 @@ export default function ConfigurationScreen({ navigation }) {
                         </Pressable>
                         <Pressable
                             onPress={() => {
+                                updateUserCollection('energy', 1)
                                 setAreaToShow("energy")
                                 setModalVisible(true)
                                 setEnergyCategory(true)
@@ -695,6 +730,7 @@ export default function ConfigurationScreen({ navigation }) {
                         </Pressable>
                         <Pressable
                             onPress={() => {
+                                updateUserCollection('movement', 1)
                                 setAreaToShow("movement")
                                 setModalVisible(true)
                                 setMovementCategory(true)
@@ -706,6 +742,7 @@ export default function ConfigurationScreen({ navigation }) {
                         </Pressable>
                         <Pressable
                             onPress={() => {
+                                updateUserCollection('recycle', 1)
                                 setAreaToShow("recycle")
                                 setModalVisible(true)
                                 setRecycleCategory(true)
@@ -717,6 +754,7 @@ export default function ConfigurationScreen({ navigation }) {
                         </Pressable>
                         <Pressable
                             onPress={() => {
+                                updateUserCollection('water', 1)
                                 setAreaToShow("water")
                                 setModalVisible(true)
                                 setWaterCategory(true)
@@ -735,14 +773,16 @@ export default function ConfigurationScreen({ navigation }) {
             <View style={styles.doubleButtonsView}>
                 <Pressable
                     onPress={() => {
+                        updateInitialQuetions()
                         updateUserCollection()
-                        navigation.navigate("Tabbar")
+                        navigation.navigate("Login")
                     }}
                     style={{ right: 'auto', left: CONST.layoutPaddingLateral }}>
                     <PrimaryButton_v2 text={"Mais tarde"} />
                 </Pressable>
                 <Pressable
                     onPress={() => {
+                        updateInitialQuetions()
                         {
                             (airCategory || energyCategory || movementCategory || recycleCategory || waterCategory) ?
                                 navigation.navigate("Category", {
@@ -753,7 +793,8 @@ export default function ConfigurationScreen({ navigation }) {
                                     "toShow": airCategory ? "air" : energyCategory ? "energy" : movementCategory ? "movement" : recycleCategory ? "recycle" : waterCategory ? "water" : "none"
                                 })
                                 :
-                                navigation.navigate("Tabbar")
+
+                                navigation.navigate("Login")
                         }
 
                     }}

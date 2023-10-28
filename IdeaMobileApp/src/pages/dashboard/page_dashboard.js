@@ -82,11 +82,15 @@ export default function DashboardScreen({ navigation }) {
         const pointFields = ["air_points", "energy_points", "movement_points", "recycle_points", "water_points"];
         let department_points = 0;
         for (const field of pointFields) {
-            department_points += currentDate in departmentData[field] ? departmentData[field][currentDate] : 0;
+            department_points += ((currentDate in departmentData[field] ) ? departmentData[field][currentDate] : 0);
         }
         const firestore_user_collection = firebase.firestore().collection('users');
         const userQuerySnapshot = await firestore_user_collection.where('department', '==', departmentData.uid).get();
-        const usersInDepartment = userQuerySnapshot.size > 0 ? userQuerySnapshot.size : 1;
+        const usersInDepartment = userQuerySnapshot.size;
+
+        if (usersInDepartment === 0) {
+            return 0
+        }
 
         if (departmentData.uid === doc.department) {
             setValueDep(Math.round(department_points / (usersInDepartment * 5)))
@@ -101,7 +105,7 @@ export default function DashboardScreen({ navigation }) {
         const organizationID = department_doc.data().organization
 
         // * calculate the org score
-        const firestore_departments = firebase.firestore().collection('departments');
+        const firestore_departments = firebase.firestore().collection('departments'); 
         const departments = await firestore_departments.where('organization', '==', organizationID).get();
 
         let totalPoints = 0
@@ -109,8 +113,7 @@ export default function DashboardScreen({ navigation }) {
         for (const element of departments.docs) {
             const department = element.data();
             const department_score = await calculateDepartmentPoints(department, doc, currentDate)
-            
-        console.log(department_score)
+
             totalPoints += department_score
         }
         setValueOrg(Math.round(totalPoints / departments.size))
@@ -292,18 +295,18 @@ export default function DashboardScreen({ navigation }) {
                                         }
                                     }}>
                                     <CircularProgress
-                                        value={(values[0] < 0) ? 100 :values[0]}
+                                        value={(values[0] < 0) ? 100 : values[0]}
                                         maxValue={100}
                                         progressValueStyle={{ display: 'none' }}
                                         radius={CONST.screenWidth / 12}
                                         progressValueColor={CONST.mainGray}
                                         activeStrokeSecondaryColor={(values[0] < 0) ? CONST.neutralGray : (values[0] < 25) ? CONST.secondaryRed : (values[0] > 66) ? CONST.secondaryGreen : CONST.secondaryBlue}
-                                        activeStrokeColor={ (values[0] < 0) ? CONST.secondaryGray : (values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue}
+                                        activeStrokeColor={(values[0] < 0) ? CONST.secondaryGray : (values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue}
                                         inActiveStrokeColor={CONST.neutralGray}
                                         inActiveStrokeOpacity={0.5}
                                         inActiveStrokeWidth={2}
                                         activeStrokeWidth={8}
-                                        title={<><Text>{(values[0] < 0) ?"":values[0]}</Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[0] < 0) ? CONST.secondaryGray : (values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue} />
+                                        title={<><Text>{(values[0] < 0) ? "" : values[0]}</Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[0] < 0) ? CONST.secondaryGray : (values[0] < 25) ? CONST.mainRed : (values[0] > 66) ? CONST.mainGreen : CONST.mainBlue} />
                                         </>}
                                         titleStyle={styles.progressBarText}
                                     />
@@ -322,7 +325,7 @@ export default function DashboardScreen({ navigation }) {
                                         }
                                     }}>
                                     <CircularProgress
-                                        value={(values[1] < 0) ? 100 :values[1]}
+                                        value={(values[1] < 0) ? 100 : values[1]}
                                         maxValue={100}
                                         progressValueStyle={{ display: 'none' }}
                                         radius={CONST.screenWidth / 5}
@@ -333,14 +336,14 @@ export default function DashboardScreen({ navigation }) {
                                         inActiveStrokeOpacity={0.5}
                                         inActiveStrokeWidth={4}
                                         activeStrokeWidth={12}
-                                        title={(values[1] < 0) ? 
-                                          <>
-                                          <Text style={{fontSize: CONST.heading6}}>Não</Text>
-                                          </>  
-                                        : 
-                                        <>
-                                        <Text>{values[1]} </Text><FontAwesome5 name="seedling" size={CONST.heading6} color={(values[1] < 0) ? CONST.secondaryGray : (values[1] < 25) ? CONST.mainRed : (values[1] > 66) ? CONST.mainGreen : CONST.mainBlue} />
-                                        </>}
+                                        title={(values[1] < 0) ?
+                                            <>
+                                                <Text style={{ fontSize: CONST.heading6 }}>Não</Text>
+                                            </>
+                                            :
+                                            <>
+                                                <Text>{values[1]} </Text><FontAwesome5 name="seedling" size={CONST.heading6} color={(values[1] < 0) ? CONST.secondaryGray : (values[1] < 25) ? CONST.mainRed : (values[1] > 66) ? CONST.mainGreen : CONST.mainBlue} />
+                                            </>}
                                         titleStyle={styles.mainProgressBarText}
                                         subtitle={(values[1] < 0) ? 'autorizado' : 'pontos'}
                                         subtitleStyle={styles.mainProgressBarSubText}
@@ -357,7 +360,7 @@ export default function DashboardScreen({ navigation }) {
                                         }
                                     }}>
                                     <CircularProgress
-                                        value={(values[2] < 0) ? 100 :values[2]}
+                                        value={(values[2] < 0) ? 100 : values[2]}
                                         maxValue={100}
                                         progressValueStyle={{ display: 'none' }}
                                         radius={CONST.screenWidth / 12}
@@ -368,7 +371,7 @@ export default function DashboardScreen({ navigation }) {
                                         inActiveStrokeOpacity={0.5}
                                         inActiveStrokeWidth={2}
                                         activeStrokeWidth={8}
-                                        title={<><Text>{(values[2] < 0) ?"":values[2]} </Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[2] < 0) ? CONST.secondaryGray : (values[2] < 25) ? CONST.mainRed : (values[2] > 66) ? CONST.mainGreen : CONST.mainBlue} />
+                                        title={<><Text>{(values[2] < 0) ? "" : values[2]} </Text><FontAwesome5 name="seedling" size={CONST.smallText} color={(values[2] < 0) ? CONST.secondaryGray : (values[2] < 25) ? CONST.mainRed : (values[2] > 66) ? CONST.mainGreen : CONST.mainBlue} />
                                         </>}
                                         titleStyle={styles.progressBarText}
                                     />
@@ -401,7 +404,7 @@ export default function DashboardScreen({ navigation }) {
                     </View>
                 </View>
                 <View>
-                    <Text style={[styles.normalText, {marginBottom: CONST.boxCardMargin, marginLeft: CONST.layoutPaddingLateral, marginTop: CONST.titlePageMargin*2, fontFamily: 'K2D-SemiBold'}]}>Áreas desafiadas</Text>
+                    <Text style={[styles.normalText, { marginBottom: CONST.boxCardMargin, marginLeft: CONST.layoutPaddingLateral, marginTop: CONST.titlePageMargin * 2, fontFamily: 'K2D-SemiBold' }]}>Áreas desafiadas</Text>
                 </View>
                 <ScrollView
                     horizontal={true}
@@ -412,9 +415,9 @@ export default function DashboardScreen({ navigation }) {
                             <Pressable
                                 key={index}
                                 onPress={() => {
-                                    navigation.navigate("Details", { 'category': category, 'activeCategories': Object.keys(activeCategories).sort(), 'userDOC' : userDOC })
+                                    navigation.navigate("Details", { 'category': category, 'activeCategories': Object.keys(activeCategories).sort(), 'userDOC': userDOC })
                                 }}
-                                style={{ marginRight: CONST.layoutPaddingLateral-10, marginLeft: CONST.layoutPaddingLateral-10 }}>
+                                style={{ marginRight: CONST.layoutPaddingLateral - 10, marginLeft: CONST.layoutPaddingLateral - 10 }}>
                                 {category === 'air' ?
                                     <AirBox color={whichColor(activeCategories[category], category)} points={todayDate in userDOC.points_categories.air ? userDOC.points_categories.air[todayDate] : 0} userCategory={true} />
                                     :

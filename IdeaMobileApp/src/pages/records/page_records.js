@@ -261,6 +261,8 @@ export default function RecordsScreen({ navigation }) {
     let recyclePoints = userDOC.points_categories.recycle[currentDate]
     let waterPoints = userDOC.points_categories.water[currentDate]
 
+    console.log(airPoints, energyPoints, movementPoints, recyclePoints, waterPoints)
+
     let idDoc = userID.concat(currentDate).replace(/\//g, "-");
     const airData = Object.fromEntries(Object.entries(userDOC.points_categories.air).filter(([key]) => key !== currentDate));
     const energyData = Object.fromEntries(Object.entries(userDOC.points_categories.energy).filter(([key]) => key !== currentDate));
@@ -284,12 +286,15 @@ export default function RecordsScreen({ navigation }) {
     const firestore_department_doc = firebase.firestore().collection("departments").doc(userDOC.department);
     const doc = await firestore_department_doc.get();
     if (doc.exists) {
-      const airDataDep = Object.fromEntries(Object.entries(doc.data().air_points).map(([key, value]) => [key, key === currentDate ? ((value - airPoints) > 0 ? (value - airPoints) : 0) : value]));
-      const energyDataDep = Object.fromEntries(Object.entries(doc.data().energy_points).map(([key, value]) => [key, key === currentDate ? ((value - energyPoints) > 0 ? (value - energyPoints) : 0) : value]));
-      const recycleDataDep = Object.fromEntries(Object.entries(doc.data().recycle_points).map(([key, value]) => [key, key === currentDate ? ((value - recyclePoints) > 0 ? (value - recyclePoints) : 0) : value]));
-      const movementDataDep = Object.fromEntries(Object.entries(doc.data().movement_points).map(([key, value]) => [key, key === currentDate ? ((value - movementPoints) > 0 ? (value - movementPoints) : 0) : value]));
-      const waterDataDep = Object.fromEntries(Object.entries(doc.data().water_points).map(([key, value]) => [key, key === currentDate ? ((value - waterPoints) > 0 ? (value - waterPoints) : 0) : value]));
+      const airDataDep = Object.fromEntries(Object.entries(doc.data().air_points).map(([key, value]) => [key, key === currentDate ? (console.log(value) && (value - airPoints) >= 0 ? (value - airPoints) : 0) : value]));
+      const energyDataDep = Object.fromEntries(Object.entries(doc.data().energy_points).map(([key, value]) => [key, key === currentDate ? (console.log(value) && (value - energyPoints) >= 0 ? (value - energyPoints) : 0) : value]));
+      const recycleDataDep = Object.fromEntries(Object.entries(doc.data().recycle_points).map(([key, value]) => [key, key === currentDate ? (console.log(value) && (value - recyclePoints) >= 0 ? (value - recyclePoints) : 0) : value]));
+      const movementDataDep = Object.fromEntries(Object.entries(doc.data().movement_points).map(([key, value]) => [key, key === currentDate ? (console.log(value) && (value - movementPoints) >= 0 ? (value - movementPoints) : 0) : value]));
+      const waterDataDep = Object.fromEntries(Object.entries(doc.data().water_points).map(([key, value]) => [key, key === currentDate ? (console.log(value) && (value - waterPoints) >= 0 ? (value - waterPoints) : 0) : value]));
       
+    console.log(airPoints, energyPoints, movementPoints, recyclePoints, waterPoints)
+
+
       firestore_department_doc.update({
         'air_points': airDataDep,
         'energy_points': energyDataDep,
