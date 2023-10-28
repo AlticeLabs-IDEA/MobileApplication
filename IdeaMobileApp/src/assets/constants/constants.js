@@ -54,6 +54,18 @@ export const softYellow = '#D88F23';
 export const grayishYellow = '#976418';
 export const darkYellow = '#774F13';
 
+export const department_color_1 = '#9C9CBD';
+export const department_color_2 = '#9DC8BE';
+export const department_color_3 = '#CEBB9F';
+export const department_color_4 = '#C6ADD9';
+export const department_color_5 = '#B7C1DC';
+export const department_color_6 = '#8B7B73';
+export const department_color_7 = '#9D6767';
+export const department_color_8 = '#ABB18A';
+export const department_color_9 = '#CFCCB7';
+export const department_color_10 = '#CBADBB';
+
+
 // ---- font-size ----
 export const normalText = 16;
 export const subText = 14;

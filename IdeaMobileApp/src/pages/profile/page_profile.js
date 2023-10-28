@@ -708,7 +708,7 @@ export default function Profile({ route, navigation }) {
               Prazer em ver-te, {userName}!
             </Text>
             <Text style={[styles.subText, { marginBottom: 0 }]}>
-              {userDepName}
+              Departamento de {userDepName}
             </Text>
             <Text style={[styles.subText, { marginBottom: 0 }]}>
               {userOrg}

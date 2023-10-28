@@ -2,7 +2,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Pressable, ScrollView, Text, View, TextInput } from "react-native";
+import { Pressable, ScrollView, Text, View, Image, Modal, TextInput } from "react-native";
 import { useEffect, useState, useRef } from "react";
 import { FontAwesome5 } from '@expo/vector-icons';
 import { useFonts } from "expo-font";
@@ -18,10 +18,10 @@ import * as CONST from "../../assets/constants/constants.js"
 
 export default function DetailsScreen({ route, navigation }) {
     const { category, activeCategories, userDOC } = route.params;
+    const [loadingBolt, setLoadingBolt] = useState(true);
     const [area, setCategory] = useState("")
     const [days, setDays] = useState([])
     const [daysLabel, setDaysLabel] = useState([])
-    const [dataset, setDataset] = useState([])
     const scrollViewRef = useRef(null);
     const [airData, setAirData] = useState()
     const [energyData, setEnergyData] = useState()
@@ -59,9 +59,8 @@ export default function DetailsScreen({ route, navigation }) {
             const sortAvgArray = Object.entries(avgTemp);
             sortAvgArray.sort((a, b) => b[1] - a[1]);
             const sortedObj = Object.fromEntries(sortAvgArray);
-
-            console.log(avgTemp)
             setAvgPoints(sortedObj)
+            setLoadingBolt(false)
         }
     }
 
@@ -122,6 +121,19 @@ export default function DetailsScreen({ route, navigation }) {
     return (
         <SafeAreaProvider style={[styles.mainContainer]}>
             <StatusBar style={"dark"} />
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={loadingBolt}
+                onRequestClose={() => {
+                    setLoadingBolt(!loadingBolt);
+                }}>
+                <View style={styles.centeredViewDarker}>
+                    <View style={{ bottom: CONST.screenHeight / 2, zIndex: 1000, left: CONST.screenWidth / 2.5, position: 'absolute' }}>
+                        <Image source={require('../../assets/images/loading_bolt_blue.gif')} resizeMode="contain" style={{ tintColor: 'white', height: 80, width: 80 }} />
+                    </View>
+                </View>
+            </Modal>
             <View style={{ height: CONST.screenHeight - 170 }}>
                 <ScrollView
                     showsHorizontalScrollIndicator={false}
@@ -130,17 +142,7 @@ export default function DetailsScreen({ route, navigation }) {
                     pagingEnabled={true}
                     onMomentumScrollEnd={(e) => {
                         var x = e.nativeEvent.contentOffset.x;
-                        if (x == 0) {
-                            whichCategory(activeCategories.length > 0 ? activeCategories[0] : 'none')
-                        } else if (x < CONST.screenWidth + 1) {
-                            whichCategory(activeCategories.length > 1 ? activeCategories[1] : 'none')
-                        } else if (x < CONST.screenWidth * 2 + 1) {
-                            whichCategory(activeCategories.length > 2 ? activeCategories[2] : 'none')
-                        } else if (x < CONST.screenWidth * 3 + 1) {
-                            whichCategory(activeCategories.length > 3 ? activeCategories[3] : 'none')
-                        } else {
-                            whichCategory(activeCategories.length > 4 ? activeCategories[4] : 'none')
-                        }
+                        setCategory(activeCategories[Math.round(x/CONST.screenWidth)])
                     }}>
 
                     {airData && avgPoints && Object.keys(avgPoints).length > 0 && daysLabel && activeCategories.includes('air') ?
@@ -465,14 +467,10 @@ export default function DetailsScreen({ route, navigation }) {
             <View
                 style={{ justifyContent: 'center', flexDirection: 'row', marginTop: CONST.dotsMargin, marginBottom: CONST.dotsMargin }}>
                 {activeCategories.map((value, idx) => (
-                    <View key={idx} style={
-                        (idx == activeCategories.indexOf(area)) ? { backgroundColor: CONST.secondaryGray, width: 20, height: 8, margin: 5, borderRadius: 10 }
-                           : { backgroundColor: CONST.secondaryGray, width: 8, height: 8, margin: 5, borderRadius: 50 }}>
+                    <View key={idx} style={{ backgroundColor: CONST.secondaryGray, opacity: (idx === activeCategories.indexOf(area)) ? 1 : 0.5, width: (idx === activeCategories.indexOf(area)) ? 20 : 8, height: 8, margin: 5, borderRadius: 10}}>
                     </View>
                 ))}
             </View>
-
-
         </SafeAreaProvider>
     )
 }

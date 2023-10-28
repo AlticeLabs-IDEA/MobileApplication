@@ -84,15 +84,15 @@ export default function AddActivitiesScreen({ navigation }) {
     let recycleData = {}
     let waterData = {}
     let userScore = 0
-    let airPointsTotal = 0
+    const [airPointsTotal, setAirPointsTotal] = useState(0)
+    const [energyPointsTotal, setEnergyPointsTotal] = useState(0)
+    const [waterPointsTotal, setWaterPointsTotal] = useState(0)
+    const [movementPointsTotal, setMovementPointsTotal] = useState(0)
+    const [recyclePointsTotal, setRecyclePointsTotal] = useState(0)
     let airPoints = 0
-    let recyclePointsTotal = 0
     let recyclePoints = 0
-    let energyPointsTotal = 0
     let energyPoints = 0
-    let movementPointsTotal = 0
     let movementPoints = 0
-    let waterPointsTotal = 0
     let waterPoints = 0
     const [departmentPointsAir, setDepartmentPointsAir] = useState()
     const [departmentPointsEnergy, setDepartmentPointsEnergy] = useState()
@@ -160,19 +160,19 @@ export default function AddActivitiesScreen({ navigation }) {
 
         getDepartmentPoints(doc.department)
 
-        if (categories['air'] !== 0) {
+        if (doc.active_categories['air'] !== 0) {
             setToShow('air')
             setCategory('de Climatização')
-        } else if (categories['energy'] !== 0) {
+        } else if (doc.active_categories['energy'] !== 0) {
             setToShow('energy')
             setCategory('de Energia Elétrica')
-        } else if (categories['movement'] !== 0) {
+        } else if (doc.active_categories['movement'] !== 0) {
             setToShow('movement')
             setCategory('de Mobilidade')
-        } else if (categories['recycle'] !== 0) {
+        } else if (doc.active_categories['recycle'] !== 0) {
             setToShow('recycle')
             setCategory('de Reciclagem')
-        } else if (categories['water'] !== 0) {
+        } else if (doc.active_categories['water'] !== 0) {
             setToShow('water')
             setCategory('de Recursos Hídricos')
         }
@@ -264,11 +264,11 @@ export default function AddActivitiesScreen({ navigation }) {
                 setRecycleAnswers(initialRecycleAnswers);
                 setRecycleQuestions(filteredRecycleData)
 
-                // setAirPointsTotal(calculateMaxOptionSum(filteredAirData))
-                // setEnergyPointsTotal(calculateMaxOptionSum(filteredEnergyData) * 6);
-                // setMovementPointsTotal(calculateMaxOptionSum(filteredMovementData));
-                // setRecyclePointsTotal(calculateMaxOptionSum(filteredRecycleData));
-                // setWaterPointsTotal(calculateMaxOptionSum(filteredWaterData));
+                setAirPointsTotal(doc.active_categories.air !== 0 ? filteredAirData.filter(q => q.main).reduce((total, q) => total + Math.max(...Object.values(q.options)), 0) : 0);
+                setEnergyPointsTotal(doc.active_categories.energy !== 0 ? filteredEnergyData.filter(q => (q.main && !q.field.includes('general'))).reduce((total, q) => total + Math.max(...Object.values(q.options)), 0) * doc.initial_questions.devices.length + filteredEnergyData.filter(q => (q.main && q.field.includes('general'))).reduce((total, q) => total + Math.max(...Object.values(q.options)), 0) : 0)
+                setRecyclePointsTotal(doc.active_categories.recycle !== 0 ? filteredRecycleData.filter(q => q.main).reduce((total, q) => total + Math.max(...Object.values(q.options)), 0) : 0);
+                setMovementPointsTotal(doc.active_categories.movement !== 0 ? filteredMovementData.filter(q => q.main).reduce((total, q) => total + Math.max(...Object.values(q.options)), 0) : 0);
+                setWaterPointsTotal(doc.active_categories.water !== 0 ? filteredWaterData.filter(q => q.main).reduce((total, q) => total + Math.max(...Object.values(q.options)), 0) : 0);
             });
         }
         catch (error) {
@@ -417,12 +417,9 @@ export default function AddActivitiesScreen({ navigation }) {
         // air first questions activate 2 sub questions:
         if (!airAnswers[0][0] && !airAnswers[0][1]) {
             airAnswers[1] = [false, false]
-            airAnswers[2] = [false, false]
         }
         else if (airAnswers[0][0]) {
             airAnswers[1] = [false, false]
-        } else {
-            airAnswers[2] = [false, false]
         }
         // recycle second question activate a sub question
         if (recycleAnswers[1][0]) {
@@ -452,11 +449,10 @@ export default function AddActivitiesScreen({ navigation }) {
         calculateScore()
     }
 
-    // ! tá mal
     // * function to calculate the score
     const calculateScore = () => {
-        // console.log("-----------> > air ", airAnswers)
         if (userDOC.active_categories.air !== 0) {
+            // console.log("-----------> > air ", airAnswers)
             for (let i = 0; i < airAnswers.length; i++) {
                 for (let j = 0; j < airAnswers[i].length; j++) {
                     if (airAnswers[i][j] === true) {
@@ -464,7 +460,6 @@ export default function AddActivitiesScreen({ navigation }) {
                         let optionValue = airQuestions[i].options[option]
                         // console.log(option, "  ->  ", optionValue)
                         airPoints += optionValue
-                        airPointsTotal += Math.max(...Object.values(airQuestions[i].options))
                         userScore = (userScore + optionValue)
                         airData[airQuestions[i].description] = option
                         break
@@ -481,7 +476,6 @@ export default function AddActivitiesScreen({ navigation }) {
                         let optionValue = waterQuestions[i].options[option]
                         // console.log(option, "  ->  ", optionValue)
                         waterPoints += optionValue
-                        waterPointsTotal += Math.max(...Object.values(waterQuestions[i].options))
                         userScore = (userScore + optionValue)
                         waterData[waterQuestions[i].description] = option
                         break
@@ -498,7 +492,6 @@ export default function AddActivitiesScreen({ navigation }) {
                         let optionValue = recycleQuestions[i].options[option]
                         // console.log(option, "  ->  ", optionValue)
                         recyclePoints += optionValue
-                        recyclePointsTotal += Math.max(...Object.values(recycleQuestions[i].options))
                         userScore = (userScore + optionValue)
                         recycleData[recycleQuestions[i].description] = option
                         break
@@ -520,7 +513,6 @@ export default function AddActivitiesScreen({ navigation }) {
                         }
                         // console.log(option, "  ->  ", optionValue)
                         movementPoints += optionValue
-                        movementPointsTotal += Math.max(...Object.values(movementQuestions[i].options))
                         userScore = (userScore + optionValue)
                         movementData[movementQuestions[i].description] = option
                         break
@@ -534,15 +526,18 @@ export default function AddActivitiesScreen({ navigation }) {
             for (let i = 0; i < energyAnswersKeys.length; i++) {
                 let questionsForDevice = energyQuestions.filter(element => element.field.includes(energyAnswersKeys[i]))
                 if (energyAnswersKeys[i] === "geral") {
-                    questionsForDevice = energyQuestions[0]
+                    questionsForDevice = [energyQuestions[0]]
                 }
                 for (let j = 0; j < questionsForDevice.length; j++) {
+                    if (energyAnswersKeys[i] === "geral") {
+                        energyAnswers[energyAnswersKeys[i]] = [energyAnswers[energyAnswersKeys[i]]]
+                    }
+
                     for (let k = 0; k < energyAnswers[energyAnswersKeys[i]][j].length; k++) {
                         if (energyAnswers[energyAnswersKeys[i]][j][k] === true) {
                             let option = Object.keys(questionsForDevice[j].options).sort()[k]
                             let optionValue = questionsForDevice[j].options[option]
                             energyPoints += optionValue
-                            energyPointsTotal += Math.max(...Object.values(questionsForDevice[j].options))
                             userScore = (userScore + optionValue)
                             energyData[energyAnswersKeys[i] + ": " + questionsForDevice[j].description] = option
                             break
@@ -562,7 +557,6 @@ export default function AddActivitiesScreen({ navigation }) {
         // console.log(waterData)
         console.log("points: ", airPoints, " ", energyPoints, " ", movementPoints, " ", recyclePoints, " ", waterPoints)
         console.log("pointsTotal: ", airPointsTotal, " ", energyPointsTotal, " ", movementPointsTotal, " ", recyclePointsTotal, " ", waterPointsTotal)
-        console.log(userPoints)
         let idDoc = userID.concat(currentDate).replace(/\//g, "-");
         const firestore_answers = firebase.firestore().collection("answers")
         firestore_answers.doc(idDoc).set({
@@ -573,8 +567,8 @@ export default function AddActivitiesScreen({ navigation }) {
             water: userDOC.active_categories.water !== 0 ? waterData : {},
         });
         const updatedPoints = { ...userPoints };
-        console.log(userScore)
-        updatedPoints[currentDate] = Math.round((100/ (airPointsTotal + energyPointsTotal + waterPointsTotal + recyclePointsTotal + movementPointsTotal) )* userScore);
+        console.log("user points:", Math.round(100/5 * (airPoints/airPointsTotal + energyPoints/energyPointsTotal + waterPoints/waterPointsTotal + recyclePoints/recyclePointsTotal + movementPoints/movementPointsTotal) ))
+        updatedPoints[currentDate] = Math.round(100/5 * (airPoints/airPointsTotal + energyPoints/energyPointsTotal + waterPoints/waterPointsTotal + recyclePoints/recyclePointsTotal + movementPoints/movementPointsTotal) );
         setUserPoints(updatedPoints);
         const updatedAirPoints = { ...userAirPoints };
         const updatedEnergyPoints = { ...userEnergyPoints };
@@ -609,35 +603,49 @@ export default function AddActivitiesScreen({ navigation }) {
         const updatedRecyclePointsDep = { ...departmentPointsRecycle };
         const updatedWaterPointsDep = { ...departmentPointsWater };
 
-        if (currentDate in departmentPointsAir) {
-            updatedAirPointsDep[currentDate] = departmentPointsAir[currentDate] + (airPoints/airPointsTotal)*100
-        } else {
-            updatedAirPointsDep[currentDate] = (airPoints/airPointsTotal)*100
+        console.log("dep ares: ", departmentPointsAir, departmentPointsEnergy, departmentPointsMovement, departmentPointsRecycle, departmentPointsWater)
+        console.log("points: ", airPoints, " ", energyPoints, " ", movementPoints, " ", recyclePoints, " ", waterPoints)
+        console.log("pointsTotal: ", airPointsTotal, " ", energyPointsTotal, " ", movementPointsTotal, " ", recyclePointsTotal, " ", waterPointsTotal)
+
+        if (categories.air !== 0) {
+            if (currentDate in departmentPointsAir) {
+                updatedAirPointsDep[currentDate] = departmentPointsAir[currentDate] +  Math.round(airPoints * 100 / airPointsTotal)
+            } else {
+                updatedAirPointsDep[currentDate] =  Math.round(airPoints * 100 / airPointsTotal)
+            }
         }
-        if (currentDate in departmentPointsEnergy) {
-            updatedEnergyPointsDep[currentDate] = departmentPointsEnergy[currentDate] + Math.round(energyPoints/energyPointsTotal)*100
-        } else {
-            updatedEnergyPointsDep[currentDate] = Math.round(energyPoints/energyPointsTotal)*100
+        if (categories.energy !== 0) {
+            if (currentDate in departmentPointsEnergy) {
+                updatedEnergyPointsDep[currentDate] = departmentPointsEnergy[currentDate] + Math.round(energyPoints * 100 / energyPointsTotal)
+            } else {
+                updatedEnergyPointsDep[currentDate] = Math.round(energyPoints * 100 / energyPointsTotal)
+            }
         }
-        if (currentDate in departmentPointsMovement) {
-            updatedMovementPointsDep[currentDate] = departmentPointsMovement[currentDate] + Math.round(movementPoints/movementPointsTotal)*100
-        } else {
-            updatedMovementPointsDep[currentDate] = Math.round(movementPoints/movementPointsTotal)*100
+        if (categories.movement !== 0) {
+            if (currentDate in departmentPointsMovement) {
+                updatedMovementPointsDep[currentDate] = departmentPointsMovement[currentDate] + Math.round(movementPoints * 100 / movementPointsTotal )
+            } else {
+                updatedMovementPointsDep[currentDate] = Math.round(movementPoints * 100/ movementPointsTotal )
+            }
         }
-        if (currentDate in departmentPointsRecycle) {
-            updatedRecyclePointsDep[currentDate] = departmentPointsRecycle[currentDate] + Math.round(recyclePoints/recyclePointsTotal)*100
-        } else {
-            updatedRecyclePointsDep[currentDate] = Math.round(recyclePoints/recyclePointsTotal)*100
+        if (categories.recycle !== 0) {
+            if (currentDate in departmentPointsRecycle) {
+                updatedRecyclePointsDep[currentDate] = departmentPointsRecycle[currentDate] + Math.round(recyclePoints * 100 / recyclePointsTotal )
+            } else {
+                updatedRecyclePointsDep[currentDate] = Math.round(recyclePoints *100 / recyclePointsTotal)
+            }
         }
-        if (currentDate in departmentPointsWater) {
-            updatedWaterPointsDep[currentDate] = departmentPointsWater[currentDate] + Math.round(waterPoints/waterPointsTotal)*100
-        } else {
-            updatedWaterPointsDep[currentDate] = Math.round(waterPoints/waterPointsTotal)*100
+        if (categories.water !== 0) {
+            if (currentDate in departmentPointsWater) {
+                updatedWaterPointsDep[currentDate] = departmentPointsWater[currentDate] + Math.round(waterPoints * 100 / waterPointsTotal )
+            } else {
+                updatedWaterPointsDep[currentDate] = Math.round(waterPoints * 100 / waterPointsTotal)
+            }
         }
 
         setDepartmentPointsAir(updatedAirPointsDep);
-        setDepartmentPointsEnergy(updatedMovementPointsDep);
-        setDepartmentPointsMovement(updatedEnergyPointsDep);
+        setDepartmentPointsEnergy(updatedEnergyPointsDep);
+        setDepartmentPointsMovement(updatedMovementPointsDep);
         setDepartmentPointsRecycle(updatedRecyclePointsDep);
         setDepartmentPointsWater(updatedWaterPointsDep);
 
@@ -690,7 +698,6 @@ export default function AddActivitiesScreen({ navigation }) {
     // * function to save data in localStorage to edit later
     const saveData = async () => {
         // * we save in localstorage the par key-value where key is the date and the value is a dict where key is the category and value the answers
-        // console.log(currentDate)
         try {
             await AsyncStorage.setItem(currentDate.toString(), JSON.stringify([airAnswers, energyAnswers, movementAnswers, recycleAnswers, waterAnswers]));
         } catch (e) {
@@ -741,6 +748,7 @@ export default function AddActivitiesScreen({ navigation }) {
 
     useEffect(() => {
         // console.log(currentDate)
+        console.log(toShow)
     }, [currentDate, toShow, airAnswers, movementAnswers, energyAnswers, recycleAnswers, waterAnswers, loadingBolt, modalWithoutCat])
 
     return (
@@ -1031,9 +1039,6 @@ export default function AddActivitiesScreen({ navigation }) {
                     airQuestions.map((callbackfn, id) => {
                         const firstQuestion = 0
                         if (id === firstQuestion + 1 && !airAnswers[firstQuestion][1]) {
-                            return (<View key={'air_' + id}></View>)
-                        }
-                        if (id === firstQuestion + 2 && !airAnswers[firstQuestion][0]) {
                             return (<View key={'air_' + id}></View>)
                         }
                         if (airQuestions[id].adjustment === 'air' && !initialQuestions.air) {
