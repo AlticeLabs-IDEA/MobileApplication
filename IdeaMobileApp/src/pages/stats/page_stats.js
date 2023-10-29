@@ -514,6 +514,8 @@ export default function StatsScreen({ navigation }) {
                                                     </View>
                                                 )
                                             }
+                                            console.log(depsAvg)
+                                            console.log(userDOC.department_name)
                                             if (index >= 3 && Object.keys(depsAvg).filter(key => key !== 'none')[index] === userDOC.department_name) {
                                                 return (
                                                     <View style={{ margin: CONST.labelPaddingVertical * 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>

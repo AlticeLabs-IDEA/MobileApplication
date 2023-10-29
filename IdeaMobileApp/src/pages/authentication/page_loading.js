@@ -15,7 +15,7 @@ import { styles } from "../../assets/styles/css.js";
 import * as CONST from "../../assets/constants/constants.js";
 
 export default function LoadingScreen({ navigation }) {
-
+   
     useEffect(() => {
         checkIsLogged()
     }, [])
@@ -31,13 +31,12 @@ export default function LoadingScreen({ navigation }) {
     };
 
     const checkIsLogged = async () => {
-        const auth = getAuth();
-        console.log(auth.currentUser)
-        if (auth.currentUser !== null) {
-            const firestore_user_doc = firebase.firestore().collection("users").doc(auth.currentUser.uid);
+        console.log("---------------------------------------->", firebase.auth())
+        if (firebase.auth().currentUser !== null && firebase.auth().currentUser !== undefined) {
+            const firestore_user_doc = firebase.firestore().collection("users").doc(firebase.auth().currentUser.uid);
             const doc = await firestore_user_doc.get();
             console.log('User is logged in');
-            storeData(doc.data(), auth.currentUser.uid)
+            storeData(doc.data(), firebase.auth().currentUser.uid)
             navigation.navigate("Tabbar")
         }
         else {

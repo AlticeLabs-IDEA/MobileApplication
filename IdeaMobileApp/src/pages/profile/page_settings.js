@@ -52,7 +52,7 @@ export default function SettingsScreen({ route, navigation }) {
     const firestore_departments = firebase.firestore().collection("departments");
     firestore_departments.get().then((querySnapshot) => {
       const tempDoc = querySnapshot.docs.map((doc) => {
-        return ({ label: doc.data().description, value: doc.id })
+        return ({ label: doc.data().name, value: doc.id })
         // return { id: doc.id, ...doc.data() }
       })
       setDepartments(tempDoc)
